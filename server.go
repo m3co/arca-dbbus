@@ -37,7 +37,7 @@ func (s *Server) Close() {
 // Start launches the grid server
 func (s *Server) Start(ready *chan bool) (err error) {
 	//s.dbs = make([]*sql.DB)
-	address := ":12345"
+	address := ":22345"
 	if s.Address != "" {
 		address = s.Address
 	}
