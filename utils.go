@@ -5,7 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
+
+type handlerIDU struct {
+	Insert func(db *sql.DB) jsonrpc.RemoteProcedure
+	Delete func(db *sql.DB) jsonrpc.RemoteProcedure
+	Update func(db *sql.DB) jsonrpc.RemoteProcedure
+}
 
 // ErrorZeroParams indicates that the request cannot be processed
 var ErrorZeroParams = errors.New("Zero params")
@@ -128,4 +136,74 @@ func Update(
 		return prepareAndExecute(db, queryPrepared, values)
 	}
 	return nil, ErrorZeroParams
+}
+
+// setupIDU whatever
+func setupIDU(
+	table string,
+	getFieldMap func(params map[string]interface{}) map[string]string,
+) handlerIDU {
+	handlers := handlerIDU{}
+
+	handlers.Insert = func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			if request.Params != nil {
+				params := request.Params.(map[string]interface{})
+				fields := getFieldMap(params)
+				return Insert(db, params, fields, table)
+			}
+			return nil, errors.New("Params are not defined")
+		}
+	}
+
+	handlers.Delete = func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			if request.Params != nil {
+				params := request.Params.(map[string]interface{})
+				fields := getFieldMap(params)
+				return Delete(db, params, fields, table)
+			}
+			return nil, errors.New("Params are not defined")
+		}
+	}
+
+	handlers.Update = func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			if request.Params != nil {
+				params := request.Params.(map[string]interface{})
+				fields := getFieldMap(params)
+				return Update(db, params, fields, table)
+			}
+			return nil, errors.New("Params are not defined")
+		}
+	}
+
+	return handlers
+}
+
+// RegisterSourceIDU whatever
+func RegisterSourceIDU(
+	source string,
+	getFieldMap func(params map[string]interface{}) map[string]string,
+	server *Server,
+	db *sql.DB,
+) {
+	// IDU(Table) :: Public
+	handlers := setupIDU(source, getFieldMap)
+	server.RegisterSource("Insert", source, handlers.Insert(db))
+	server.RegisterSource("Delete", source, handlers.Delete(db))
+	server.RegisterSource("Update", source, handlers.Update(db))
+}
+
+// RegisterTargetIDU whatever
+func RegisterTargetIDU(
+	target string,
+	getFieldMap func(params map[string]interface{}) map[string]string,
+	server *Server,
+) {
+	// idu(_Table) :: Private
+	handlers := setupIDU(target, getFieldMap)
+	server.RegisterTarget("insert", target, handlers.Insert)
+	server.RegisterTarget("delete", target, handlers.Delete)
+	server.RegisterTarget("update", target, handlers.Update)
 }
