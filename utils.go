@@ -18,6 +18,9 @@ type handlerIDU struct {
 // ErrorZeroParams indicates that the request cannot be processed
 var ErrorZeroParams = errors.New("Zero params")
 
+// ErrorUndefinedParams whatever
+var ErrorUndefinedParams = errors.New("Params are not defined")
+
 // ResultOK is the standar result for JSON-RPC-Response Result field
 type ResultOK struct {
 	Success bool
@@ -152,7 +155,7 @@ func setupIDU(
 				fields := getFieldMap(params)
 				return Insert(db, params, fields, table)
 			}
-			return nil, errors.New("Params are not defined")
+			return nil, ErrorUndefinedParams
 		}
 	}
 
@@ -163,7 +166,7 @@ func setupIDU(
 				fields := getFieldMap(params)
 				return Delete(db, params, fields, table)
 			}
-			return nil, errors.New("Params are not defined")
+			return nil, ErrorUndefinedParams
 		}
 	}
 
@@ -174,7 +177,7 @@ func setupIDU(
 				fields := getFieldMap(params)
 				return Update(db, params, fields, table)
 			}
-			return nil, errors.New("Params are not defined")
+			return nil, ErrorUndefinedParams
 		}
 	}
 
