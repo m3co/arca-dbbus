@@ -116,7 +116,7 @@ func Delete(
 // Update whatever
 func Update(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, table string,
+	fieldMap map[string]string, keys []string, table string,
 ) (interface{}, error) {
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
@@ -141,10 +141,12 @@ func Update(
 	return nil, ErrorZeroParams
 }
 
+type fieldMap func(params map[string]interface{}) (map[string]string, []string)
+
 // setupIDU whatever
 func setupIDU(
 	table string,
-	getFieldMap func(params map[string]interface{}) map[string]string,
+	getFieldMap fieldMap,
 ) handlerIDU {
 	handlers := handlerIDU{}
 
@@ -152,7 +154,7 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields := getFieldMap(params)
+				fields, _ := getFieldMap(params)
 				return Insert(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
@@ -163,7 +165,7 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields := getFieldMap(params)
+				fields, _ := getFieldMap(params)
 				return Delete(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
@@ -174,8 +176,8 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields := getFieldMap(params)
-				return Update(db, params, fields, table)
+				fields, keys := getFieldMap(params)
+				return Update(db, params, fields, keys, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -187,7 +189,7 @@ func setupIDU(
 // RegisterSourceIDU whatever
 func RegisterSourceIDU(
 	source string,
-	getFieldMap func(params map[string]interface{}) map[string]string,
+	getFieldMap fieldMap,
 	server *Server,
 	db *sql.DB,
 ) {
@@ -201,7 +203,7 @@ func RegisterSourceIDU(
 // RegisterTargetIDU whatever
 func RegisterTargetIDU(
 	target string,
-	getFieldMap func(params map[string]interface{}) map[string]string,
+	getFieldMap fieldMap,
 	server *Server,
 ) {
 	// idu(_Table) :: Private
