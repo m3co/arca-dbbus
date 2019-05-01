@@ -15,15 +15,29 @@ type handlerIDU struct {
 	Update func(db *sql.DB) jsonrpc.RemoteProcedure
 }
 
+type fieldMap func(params map[string]interface{}) (map[string]string, []string)
+
 // ErrorZeroParams indicates that the request cannot be processed
 var ErrorZeroParams = errors.New("Zero params")
 
 // ErrorUndefinedParams whatever
 var ErrorUndefinedParams = errors.New("Params are not defined")
 
+// ErrorEmptyCondition whatever
+var ErrorEmptyCondition = errors.New("Condition ended up in empty")
+
 // ResultOK is the standar result for JSON-RPC-Response Result field
 type ResultOK struct {
 	Success bool
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func prepareAndExecute(
@@ -120,28 +134,34 @@ func Update(
 ) (interface{}, error) {
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
-	condition := ""
+	condition := make([]string, 0)
 	i := 0
 	for field, typefield := range fieldMap {
-		i++
-		values = append(values, params[field])
-		if field == "ID" {
-			condition = fmt.Sprintf(`where "ID"=$%d::%s`, i, typefield)
+		if contains(keys, field) {
 			continue
 		}
+		i++
+		values = append(values, params[field])
 		body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
 			field, i, typefield))
 	}
-	if condition != "" {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s %s;`,
-			table, strings.Join(body, ","), condition)
-
+	if i == 0 {
+		return nil, ErrorZeroParams
+	}
+	for _, field := range keys {
+		i++
+		values = append(values, params[field])
+		typefield := fieldMap[field]
+		condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+			field, i, typefield))
+	}
+	if len(condition) > 0 {
+		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
+			table, strings.Join(body, ","), strings.Join(condition, " and "))
 		return prepareAndExecute(db, queryPrepared, values)
 	}
-	return nil, ErrorZeroParams
+	return nil, ErrorEmptyCondition
 }
-
-type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
 // setupIDU whatever
 func setupIDU(
