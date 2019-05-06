@@ -55,7 +55,11 @@ func (s *Server) setupListenNotify(connStr string) {
 			request.Context = notification.Context
 			request.Params = notification.Result
 			for _, db := range s.dbs {
-				s.rpc.ProcessNotification(&request, db)
+				response, err := s.rpc.ProcessNotification(&request, db)
+				if err != nil {
+					msg, _ := json.Marshal(response)
+					s.rpc.Broadcast(msg)
+				}
 			}
 		}
 		if isnotification {
