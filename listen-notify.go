@@ -87,5 +87,11 @@ func (s *Server) setupListenNotify(connStr string) {
 			Es decir, en este caso ocurre que la notificación es para ejecutar el RPC
 			sobre una vista determinada.
 		*/
+		request := jsonrpc.Request{}
+		request.Method = notification.Method
+		request.Context = notification.Context
+		request.Params = notification.Result
+
+		s.rpc.ProcessRequest(&request, nil)
 	}
 }
