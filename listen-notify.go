@@ -49,21 +49,43 @@ func (s *Server) setupListenNotify(connStr string) {
 			isnotification = iNotification.(bool)
 		}
 
+		/*
+			Expliquemos aquí el significado de (isprime): Cuando una vista primaria
+			pretende afectar a una tabla primaria, tenemos que ocurre un JSON-RPC con
+			el campo "Prime": true. En éste caso, hay que ejecutar dicho "request" en
+			todas las bases de datos para así garantizar consistencia en todas partes.
+		*/
 		if isprime {
 			request := jsonrpc.Request{}
 			request.Method = notification.Method
 			request.Context = notification.Context
 			request.Params = notification.Result
 			for _, db := range s.dbs {
-				response, err := s.rpc.ProcessNotification(&request, db)
-				if err != nil {
-					msg, _ := json.Marshal(response)
-					s.rpc.Broadcast(msg)
-				}
+				s.rpc.ProcessNotification(&request, db)
 			}
+			continue // favor, salir del ciclo presente*
 		}
+
+		/*
+			Cualquier notificación, sin importar su carácter, hay que notificarla a
+			todos los clientes.
+		*/
 		if isnotification {
 			s.rpc.Broadcast([]byte(msg.Extra))
+			continue // favor, salir del ciclo presente*
 		}
+
+		/*
+			favor, salir del ciclo presente* : es porque no se aceptan notificaciones
+			con diferentes intenciones.
+			Si la notificación contiene "Prime": true entonces "Notification": true
+			no puede estar presente al mismo tiempo, y viceversa.
+		*/
+
+		/*
+			Este caso ocurre cuando no es ni notificación ni es a primaria.
+			Es decir, en este caso ocurre que la notificación es para ejecutar el RPC
+			sobre una vista determinada.
+		*/
 	}
 }
