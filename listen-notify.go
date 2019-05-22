@@ -38,13 +38,13 @@ func (s *Server) setupListenNotify(connStr string) {
 		}
 
 		Row := notification.Row
-		Has := notification.Has
+		PK := notification.PK
 		Params := make(map[string]interface{})
 		if Row != nil {
 			Params["Row"] = Row
 		}
-		if Has != nil {
-			Params["Has"] = Has
+		if PK != nil {
+			Params["PK"] = PK
 		}
 		iPrime := notification.Context["Prime"]
 		iNotification := notification.Context["Notification"]

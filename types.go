@@ -14,8 +14,8 @@ type Notification struct {
 	// Row contiene la entrada
 	Row interface{}
 
-	// Has contiene los campos "primary-key"
-	Has interface{}
+	// PK contiene los campos "primary-key"
+	PK interface{}
 
 	/*
 		Context contiene las variables auxiliares del contexto contiene

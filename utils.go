@@ -17,11 +17,20 @@ type handlerIDU struct {
 
 type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
-// ErrorZeroParams indicates that the request cannot be processed
-var ErrorZeroParams = errors.New("Zero params")
+// ErrorZeroParamsInRow indicates that the request cannot be processed
+var ErrorZeroParamsInRow = errors.New("Zero params in Row")
+
+// ErrorZeroParamsInPK indicates that the request cannot be processed
+var ErrorZeroParamsInPK = errors.New("Zero params in PK")
 
 // ErrorUndefinedParams whatever
 var ErrorUndefinedParams = errors.New("Params are not defined")
+
+// ErrorUndefinedRow whatever
+var ErrorUndefinedRow = errors.New("Row is not defined")
+
+// ErrorUndefinedPK whatever
+var ErrorUndefinedPK = errors.New("PK is not defined")
 
 // ErrorEmptyCondition whatever
 var ErrorEmptyCondition = errors.New("Condition ended up in empty")
@@ -91,10 +100,12 @@ func Insert(
 	i := 0
 
 	for field, typefield := range fieldMap {
-		i++
-		header = append(header, fmt.Sprintf(`"%s"`, field))
-		body = append(body, fmt.Sprintf(`$%d::%s as "%s"`, i, typefield, field))
-		values = append(values, Row[field])
+		if value, ok := Row[field]; ok {
+			i++
+			header = append(header, fmt.Sprintf(`"%s"`, field))
+			body = append(body, fmt.Sprintf(`$%d::%s as "%s"`, i, typefield, field))
+			values = append(values, value)
+		}
 	}
 
 	if i > 0 {
@@ -103,7 +114,7 @@ func Insert(
 
 		return PrepareAndExecute(db, queryPrepared, values)
 	}
-	return nil, ErrorZeroParams
+	return nil, ErrorZeroParamsInRow
 }
 
 // Delete whatever
@@ -113,13 +124,15 @@ func Delete(
 ) (interface{}, error) {
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
-	Row := params["Row"].(map[string]interface{})
+	PK := params["PK"].(map[string]interface{})
 	i := 0
 	for field, typefield := range fieldMap {
-		i++
-		values = append(values, Row[field])
-		body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
-			field, i, typefield))
+		if value, ok := PK[field]; ok {
+			i++
+			values = append(values, value)
+			body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
+				field, i, typefield))
+		}
 	}
 	if i > 0 {
 		queryPrepared := fmt.Sprintf(`delete from "%s" where %s;`,
@@ -127,7 +140,7 @@ func Delete(
 
 		return PrepareAndExecute(db, queryPrepared, values)
 	}
-	return nil, ErrorZeroParams
+	return nil, ErrorZeroParamsInPK
 }
 
 // Update whatever
@@ -139,25 +152,31 @@ func Update(
 	values := make([]interface{}, 0)
 	condition := make([]string, 0)
 	Row := params["Row"].(map[string]interface{})
+	PK := params["PK"].(map[string]interface{})
 	i := 0
 	for field, typefield := range fieldMap {
-		if contains(keys, field) {
-			continue
+		if value, ok := Row[field]; ok {
+			i++
+			values = append(values, value)
+			body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
+				field, i, typefield))
 		}
-		i++
-		values = append(values, Row[field])
-		body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
-			field, i, typefield))
 	}
 	if i == 0 {
-		return nil, ErrorZeroParams
+		return nil, ErrorZeroParamsInRow
 	}
+	i = 0
 	for _, field := range keys {
-		i++
-		values = append(values, Row[field])
-		typefield := fieldMap[field]
-		condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-			field, i, typefield))
+		if value, ok := PK[field]; ok {
+			i++
+			values = append(values, value)
+			typefield := fieldMap[field]
+			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+				field, i, typefield))
+		}
+	}
+	if i == 0 {
+		return nil, ErrorZeroParamsInPK
 	}
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
