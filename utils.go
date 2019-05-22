@@ -87,13 +87,14 @@ func Insert(
 	header := make([]string, 0)
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
+	Row := params["Row"].(map[string]interface{})
 	i := 0
 
 	for field, typefield := range fieldMap {
 		i++
 		header = append(header, fmt.Sprintf(`"%s"`, field))
 		body = append(body, fmt.Sprintf(`$%d::%s as "%s"`, i, typefield, field))
-		values = append(values, params[field])
+		values = append(values, Row[field])
 	}
 
 	if i > 0 {
@@ -112,10 +113,11 @@ func Delete(
 ) (interface{}, error) {
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
+	Row := params["Row"].(map[string]interface{})
 	i := 0
 	for field, typefield := range fieldMap {
 		i++
-		values = append(values, params[field])
+		values = append(values, Row[field])
 		body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
 			field, i, typefield))
 	}
@@ -136,13 +138,14 @@ func Update(
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
 	condition := make([]string, 0)
+	Row := params["Row"].(map[string]interface{})
 	i := 0
 	for field, typefield := range fieldMap {
 		if contains(keys, field) {
 			continue
 		}
 		i++
-		values = append(values, params[field])
+		values = append(values, Row[field])
 		body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
 			field, i, typefield))
 	}
@@ -151,7 +154,7 @@ func Update(
 	}
 	for _, field := range keys {
 		i++
-		values = append(values, params[field])
+		values = append(values, Row[field])
 		typefield := fieldMap[field]
 		condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 			field, i, typefield))

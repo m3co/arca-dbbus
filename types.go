@@ -10,15 +10,22 @@ import (
 type Notification struct {
 	// Method = insert | update | delete
 	Method string
-	// Result contiene la entrada
-	Result interface{}
-	// Context contiene las variables auxiliares del contexto contiene
-	// * Source es de que tabla/vista proviene el JSON-RPC
-	// * Target es a que tabla/vista está dirigido el JSON-RPC
-	// * Db es el nombre de la base de datos
-	// * Prime es si Target esta dirigido a una Tabla
-	//     true  - Target va hacia una tabla "primaria"
-	//     false - Target va hacia una vista
+
+	// Row contiene la entrada
+	Row interface{}
+
+	// Has contiene los campos "primary-key"
+	Has interface{}
+
+	/*
+		Context contiene las variables auxiliares del contexto contiene
+		 * Source es de que tabla/vista proviene el JSON-RPC
+		 * Target es a que tabla/vista está dirigido el JSON-RPC
+		 * Db es el nombre de la base de datos
+		 * Prime es si Target esta dirigido a una Tabla
+		     true  - Target va hacia una tabla "primaria"
+				 false - Target va hacia una vista
+	*/
 	Context map[string]interface{}
 }
 

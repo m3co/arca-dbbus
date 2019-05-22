@@ -37,6 +37,15 @@ func (s *Server) setupListenNotify(connStr string) {
 			panic(err)
 		}
 
+		Row := notification.Row
+		Has := notification.Has
+		Params := make(map[string]interface{})
+		if Row != nil {
+			Params["Row"] = Row
+		}
+		if Has != nil {
+			Params["Has"] = Has
+		}
 		iPrime := notification.Context["Prime"]
 		iNotification := notification.Context["Notification"]
 
@@ -59,7 +68,7 @@ func (s *Server) setupListenNotify(connStr string) {
 			request := jsonrpc.Request{}
 			request.Method = notification.Method
 			request.Context = notification.Context
-			request.Params = notification.Result
+			request.Params = Params
 			for _, db := range s.dbs {
 				s.rpc.ProcessNotification(&request, db)
 			}
@@ -90,7 +99,7 @@ func (s *Server) setupListenNotify(connStr string) {
 		request := jsonrpc.Request{}
 		request.Method = notification.Method
 		request.Context = notification.Context
-		request.Params = notification.Result
+		request.Params = Params
 
 		s.rpc.ProcessRequest(&request, nil)
 	}
