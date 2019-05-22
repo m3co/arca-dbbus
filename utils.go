@@ -151,8 +151,17 @@ func Update(
 	body := make([]string, 0)
 	values := make([]interface{}, 0)
 	condition := make([]string, 0)
-	Row := params["Row"].(map[string]interface{})
-	PK := params["PK"].(map[string]interface{})
+	var Row, PK map[string]interface{}
+	if value, ok := params["Row"]; ok {
+		Row = value.(map[string]interface{})
+	} else {
+		return nil, ErrorUndefinedRow
+	}
+	if value, ok := params["PK"]; ok {
+		PK = value.(map[string]interface{})
+	} else {
+		return nil, ErrorUndefinedPK
+	}
 	i := 0
 	for field, typefield := range fieldMap {
 		if value, ok := Row[field]; ok {
@@ -165,17 +174,17 @@ func Update(
 	if i == 0 {
 		return nil, ErrorZeroParamsInRow
 	}
-	i = 0
+	j := 0
 	for _, field := range keys {
 		if value, ok := PK[field]; ok {
-			i++
+			j++
 			values = append(values, value)
 			typefield := fieldMap[field]
 			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-				field, i, typefield))
+				field, i+j, typefield))
 		}
 	}
-	if i == 0 {
+	if j == 0 {
 		return nil, ErrorZeroParamsInPK
 	}
 	if len(condition) > 0 {
