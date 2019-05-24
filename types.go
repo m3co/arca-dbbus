@@ -29,6 +29,28 @@ type Notification struct {
 	Context map[string]interface{}
 }
 
+// FieldInfo representa la informacion sobre un campo
+type FieldInfo struct {
+	Name     string
+	Type     string
+	Primary  bool
+	Required bool
+	Editable bool
+}
+
+// ActionsInfo representa las acciones disponibles para una tabla o vista
+type ActionsInfo struct {
+	Insert bool
+	Delete bool
+	Update bool
+}
+
+// ModelInfo representa la informacion sobre una tabla o vista
+type ModelInfo struct {
+	Actions ActionsInfo
+	Fields  []FieldInfo
+}
+
 // Server grid that binds all the DBs with the json-rpc arca server
 type Server struct {
 	dbs     []*sql.DB
