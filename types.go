@@ -29,6 +29,29 @@ type Notification struct {
 	Context map[string]interface{}
 }
 
+// ComboboxInfo contiene la info sobre un combobox
+/* Ejemplo:
+```
+  Source: "FACAD-ParamsBIC",
+  Display: "Field",
+  Value: "Field",
+  Params: {
+    "BuiltInCategories": "BuiltInCategories",
+    "ReportType":  "ReportType",
+  },
+  SearchBy: {
+    "Field": "ConstraintField",
+  }
+```
+*/
+type ComboboxInfo struct {
+	Source   string
+	Display  string
+	Value    string
+	Params   map[string]string
+	SearchBy map[string]string
+}
+
 // FieldInfo representa la informacion sobre un campo
 type FieldInfo struct {
 	Name     string
@@ -36,6 +59,7 @@ type FieldInfo struct {
 	Primary  bool
 	Required bool
 	Editable bool
+	Combobox *ComboboxInfo
 }
 
 // ActionsInfo representa las acciones disponibles para una tabla o vista
