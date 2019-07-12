@@ -38,18 +38,15 @@ type Notification struct {
   Params: {
     "BuiltInCategories": "BuiltInCategories",
     "ReportType":  "ReportType",
-  },
-  SearchBy: {
     "Field": "ConstraintField",
   }
 ```
 */
 type ComboboxInfo struct {
-	Source   string
-	Display  string
-	Value    string
-	Params   map[string]string
-	SearchBy map[string]string
+	Source  string
+	Display string
+	Value   string
+	Params  map[string]string
 }
 
 // FieldInfo representa la informacion sobre un campo
