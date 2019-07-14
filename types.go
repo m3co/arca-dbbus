@@ -57,6 +57,7 @@ type FieldInfo struct {
 	Required bool
 	Editable bool
 	Combobox *ComboboxInfo
+	Select   *[]string
 }
 
 // ActionsInfo representa las acciones disponibles para una tabla o vista
