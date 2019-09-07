@@ -14,3 +14,5 @@ COPY Gopkg.toml .
 RUN ln -s ~/go/bin/dep /bin/
 RUN ln -s ~/go/bin/dlv /bin/
 RUN dep ensure --vendor-only
+
+CMD [ "go", "test" ]
