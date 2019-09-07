@@ -35,7 +35,7 @@ func (s *Server) Close() {
 }
 
 // Start launches the grid server
-func (s *Server) Start(ready *chan bool) (err error) {
+func (s *Server) Start() (err error) {
 	//s.dbs = make([]*sql.DB)
 	address := ":22345"
 	if s.Address != "" {
@@ -43,21 +43,14 @@ func (s *Server) Start(ready *chan bool) (err error) {
 	}
 	s.rpc = &jsonrpc.Server{Address: address}
 
-	readyJSONRPC := make(chan bool)
-
-	go (func() {
-		err := s.rpc.Start(&readyJSONRPC)
-		if err != nil {
-			s.Close()
-			panic(err)
-		}
-	})()
-
-	<-readyJSONRPC
+	err = s.rpc.Start()
+	if err != nil {
+		s.Close()
+		return
+	}
 
 	println("Serving...")
 
-	*ready <- true
 	<-s.close
 	return
 }
