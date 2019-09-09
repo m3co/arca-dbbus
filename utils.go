@@ -51,40 +51,44 @@ func contains(s []string, e string) bool {
 
 // PrepareAndExecute whatever
 func PrepareAndExecute(
-	db *sql.DB, queryPrepared string, values []interface{},
+	db *sql.DB, queryPrepared string, values ...interface{},
 ) (*ResultOK, error) {
 	tx, err := db.Begin()
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 	defer query.Close()
 
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
 	row, err := query.Exec(values...)
-
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
 	_, err = row.RowsAffected()
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
 	return &ResultOK{true}, nil
 }
 
