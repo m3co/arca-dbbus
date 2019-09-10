@@ -24,6 +24,7 @@ var (
 	ErrorUndefinedParams = errors.New("Params are not defined")
 	ErrorUndefinedRow    = errors.New("Row is not defined")
 	ErrorMalformedRow    = errors.New("Row is not a map of values")
+	ErrorMalformedPK     = errors.New("PK is not a map of values")
 	ErrorUndefinedPK     = errors.New("PK is not defined")
 	ErrorEmptyCondition  = errors.New("Condition ended up in empty")
 )
@@ -152,17 +153,18 @@ func Update(
 	condition := []string{}
 	var Row, PK map[string]interface{}
 	if value, ok := params["Row"]; ok {
-		Row = value.(map[string]interface{})
+		Row, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedRow
+		}
 	} else {
 		return ErrorUndefinedRow
 	}
-	if value, ok := params["PK"]; ok {
-		PK = value.(map[string]interface{})
-	} else {
-		return ErrorUndefinedPK
-	}
 	i := 0
 	for field, typefield := range fieldMap {
+		if contains(keys, field) {
+			continue
+		}
 		if value, ok := Row[field]; ok {
 			i++
 			values = append(values, value)
@@ -173,6 +175,24 @@ func Update(
 	if i == 0 {
 		return ErrorZeroParamsInRow
 	}
+	if value, ok := params["PK"]; ok {
+		PK, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedPK
+		}
+		j := 0
+		for field := range fieldMap {
+			if _, ok := PK[field]; ok {
+				j++
+				break
+			}
+		}
+		if j == 0 {
+			return ErrorZeroParamsInPK
+		}
+	} else {
+		return ErrorUndefinedPK
+	}
 	j := 0
 	for _, field := range keys {
 		if value, ok := PK[field]; ok {
@@ -182,9 +202,6 @@ func Update(
 			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 				field, i+j, typefield))
 		}
-	}
-	if j == 0 {
-		return ErrorZeroParamsInPK
 	}
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
