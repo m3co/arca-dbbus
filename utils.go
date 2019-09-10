@@ -29,6 +29,9 @@ var ErrorUndefinedParams = errors.New("Params are not defined")
 // ErrorUndefinedRow whatever
 var ErrorUndefinedRow = errors.New("Row is not defined")
 
+// ErrorMalformedRow whatever
+var ErrorMalformedRow = errors.New("Row is not a map of values")
+
 // ErrorUndefinedPK whatever
 var ErrorUndefinedPK = errors.New("PK is not defined")
 
@@ -95,7 +98,14 @@ func Insert(
 	header := []string{}
 	body := []string{}
 	values := []interface{}{}
-	Row := (params)["Row"].(map[string]interface{})
+	row, ok := params["Row"]
+	if !ok || row == nil {
+		return ErrorUndefinedRow
+	}
+	Row, ok := row.(map[string]interface{})
+	if !ok {
+		return ErrorMalformedRow
+	}
 	i := 0
 
 	for field, typefield := range fieldMap {

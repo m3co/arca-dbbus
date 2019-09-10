@@ -223,6 +223,55 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	}
 }
 
+func Test_insert__undefined_row_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{}
+	err = dbbus.Insert(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorUndefinedRow {
+		t.Fatal(err)
+	}
+}
+
+func Test_insert__zeroparams_row_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{
+		"Row": map[string]interface{}{},
+	}
+	err = dbbus.Insert(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorZeroParamsInRow {
+		t.Fatal(err)
+	}
+}
+
+func Test_insert__malformed_row_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{
+		"Row": 666,
+	}
+	err = dbbus.Insert(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorMalformedRow {
+		t.Fatal(err)
+	}
+}
+
 func Test_insert__take1_OK(t *testing.T) {
 	db, err := connect()
 	if err != nil {
