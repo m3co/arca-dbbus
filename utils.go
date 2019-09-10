@@ -17,26 +17,16 @@ type handlerIDU struct {
 
 type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
-// ErrorZeroParamsInRow indicates that the request cannot be processed
-var ErrorZeroParamsInRow = errors.New("Zero params in Row")
-
-// ErrorZeroParamsInPK indicates that the request cannot be processed
-var ErrorZeroParamsInPK = errors.New("Zero params in PK")
-
-// ErrorUndefinedParams whatever
-var ErrorUndefinedParams = errors.New("Params are not defined")
-
-// ErrorUndefinedRow whatever
-var ErrorUndefinedRow = errors.New("Row is not defined")
-
-// ErrorMalformedRow whatever
-var ErrorMalformedRow = errors.New("Row is not a map of values")
-
-// ErrorUndefinedPK whatever
-var ErrorUndefinedPK = errors.New("PK is not defined")
-
-// ErrorEmptyCondition whatever
-var ErrorEmptyCondition = errors.New("Condition ended up in empty")
+// Error definitions
+var (
+	ErrorZeroParamsInRow = errors.New("Zero params in Row")
+	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
+	ErrorUndefinedParams = errors.New("Params are not defined")
+	ErrorUndefinedRow    = errors.New("Row is not defined")
+	ErrorMalformedRow    = errors.New("Row is not a map of values")
+	ErrorUndefinedPK     = errors.New("PK is not defined")
+	ErrorEmptyCondition  = errors.New("Condition ended up in empty")
+)
 
 func contains(s []string, e string) bool {
 	for _, a := range s {
