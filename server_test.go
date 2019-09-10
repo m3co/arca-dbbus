@@ -11,7 +11,15 @@ import (
 	dbbus "github.com/m3co/arca-dbbus"
 )
 
-var connStr string
+var (
+	connStr  = ""
+	fieldMap = map[string]string{
+		"Field1": "character varying(255)",
+		"Field2": "character varying(255)",
+		"Field3": "character varying(255)",
+		"Field4": "character varying(255)",
+	}
+)
 
 func init() {
 	dbhost := "arca-dbbus-db"
@@ -100,16 +108,13 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := dbbus.PrepareAndExecute(db,
+	err = dbbus.PrepareAndExecute(db,
 		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
 		"take 1 - field 1", "take 1 - field 2", "take 1 - field 3", "take 1 - field 4")
 
 	if err != nil {
 		t.Fatal(err)
-	}
-	if result == nil {
-		t.Fatal("unexpected result")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -133,16 +138,13 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := dbbus.PrepareAndExecute(db,
+	err = dbbus.PrepareAndExecute(db,
 		`insert into "Table"("Field2", "Field3", "Field4")
 		 values ($1, $2, $3);`,
 		"take 2 - field 2", "take 2 - field 3", "take 2 - field 4")
 
 	if err != nil {
 		t.Fatal(err)
-	}
-	if result == nil {
-		t.Fatal("unexpected result")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -166,16 +168,13 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := dbbus.PrepareAndExecute(db,
+	err = dbbus.PrepareAndExecute(db,
 		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
 		nil, "take 3 - field 2", "take 3 - field 3", "take 3 - field 4")
 
 	if err != nil {
 		t.Fatal(err)
-	}
-	if result == nil {
-		t.Fatal("unexpected result")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -199,16 +198,13 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := dbbus.PrepareAndExecute(db,
+	err = dbbus.PrepareAndExecute(db,
 		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1::character varying(255), $2, $3, $4);`,
 		nil, "take 4 - field 2", "take 4 - field 3", "take 4 - field 4")
 
 	if err != nil {
 		t.Fatal(err)
-	}
-	if result == nil {
-		t.Fatal("unexpected result")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -222,6 +218,41 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 			field.Field2 == "take 4 - field 2" &&
 			field.Field3 == "take 4 - field 3" &&
 			*field.Field4 == "take 4 - field 4") {
+			t.Fatal("Unexpected row at take 4")
+		}
+	}
+}
+
+func Test_insert__take1_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field1": "insert - take 1 - field 1",
+		"Field2": "insert - take 1 - field 2",
+		"Field3": "insert - take 1 - field 3",
+		"Field4": "insert - take 1 - field 4",
+	}
+	params := map[string]interface{}{
+		"Row": row,
+	}
+	err = dbbus.Insert(db, params, fieldMap, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(*field.Field1 == "insert - take 1 - field 1" &&
+			field.Field2 == "insert - take 1 - field 2" &&
+			field.Field3 == "insert - take 1 - field 3" &&
+			*field.Field4 == "insert - take 1 - field 4") {
 			t.Fatal("Unexpected row at take 4")
 		}
 	}
