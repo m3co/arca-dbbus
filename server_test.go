@@ -2,10 +2,26 @@ package dbbus_test
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
 
 	dbbus "github.com/m3co/arca-dbbus"
 )
+
+var connStr string
+
+func init() {
+	dbhost := "arca-dbbus-db"
+	err := godotenv.Load()
+	if err == nil {
+		dbhost = os.Getenv("DB_HOST")
+	}
+	connStr = fmt.Sprintf("host=%s user=test dbname=test password=test port=5432 sslmode=disable", dbhost)
+	fmt.Println(connStr)
+}
 
 /* Casos
 Field1	-			-
@@ -20,8 +36,6 @@ type Fields struct {
 	Field1, Field4 *string
 	Field2, Field3 string
 }
-
-var connStr = "host=arca-dbbus-db user=test dbname=test password=test port=5432 sslmode=disable"
 
 func connect() (db *sql.DB, err error) {
 	db, err = sql.Open("postgres", connStr)
