@@ -147,9 +147,9 @@ func Update(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, keys []string, table string,
 ) error {
-	body := make([]string, 0)
-	values := make([]interface{}, 0)
-	condition := make([]string, 0)
+	body := []string{}
+	values := []interface{}{}
+	condition := []string{}
 	var Row, PK map[string]interface{}
 	if value, ok := params["Row"]; ok {
 		Row = value.(map[string]interface{})
@@ -189,7 +189,7 @@ func Update(
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
 			table, strings.Join(body, ","), strings.Join(condition, " and "))
-		return PrepareAndExecute(db, queryPrepared, values)
+		return PrepareAndExecute(db, queryPrepared, values...)
 	}
 	return ErrorEmptyCondition
 }

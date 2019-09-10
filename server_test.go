@@ -14,11 +14,13 @@ import (
 var (
 	connStr  = ""
 	fieldMap = map[string]string{
+		"ID":     "integer",
 		"Field1": "character varying(255)",
 		"Field2": "character varying(255)",
 		"Field3": "character varying(255)",
 		"Field4": "character varying(255)",
 	}
+	PK = []string{"ID"}
 )
 
 func init() {
@@ -302,7 +304,46 @@ func Test_insert__take1_OK(t *testing.T) {
 			field.Field2 == "insert - take 1 - field 2" &&
 			field.Field3 == "insert - take 1 - field 3" &&
 			*field.Field4 == "insert - take 1 - field 4") {
-			t.Fatal("Unexpected row at take 4")
+			t.Fatal("Unexpected row at insert - take 1")
+		}
+	}
+}
+
+func Test_update__take1_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field1": "update - take 1 - field 1",
+		"Field2": "update - take 1 - field 2",
+		"Field3": "update - take 1 - field 3",
+		"Field4": "update - take 1 - field 4",
+	}
+	pk := map[string]interface{}{
+		"ID": 5,
+	}
+	params := map[string]interface{}{
+		"Row": row,
+		"PK":  pk,
+	}
+	err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(*field.Field1 == "update - take 1 - field 1" &&
+			field.Field2 == "update - take 1 - field 2" &&
+			field.Field3 == "update - take 1 - field 3" &&
+			*field.Field4 == "update - take 1 - field 4") {
+			t.Fatal("Unexpected row at update - take 1")
 		}
 	}
 }
