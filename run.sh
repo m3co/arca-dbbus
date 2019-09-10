@@ -9,7 +9,7 @@ docker build -t arca-dbbus-db -f db.Dockerfile . && \
 
 # Run
 docker run -d --rm --name arca-dbbus-db --net arca-dbbus-net arca-dbbus-db && \
-docker run --rm --name arca-dbbus-go --net arca-dbbus-net arca-dbbus-go && \
+docker run --rm --name arca-dbbus-go --net arca-dbbus-net arca-dbbus-go go -- test -v && \
 
 # Clean-up
 docker stop arca-dbbus-db && \
