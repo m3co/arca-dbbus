@@ -122,25 +122,36 @@ func Delete(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string,
 ) error {
-	body := make([]string, 0)
+	condition := make([]string, 0)
 	values := make([]interface{}, 0)
-	PK := params["PK"].(map[string]interface{})
+	var PK map[string]interface{}
+	if value, ok := params["PK"]; ok {
+		PK, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedPK
+		}
+		if len(PK) == 0 {
+			return ErrorZeroParamsInPK
+		}
+	} else {
+		return ErrorUndefinedPK
+	}
 	i := 0
 	for field, typefield := range fieldMap {
 		if value, ok := PK[field]; ok {
 			i++
 			values = append(values, value)
-			body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
+			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 				field, i, typefield))
 		}
 	}
-	if i > 0 {
+	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`delete from "%s" where %s;`,
-			table, strings.Join(body, " and "))
+			table, strings.Join(condition, " and "))
 
-		return PrepareAndExecute(db, queryPrepared, values)
+		return PrepareAndExecute(db, queryPrepared, values...)
 	}
-	return ErrorZeroParamsInPK
+	return ErrorEmptyCondition
 }
 
 // Update whatever
@@ -180,14 +191,7 @@ func Update(
 		if !ok {
 			return ErrorMalformedPK
 		}
-		j := 0
-		for field := range fieldMap {
-			if _, ok := PK[field]; ok {
-				j++
-				break
-			}
-		}
-		if j == 0 {
+		if len(PK) == 0 {
 			return ErrorZeroParamsInPK
 		}
 	} else {

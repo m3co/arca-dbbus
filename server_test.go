@@ -628,3 +628,98 @@ func Test_update__take5_OK(t *testing.T) {
 		}
 	}
 }
+
+func Test_delete__undefined_pk_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{}
+	err = dbbus.Delete(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorUndefinedPK {
+		t.Fatal(err)
+	}
+}
+
+func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{
+		"PK": map[string]interface{}{},
+	}
+	err = dbbus.Delete(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorZeroParamsInPK {
+		t.Fatal(err)
+	}
+}
+
+func Test_delete__malformed_pk_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := map[string]interface{}{
+		"PK": 666,
+	}
+	err = dbbus.Delete(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorMalformedPK {
+		t.Fatal(err)
+	}
+}
+
+func Test_delete__take1_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk := map[string]interface{}{
+		"ID": 5,
+	}
+	params := map[string]interface{}{
+		"PK": pk,
+	}
+	err = dbbus.Delete(db, params, fieldMap, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID == 5 {
+			t.Fatal("Unexpected row at delete - take 1")
+		}
+	}
+}
+
+func Test_delete__emptycondition_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk := map[string]interface{}{
+		"Whatever": "Whatever",
+	}
+	params := map[string]interface{}{
+		"PK": pk,
+	}
+	err = dbbus.Delete(db, params, fieldMap, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorEmptyCondition {
+		t.Fatal(err)
+	}
+}
