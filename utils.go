@@ -17,28 +17,17 @@ type handlerIDU struct {
 
 type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
-// ErrorZeroParamsInRow indicates that the request cannot be processed
-var ErrorZeroParamsInRow = errors.New("Zero params in Row")
-
-// ErrorZeroParamsInPK indicates that the request cannot be processed
-var ErrorZeroParamsInPK = errors.New("Zero params in PK")
-
-// ErrorUndefinedParams whatever
-var ErrorUndefinedParams = errors.New("Params are not defined")
-
-// ErrorUndefinedRow whatever
-var ErrorUndefinedRow = errors.New("Row is not defined")
-
-// ErrorUndefinedPK whatever
-var ErrorUndefinedPK = errors.New("PK is not defined")
-
-// ErrorEmptyCondition whatever
-var ErrorEmptyCondition = errors.New("Condition ended up in empty")
-
-// ResultOK is the standar result for JSON-RPC-Response Result field
-type ResultOK struct {
-	Success bool
-}
+// Error definitions
+var (
+	ErrorZeroParamsInRow = errors.New("Zero params in Row")
+	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
+	ErrorUndefinedParams = errors.New("Params are not defined")
+	ErrorUndefinedRow    = errors.New("Row is not defined")
+	ErrorMalformedRow    = errors.New("Row is not a map of values")
+	ErrorMalformedPK     = errors.New("PK is not a map of values")
+	ErrorUndefinedPK     = errors.New("PK is not defined")
+	ErrorEmptyCondition  = errors.New("Condition ended up in empty")
+)
 
 func contains(s []string, e string) bool {
 	for _, a := range s {
@@ -51,52 +40,63 @@ func contains(s []string, e string) bool {
 
 // PrepareAndExecute whatever
 func PrepareAndExecute(
-	db *sql.DB, queryPrepared string, values []interface{},
-) (*ResultOK, error) {
+	db *sql.DB, queryPrepared string, values ...interface{},
+) error {
 	tx, err := db.Begin()
 	if err != nil {
-		tx.Rollback()
-		return nil, err
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
-		tx.Rollback()
-		return nil, err
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
 	}
 	defer query.Close()
 
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
 	row, err := query.Exec(values...)
-
 	if err != nil {
-		tx.Rollback()
-		return nil, err
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
 	}
 
 	_, err = row.RowsAffected()
 	if err != nil {
-		tx.Rollback()
-		return nil, err
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
 	}
 
-	tx.Commit()
-	return &ResultOK{true}, nil
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Insert whatever
 func Insert(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string,
-) (interface{}, error) {
-	header := make([]string, 0)
-	body := make([]string, 0)
-	values := make([]interface{}, 0)
-	Row := params["Row"].(map[string]interface{})
+) error {
+	header := []string{}
+	body := []string{}
+	values := []interface{}{}
+	row, ok := params["Row"]
+	if !ok || row == nil {
+		return ErrorUndefinedRow
+	}
+	Row, ok := row.(map[string]interface{})
+	if !ok {
+		return ErrorMalformedRow
+	}
 	i := 0
 
 	for field, typefield := range fieldMap {
@@ -112,58 +112,70 @@ func Insert(
 		queryPrepared := fmt.Sprintf(`INSERT INTO "%s"(%s) SELECT %s;`,
 			table, strings.Join(header, ","), strings.Join(body, ","))
 
-		return PrepareAndExecute(db, queryPrepared, values)
+		return PrepareAndExecute(db, queryPrepared, values...)
 	}
-	return nil, ErrorZeroParamsInRow
+	return ErrorZeroParamsInRow
 }
 
 // Delete whatever
 func Delete(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string,
-) (interface{}, error) {
-	body := make([]string, 0)
+) error {
+	condition := make([]string, 0)
 	values := make([]interface{}, 0)
-	PK := params["PK"].(map[string]interface{})
+	var PK map[string]interface{}
+	if value, ok := params["PK"]; ok {
+		PK, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedPK
+		}
+		if len(PK) == 0 {
+			return ErrorZeroParamsInPK
+		}
+	} else {
+		return ErrorUndefinedPK
+	}
 	i := 0
 	for field, typefield := range fieldMap {
 		if value, ok := PK[field]; ok {
 			i++
 			values = append(values, value)
-			body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
+			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 				field, i, typefield))
 		}
 	}
-	if i > 0 {
+	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`delete from "%s" where %s;`,
-			table, strings.Join(body, " and "))
+			table, strings.Join(condition, " and "))
 
-		return PrepareAndExecute(db, queryPrepared, values)
+		return PrepareAndExecute(db, queryPrepared, values...)
 	}
-	return nil, ErrorZeroParamsInPK
+	return ErrorEmptyCondition
 }
 
 // Update whatever
 func Update(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, keys []string, table string,
-) (interface{}, error) {
-	body := make([]string, 0)
-	values := make([]interface{}, 0)
-	condition := make([]string, 0)
+) error {
+	body := []string{}
+	values := []interface{}{}
+	condition := []string{}
 	var Row, PK map[string]interface{}
 	if value, ok := params["Row"]; ok {
-		Row = value.(map[string]interface{})
+		Row, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedRow
+		}
 	} else {
-		return nil, ErrorUndefinedRow
-	}
-	if value, ok := params["PK"]; ok {
-		PK = value.(map[string]interface{})
-	} else {
-		return nil, ErrorUndefinedPK
+		return ErrorUndefinedRow
 	}
 	i := 0
 	for field, typefield := range fieldMap {
+		if contains(keys, field) {
+			continue
+		}
 		if value, ok := Row[field]; ok {
 			i++
 			values = append(values, value)
@@ -172,7 +184,18 @@ func Update(
 		}
 	}
 	if i == 0 {
-		return nil, ErrorZeroParamsInRow
+		return ErrorZeroParamsInRow
+	}
+	if value, ok := params["PK"]; ok {
+		PK, ok = value.(map[string]interface{})
+		if !ok {
+			return ErrorMalformedPK
+		}
+		if len(PK) == 0 {
+			return ErrorZeroParamsInPK
+		}
+	} else {
+		return ErrorUndefinedPK
 	}
 	j := 0
 	for _, field := range keys {
@@ -184,15 +207,12 @@ func Update(
 				field, i+j, typefield))
 		}
 	}
-	if j == 0 {
-		return nil, ErrorZeroParamsInPK
-	}
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
 			table, strings.Join(body, ","), strings.Join(condition, " and "))
-		return PrepareAndExecute(db, queryPrepared, values)
+		return PrepareAndExecute(db, queryPrepared, values...)
 	}
-	return nil, ErrorEmptyCondition
+	return ErrorEmptyCondition
 }
 
 // setupIDU whatever
@@ -207,7 +227,7 @@ func setupIDU(
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, _ := getFieldMap(params)
-				return Insert(db, params, fields, table)
+				return nil, Insert(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -218,7 +238,7 @@ func setupIDU(
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, _ := getFieldMap(params)
-				return Delete(db, params, fields, table)
+				return nil, Delete(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -229,7 +249,7 @@ func setupIDU(
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, keys := getFieldMap(params)
-				return Update(db, params, fields, keys, table)
+				return nil, Update(db, params, fields, keys, table)
 			}
 			return nil, ErrorUndefinedParams
 		}

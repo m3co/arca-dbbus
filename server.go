@@ -36,7 +36,6 @@ func (s *Server) Close() {
 
 // Start launches the grid server
 func (s *Server) Start() (err error) {
-	//s.dbs = make([]*sql.DB)
 	address := ":22345"
 	if s.Address != "" {
 		address = s.Address
