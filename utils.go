@@ -221,13 +221,14 @@ func setupIDU(
 	getFieldMap fieldMap,
 ) handlerIDU {
 	handlers := handlerIDU{}
+	success := map[string]bool{"Success": true}
 
 	handlers.Insert = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, _ := getFieldMap(params)
-				return nil, Insert(db, params, fields, table)
+				return success, Insert(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -238,7 +239,7 @@ func setupIDU(
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, _ := getFieldMap(params)
-				return nil, Delete(db, params, fields, table)
+				return success, Delete(db, params, fields, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -249,7 +250,7 @@ func setupIDU(
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
 				fields, keys := getFieldMap(params)
-				return nil, Update(db, params, fields, keys, table)
+				return success, Update(db, params, fields, keys, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
