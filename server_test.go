@@ -419,6 +419,30 @@ func Test_update__malformed_pk_ERROR(t *testing.T) {
 	}
 }
 
+func Test_update__emptycondition_ERROR(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field1": "Whatever",
+	}
+	pk := map[string]interface{}{
+		"Field1": "Whatever",
+	}
+	params := map[string]interface{}{
+		"Row": row,
+		"PK":  pk,
+	}
+	err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	if err != dbbus.ErrorEmptyCondition {
+		t.Fatal(err)
+	}
+}
+
 func Test_update__take1_OK(t *testing.T) {
 	db, err := connect()
 	if err != nil {
@@ -458,26 +482,149 @@ func Test_update__take1_OK(t *testing.T) {
 	}
 }
 
-func Test_update__emptycondition_ERROR(t *testing.T) {
+func Test_update__take2_OK(t *testing.T) {
 	db, err := connect()
 	if err != nil {
 		t.Fatal(err)
 	}
 	row := map[string]interface{}{
-		"Field1": "Whatever",
+		"Field2": "update - take 2 - field 2",
+		"Field3": "update - take 2 - field 3",
+		"Field4": "update - take 2 - field 4",
 	}
 	pk := map[string]interface{}{
-		"Field1": "Whatever",
+		"ID": 5,
 	}
 	params := map[string]interface{}{
 		"Row": row,
 		"PK":  pk,
 	}
 	err = dbbus.Update(db, params, fieldMap, PK, "Table")
-	if err == nil {
-		t.Fatal("error expected")
-	}
-	if err != dbbus.ErrorEmptyCondition {
+	if err != nil {
 		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(*field.Field1 == "update - take 1 - field 1" &&
+			field.Field2 == "update - take 2 - field 2" &&
+			field.Field3 == "update - take 2 - field 3" &&
+			*field.Field4 == "update - take 2 - field 4") {
+			t.Fatal("Unexpected row at update - take 2")
+		}
+	}
+}
+
+func Test_update__take3_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field3": "update - take 3 - field 3",
+		"Field4": "update - take 3 - field 4",
+	}
+	pk := map[string]interface{}{
+		"ID": 5,
+	}
+	params := map[string]interface{}{
+		"Row": row,
+		"PK":  pk,
+	}
+	err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(*field.Field1 == "update - take 1 - field 1" &&
+			field.Field2 == "update - take 2 - field 2" &&
+			field.Field3 == "update - take 3 - field 3" &&
+			*field.Field4 == "update - take 3 - field 4") {
+			t.Fatal("Unexpected row at update - take 3")
+		}
+	}
+}
+
+func Test_update__take4_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field4": "update - take 4 - field 4",
+	}
+	pk := map[string]interface{}{
+		"ID": 5,
+	}
+	params := map[string]interface{}{
+		"Row": row,
+		"PK":  pk,
+	}
+	err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(*field.Field1 == "update - take 1 - field 1" &&
+			field.Field2 == "update - take 2 - field 2" &&
+			field.Field3 == "update - take 3 - field 3" &&
+			*field.Field4 == "update - take 4 - field 4") {
+			t.Fatal("Unexpected row at update - take 4")
+		}
+	}
+}
+
+func Test_update__take5_OK(t *testing.T) {
+	db, err := connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := map[string]interface{}{
+		"Field1": nil,
+	}
+	pk := map[string]interface{}{
+		"ID": 5,
+	}
+	params := map[string]interface{}{
+		"Row": row,
+		"PK":  pk,
+	}
+	err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields, err := selectFieldsFromTable(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range fields {
+		if field.ID != 5 {
+			continue
+		}
+		if !(field.Field1 == nil &&
+			field.Field2 == "update - take 2 - field 2" &&
+			field.Field3 == "update - take 3 - field 3" &&
+			*field.Field4 == "update - take 4 - field 4") {
+			t.Fatal("Unexpected row at update - take 4")
+		}
 	}
 }
