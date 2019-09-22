@@ -59,6 +59,20 @@ func PrepareAndExecute(
 	}
 	defer query.Close()
 
+	if pk != nil {
+		row := query.QueryRow(values...)
+		var v1, v2 interface{}
+		v := []interface{}{&v1, &v2}
+		if err := row.Scan(v...); err != nil {
+			return nil, err
+		}
+		PK := map[string]interface{}{
+			pk[0]: v1,
+			pk[1]: v2,
+		}
+		return PK, nil
+	}
+
 	row, err := query.Exec(values...)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {

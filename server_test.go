@@ -110,13 +110,24 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = dbbus.PrepareAndExecute(db, nil,
+	res, err := dbbus.PrepareAndExecute(db, []string{"ID", "Field2"},
 		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
-		 values ($1, $2, $3, $4);`,
+		 values ($1, $2, $3, $4) returning "ID", "Field2";`,
 		"take 1 - field 1", "take 1 - field 2", "take 1 - field 3", "take 1 - field 4")
-
 	if err != nil {
 		t.Fatal(err)
+	}
+	row, ok := res.(map[string]interface{})
+	if !ok {
+		t.Fatal("cannot cast row")
+	}
+	ID, ok := row["ID"]
+	if !(ok && ID.(int64) == 1) {
+		t.Fatal("unexpected ID at result")
+	}
+	Field2, ok := row["Field2"]
+	if !(ok && Field2.(string) == "take 1 - field 2") {
+		t.Fatal("unexpected Field2 at result")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
