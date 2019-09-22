@@ -71,6 +71,13 @@ func PrepareAndExecute(
 		}
 
 		if err := row.Scan(ret...); err != nil {
+			if err := tx.Rollback(); err != nil {
+				return nil, err
+			}
+			return nil, err
+		}
+
+		if err := tx.Commit(); err != nil {
 			return nil, err
 		}
 
