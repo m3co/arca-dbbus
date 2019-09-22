@@ -301,6 +301,9 @@ func Test_insert__take1_OK(t *testing.T) {
 	}
 	pk := []string{"ID", "Field2"}
 	result, err := dbbus.Insert(db, params, fieldMap, pk, "Table")
+	if err != nil {
+		t.Fatal(err)
+	}
 	row, ok := result.(map[string]interface{})
 	if !ok {
 		t.Fatal("cannot cast result")
@@ -326,9 +329,6 @@ func Test_insert__take1_OK(t *testing.T) {
 		}
 	} else {
 		t.Fatal("Cannot cast Field2")
-	}
-	if err != nil {
-		t.Fatal(err)
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -499,9 +499,24 @@ func Test_update__take1_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	result, err := dbbus.Update(db, params, fieldMap, PK, "Table")
 	if err != nil {
 		t.Fatal(err)
+	}
+	row, ok := result.(map[string]interface{})
+	if !ok {
+		t.Fatal("cannot cast result")
+	}
+	ID, ok := row["ID"]
+	if !ok {
+		t.Fatal("Expecting ID in result")
+	}
+	if id, ok := ID.(int64); ok {
+		if id != 5 {
+			t.Fatal("Unexpected ID")
+		}
+	} else {
+		t.Fatal("Cannot cast ID")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -673,7 +688,7 @@ func Test_delete__undefined_pk_ERROR(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := map[string]interface{}{}
-	_, err = dbbus.Delete(db, params, fieldMap, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -690,7 +705,7 @@ func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": map[string]interface{}{},
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -707,7 +722,7 @@ func Test_delete__malformed_pk_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": 666,
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -727,9 +742,36 @@ func Test_delete__take1_OK(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": pk,
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, "Table")
+	PK := []string{"ID", "Field2"}
+	result, err := dbbus.Delete(db, params, fieldMap, PK, "Table")
 	if err != nil {
 		t.Fatal(err)
+	}
+	row, ok := result.(map[string]interface{})
+	if !ok {
+		t.Fatal("cannot cast result")
+	}
+	ID, ok := row["ID"]
+	if !ok {
+		t.Fatal("Expecting ID in result")
+	}
+	if id, ok := ID.(int64); ok {
+		if id != 5 {
+			t.Fatal("Unexpected ID")
+		}
+	} else {
+		t.Fatal("Cannot cast ID")
+	}
+	Field2, ok := row["Field2"]
+	if !ok {
+		t.Fatal("Expecting Field2 in result")
+	}
+	if field2, ok := Field2.(string); ok {
+		if field2 != "update - take 1 - field 2" {
+			t.Fatal("Unexpected Field2")
+		}
+	} else {
+		t.Fatal("Cannot cast Field2")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -753,7 +795,7 @@ func Test_delete__emptycondition_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": pk,
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}

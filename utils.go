@@ -110,6 +110,18 @@ func PrepareAndExecute(
 	return row, nil
 }
 
+func generateReturning(pk []string) string {
+	var pks string
+	if pk != nil {
+		pkM := make([]string, len(pk))
+		for i, v := range pk {
+			pkM[i] = fmt.Sprintf(`"%s"`, v)
+		}
+		pks = fmt.Sprintf("returning %s", strings.Join(pkM, ","))
+	}
+	return pks
+}
+
 // Insert whatever
 func Insert(
 	db *sql.DB, params map[string]interface{},
@@ -138,16 +150,9 @@ func Insert(
 	}
 
 	if i > 0 {
-		var pks string
-		if pk != nil {
-			pkM := make([]string, len(pk))
-			for i, v := range pk {
-				pkM[i] = fmt.Sprintf(`"%s"`, v)
-			}
-			pks = fmt.Sprintf("returning %s", strings.Join(pkM, ","))
-		}
 		queryPrepared := fmt.Sprintf(`insert into "%s"(%s) select %s %s;`,
-			table, strings.Join(header, ","), strings.Join(body, ","), pks)
+			table, strings.Join(header, ","), strings.Join(body, ","),
+			generateReturning(pk))
 
 		return PrepareAndExecute(db, pk, queryPrepared, values...)
 	}
@@ -157,7 +162,7 @@ func Insert(
 // Delete whatever
 func Delete(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, table string,
+	fieldMap map[string]string, pk []string, table string,
 ) (interface{}, error) {
 	condition := make([]string, 0)
 	values := make([]interface{}, 0)
@@ -183,10 +188,11 @@ func Delete(
 		}
 	}
 	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`delete from "%s" where %s;`,
-			table, strings.Join(condition, " and "))
+		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
+			table, strings.Join(condition, " and "),
+			generateReturning(pk))
 
-		return PrepareAndExecute(db, nil, queryPrepared, values...)
+		return PrepareAndExecute(db, pk, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -245,9 +251,10 @@ func Update(
 		}
 	}
 	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
-			table, strings.Join(body, ","), strings.Join(condition, " and "))
-		return PrepareAndExecute(db, nil, queryPrepared, values...)
+		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+			table, strings.Join(body, ","), strings.Join(condition, " and "),
+			generateReturning(keys))
+		return PrepareAndExecute(db, keys, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -274,8 +281,8 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields, _ := getFieldMap(params)
-				return Delete(db, params, fields, table)
+				fields, pk := getFieldMap(params)
+				return Delete(db, params, fields, pk, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
