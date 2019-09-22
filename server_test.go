@@ -242,7 +242,7 @@ func Test_insert__undefined_row_ERROR(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := map[string]interface{}{}
-	_, err = dbbus.Insert(db, params, fieldMap, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -259,7 +259,7 @@ func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{},
 	}
-	_, err = dbbus.Insert(db, params, fieldMap, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -276,7 +276,7 @@ func Test_insert__malformed_row_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"Row": 666,
 	}
-	_, err = dbbus.Insert(db, params, fieldMap, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -299,7 +299,34 @@ func Test_insert__take1_OK(t *testing.T) {
 	params := map[string]interface{}{
 		"Row": row,
 	}
-	_, err = dbbus.Insert(db, params, fieldMap, "Table")
+	pk := []string{"ID", "Field2"}
+	result, err := dbbus.Insert(db, params, fieldMap, pk, "Table")
+	row, ok := result.(map[string]interface{})
+	if !ok {
+		t.Fatal("cannot cast result")
+	}
+	ID, ok := row["ID"]
+	if !ok {
+		t.Fatal("Expecting ID in result")
+	}
+	if id, ok := ID.(int64); ok {
+		if id != 5 {
+			t.Fatal("Unexpected ID")
+		}
+	} else {
+		t.Fatal("Cannot cast ID")
+	}
+	Field2, ok := row["Field2"]
+	if !ok {
+		t.Fatal("Expecting Field2 in result")
+	}
+	if field2, ok := Field2.(string); ok {
+		if field2 != "insert - take 1 - field 2" {
+			t.Fatal("Unexpected Field2")
+		}
+	} else {
+		t.Fatal("Cannot cast Field2")
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

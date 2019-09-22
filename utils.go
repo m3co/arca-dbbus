@@ -113,7 +113,7 @@ func PrepareAndExecute(
 // Insert whatever
 func Insert(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, table string,
+	fieldMap map[string]string, pk []string, table string,
 ) (interface{}, error) {
 	header := []string{}
 	body := []string{}
@@ -138,10 +138,18 @@ func Insert(
 	}
 
 	if i > 0 {
-		queryPrepared := fmt.Sprintf(`INSERT INTO "%s"(%s) SELECT %s;`,
-			table, strings.Join(header, ","), strings.Join(body, ","))
+		var pks string
+		if pk != nil {
+			pkM := make([]string, len(pk))
+			for i, v := range pk {
+				pkM[i] = fmt.Sprintf(`"%s"`, v)
+			}
+			pks = fmt.Sprintf("returning %s", strings.Join(pkM, ","))
+		}
+		queryPrepared := fmt.Sprintf(`insert into "%s"(%s) select %s %s;`,
+			table, strings.Join(header, ","), strings.Join(body, ","), pks)
 
-		return PrepareAndExecute(db, nil, queryPrepared, values...)
+		return PrepareAndExecute(db, pk, queryPrepared, values...)
 	}
 	return nil, ErrorZeroParamsInRow
 }
@@ -255,8 +263,8 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields, _ := getFieldMap(params)
-				return Insert(db, params, fields, table)
+				fields, pk := getFieldMap(params)
+				return Insert(db, params, fields, pk, table)
 			}
 			return nil, ErrorUndefinedParams
 		}
