@@ -742,7 +742,6 @@ func Test_delete__take1_OK(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": pk,
 	}
-	PK := []string{"ID", "Field2"}
 	result, err := dbbus.Delete(db, params, fieldMap, PK, "Table")
 	if err != nil {
 		t.Fatal(err)
@@ -761,17 +760,6 @@ func Test_delete__take1_OK(t *testing.T) {
 		}
 	} else {
 		t.Fatal("Cannot cast ID")
-	}
-	Field2, ok := row["Field2"]
-	if !ok {
-		t.Fatal("Expecting Field2 in result")
-	}
-	if field2, ok := Field2.(string); ok {
-		if field2 != "update - take 1 - field 2" {
-			t.Fatal("Unexpected Field2")
-		}
-	} else {
-		t.Fatal("Cannot cast Field2")
 	}
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
