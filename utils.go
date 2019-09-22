@@ -40,7 +40,7 @@ func contains(s []string, e string) bool {
 
 // PrepareAndExecute whatever
 func PrepareAndExecute(
-	db *sql.DB, queryPrepared string, values ...interface{},
+	db *sql.DB, pk []string, queryPrepared string, values ...interface{},
 ) (interface{}, error) {
 	tx, err := db.Begin()
 	if err != nil {
@@ -112,7 +112,7 @@ func Insert(
 		queryPrepared := fmt.Sprintf(`INSERT INTO "%s"(%s) SELECT %s;`,
 			table, strings.Join(header, ","), strings.Join(body, ","))
 
-		return PrepareAndExecute(db, queryPrepared, values...)
+		return PrepareAndExecute(db, nil, queryPrepared, values...)
 	}
 	return nil, ErrorZeroParamsInRow
 }
@@ -149,7 +149,7 @@ func Delete(
 		queryPrepared := fmt.Sprintf(`delete from "%s" where %s;`,
 			table, strings.Join(condition, " and "))
 
-		return PrepareAndExecute(db, queryPrepared, values...)
+		return PrepareAndExecute(db, nil, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -210,7 +210,7 @@ func Update(
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s;`,
 			table, strings.Join(body, ","), strings.Join(condition, " and "))
-		return PrepareAndExecute(db, queryPrepared, values...)
+		return PrepareAndExecute(db, nil, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
