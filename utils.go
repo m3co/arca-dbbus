@@ -61,14 +61,22 @@ func PrepareAndExecute(
 
 	if pk != nil {
 		row := query.QueryRow(values...)
-		var v1, v2 interface{}
-		v := []interface{}{&v1, &v2}
-		if err := row.Scan(v...); err != nil {
+
+		ret := make([]interface{}, len(pk))
+		retL := make([]*interface{}, len(pk))
+		for i := range pk {
+			var v interface{}
+			retL[i] = &v
+			ret[i] = &v
+		}
+
+		if err := row.Scan(ret...); err != nil {
 			return nil, err
 		}
-		PK := map[string]interface{}{
-			pk[0]: v1,
-			pk[1]: v2,
+
+		PK := map[string]interface{}{}
+		for i, key := range pk {
+			PK[key] = *retL[i]
 		}
 		return PK, nil
 	}
