@@ -70,7 +70,7 @@ func PrepareAndExecute(
 			ret[i] = &v
 		}
 
-		if err := row.Scan(ret...); err != nil {
+		if err := row.Scan(ret...); err != nil && err != sql.ErrNoRows {
 			if err := tx.Rollback(); err != nil {
 				return nil, err
 			}
