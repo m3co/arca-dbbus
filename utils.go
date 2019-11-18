@@ -243,11 +243,16 @@ func Update(
 	j := 0
 	for _, field := range keys {
 		if value, ok := PK[field]; ok {
-			j++
-			values = append(values, value)
-			typefield := fieldMap[field]
-			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-				field, i+j, typefield))
+			if value != nil {
+				j++
+				values = append(values, value)
+				typefield := fieldMap[field]
+				condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+					field, i+j, typefield))
+			} else {
+				condition = append(condition, fmt.Sprintf(`"%s" is null`,
+					field))
+			}
 		}
 	}
 	if len(condition) > 0 {
