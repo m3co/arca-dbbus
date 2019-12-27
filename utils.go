@@ -217,7 +217,20 @@ func Update(
 	i := 0
 	for field, typefield := range fieldMap {
 		if contains(keys, field) {
-			continue
+			vfRow, ok := Row[field]
+			if !ok {
+				vfRow = nil
+			}
+			vfPK, ok := PK[field]
+			if !ok {
+				vfPK = nil
+			}
+			if (vfPK != nil && vfRow == nil) ||
+				(vfPK == nil && vfRow != nil) {
+
+			} else {
+				continue
+			}
 		}
 		if value, ok := Row[field]; ok {
 			i++
