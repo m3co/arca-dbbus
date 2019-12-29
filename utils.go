@@ -17,6 +17,15 @@ type handlerIDU struct {
 
 type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
+type result struct {
+	Sucess bool
+}
+
+var (
+	resultSuccess   = result{Sucess: true}
+	resultUnsuccess = result{Sucess: false}
+)
+
 // Error definitions
 var (
 	ErrorZeroParamsInRow = errors.New("Zero params in Row")
@@ -45,17 +54,17 @@ func PrepareAndExecute(
 	tx, err := db.Begin()
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return nil, err
+			return resultUnsuccess, err
 		}
-		return nil, err
+		return resultUnsuccess, err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return nil, err
+			return resultUnsuccess, err
 		}
-		return nil, err
+		return resultUnsuccess, err
 	}
 	defer query.Close()
 
@@ -72,13 +81,13 @@ func PrepareAndExecute(
 
 		if err := row.Scan(ret...); err != nil && err != sql.ErrNoRows {
 			if err := tx.Rollback(); err != nil {
-				return nil, err
+				return resultUnsuccess, err
 			}
-			return nil, err
+			return resultUnsuccess, err
 		}
 
 		if err := tx.Commit(); err != nil {
-			return nil, err
+			return resultUnsuccess, err
 		}
 
 		PK := map[string]interface{}{}
@@ -91,23 +100,23 @@ func PrepareAndExecute(
 	row, err := query.Exec(values...)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return nil, err
+			return resultUnsuccess, err
 		}
-		return nil, err
+		return resultUnsuccess, err
 	}
 
 	_, err = row.RowsAffected()
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return nil, err
+			return resultUnsuccess, err
 		}
-		return nil, err
+		return resultUnsuccess, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, err
+		return resultUnsuccess, err
 	}
-	return row, nil
+	return resultSuccess, nil
 }
 
 func generateReturning(pk []string) string {
