@@ -17,14 +17,11 @@ type handlerIDU struct {
 
 type fieldMap func(params map[string]interface{}) (map[string]string, []string)
 
-type result struct {
+// Result shows if a request
+type Result struct {
 	Sucess bool
+	PK     map[string]interface{} `json:",omitempty"`
 }
-
-var (
-	resultSuccess   = result{Sucess: true}
-	resultUnsuccess = result{Sucess: false}
-)
 
 // Error definitions
 var (
@@ -50,21 +47,21 @@ func contains(s []string, e string) bool {
 // PrepareAndExecute whatever
 func PrepareAndExecute(
 	db *sql.DB, pk []string, queryPrepared string, values ...interface{},
-) (interface{}, error) {
+) (*Result, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 	defer query.Close()
 
@@ -81,33 +78,33 @@ func PrepareAndExecute(
 
 		if err := row.Scan(ret...); err != nil && err != sql.ErrNoRows {
 			if err := tx.Rollback(); err != nil {
-				return resultUnsuccess, err
+				return nil, err
 			}
-			return resultUnsuccess, err
+			return nil, err
 		}
 
 		if err := tx.Commit(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
 
 		PK := map[string]interface{}{}
 		for i, key := range pk {
 			PK[key] = *retL[i]
 		}
-		return PK, nil
+		return &Result{Sucess: true, PK: PK}, nil
 	}
 
 	if _, err := query.Exec(values...); err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return resultUnsuccess, err
+		return nil, err
 	}
-	return resultSuccess, nil
+	return &Result{Sucess: true}, nil
 }
 
 func generateReturning(pk []string) string {
@@ -126,7 +123,7 @@ func generateReturning(pk []string) string {
 func Insert(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, pk []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	header := []string{}
 	body := []string{}
 	values := []interface{}{}
@@ -163,7 +160,7 @@ func Insert(
 func Delete(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, pk []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	condition := make([]string, 0)
 	values := make([]interface{}, 0)
 	var PK map[string]interface{}
@@ -201,7 +198,7 @@ func Delete(
 func Update(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, keys []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	body := []string{}
 	values := []interface{}{}
 	condition := []string{}
