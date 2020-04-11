@@ -20,7 +20,8 @@ var (
 		"Field3": "character varying(255)",
 		"Field4": "character varying(255)",
 	}
-	PK = []string{"ID"}
+	PK                   = []string{"ID"}
+	lastInsertedID int64 = 0
 )
 
 func init() {
@@ -122,7 +123,8 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 		t.Fatal("cannot cast row")
 	}
 	ID, ok := row["ID"]
-	if !(ok && ID.(int64) == 1) {
+	lastInsertedID++
+	if !(ok && ID.(int64) == lastInsertedID) {
 		t.Fatal("unexpected ID at result")
 	}
 	Field2, ok := row["Field2"]
@@ -134,7 +136,7 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 1 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "take 1 - field 1" &&
@@ -159,12 +161,13 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	lastInsertedID++
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 2 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(field.Field1 == nil &&
@@ -189,12 +192,13 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	lastInsertedID++
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 3 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(field.Field1 == nil &&
@@ -213,18 +217,19 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	}
 	_, err = dbbus.PrepareAndExecute(db, nil,
 		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
-		 values ($1::character varying(255), $2, $3, $4);`,
+		 values ($1, $2, $3, $4);`,
 		nil, "take 4 - field 2", "take 4 - field 3", "take 4 - field 4")
 
 	if err != nil {
 		t.Fatal(err)
 	}
+	lastInsertedID++
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 4 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(field.Field1 == nil &&
@@ -312,8 +317,9 @@ func Test_insert__take1_OK(t *testing.T) {
 	if !ok {
 		t.Fatal("Expecting ID in result")
 	}
+	lastInsertedID++
 	if id, ok := ID.(int64); ok {
-		if id != 5 {
+		if id != lastInsertedID {
 			t.Fatal("Unexpected ID")
 		}
 	} else {
@@ -335,7 +341,7 @@ func Test_insert__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "insert - take 1 - field 1" &&
@@ -493,7 +499,7 @@ func Test_update__take1_OK(t *testing.T) {
 		"Field4": "update - take 1 - field 4",
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"Row": row,
@@ -512,7 +518,7 @@ func Test_update__take1_OK(t *testing.T) {
 		t.Fatal("Expecting ID in result")
 	}
 	if id, ok := ID.(int64); ok {
-		if id != 5 {
+		if id != lastInsertedID {
 			t.Fatal("Unexpected ID")
 		}
 	} else {
@@ -523,7 +529,7 @@ func Test_update__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "update - take 1 - field 1" &&
@@ -546,7 +552,7 @@ func Test_update__take2_OK(t *testing.T) {
 		"Field4": "update - take 2 - field 4",
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"Row": row,
@@ -561,7 +567,7 @@ func Test_update__take2_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "update - take 1 - field 1" &&
@@ -583,7 +589,7 @@ func Test_update__take3_OK(t *testing.T) {
 		"Field4": "update - take 3 - field 4",
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"Row": row,
@@ -598,7 +604,7 @@ func Test_update__take3_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "update - take 1 - field 1" &&
@@ -619,7 +625,7 @@ func Test_update__take4_OK(t *testing.T) {
 		"Field4": "update - take 4 - field 4",
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"Row": row,
@@ -634,7 +640,7 @@ func Test_update__take4_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(*field.Field1 == "update - take 1 - field 1" &&
@@ -655,7 +661,7 @@ func Test_update__take5_OK(t *testing.T) {
 		"Field1": nil,
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"Row": row,
@@ -670,7 +676,7 @@ func Test_update__take5_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID != 5 {
+		if field.ID != lastInsertedID {
 			continue
 		}
 		if !(field.Field1 == nil &&
@@ -737,7 +743,7 @@ func Test_delete__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	pk := map[string]interface{}{
-		"ID": 5,
+		"ID": lastInsertedID,
 	}
 	params := map[string]interface{}{
 		"PK": pk,
@@ -755,7 +761,7 @@ func Test_delete__take1_OK(t *testing.T) {
 		t.Fatal("Expecting ID in result")
 	}
 	if id, ok := ID.(int64); ok {
-		if id != 5 {
+		if id != lastInsertedID {
 			t.Fatal("Unexpected ID")
 		}
 	} else {
@@ -766,7 +772,7 @@ func Test_delete__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, field := range fields {
-		if field.ID == 5 {
+		if field.ID == lastInsertedID {
 			t.Fatal("Unexpected row at delete - take 1")
 		}
 	}
