@@ -80,3 +80,17 @@ type Server struct {
 	Address string
 	close   chan bool
 }
+
+type handlerIDU struct {
+	Insert func(db *sql.DB) jsonrpc.RemoteProcedure
+	Delete func(db *sql.DB) jsonrpc.RemoteProcedure
+	Update func(db *sql.DB) jsonrpc.RemoteProcedure
+}
+
+type fieldMap func(params map[string]interface{}) (map[string]string, []string)
+
+// Result shows if a request
+type Result struct {
+	Sucess bool
+	PK     map[string]interface{} `json:",omitempty"`
+}

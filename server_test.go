@@ -61,7 +61,7 @@ func connect() (db *sql.DB, err error) {
 func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 	var rows *sql.Rows
 	fields = []Fields{}
-	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "Table" order by "ID"`)
+	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table" order by "ID"`)
 	if err != nil {
 		return
 	}
@@ -112,7 +112,7 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	result, err := dbbus.PrepareAndExecute(db, []string{"ID", "Field2"},
-		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
+		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4) returning "ID", "Field2";`,
 		"take 1 - field 1", "take 1 - field 2", "take 1 - field 3", "take 1 - field 4")
 	if err != nil {
@@ -150,7 +150,7 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = dbbus.PrepareAndExecute(db, nil,
-		`insert into "Table"("Field2", "Field3", "Field4")
+		`insert into "_Table"("Field2", "Field3", "Field4")
 		 values ($1, $2, $3);`,
 		"take 2 - field 2", "take 2 - field 3", "take 2 - field 4")
 
@@ -181,7 +181,7 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = dbbus.PrepareAndExecute(db, nil,
-		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
+		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
 		nil, "take 3 - field 2", "take 3 - field 3", "take 3 - field 4")
 
@@ -212,7 +212,7 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = dbbus.PrepareAndExecute(db, nil,
-		`insert into "Table"("Field1", "Field2", "Field3", "Field4")
+		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
 		nil, "take 4 - field 2", "take 4 - field 3", "take 4 - field 4")
 
@@ -243,7 +243,7 @@ func Test_insert__undefined_row_ERROR(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := map[string]interface{}{}
-	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -260,7 +260,7 @@ func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{},
 	}
-	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -277,7 +277,7 @@ func Test_insert__malformed_row_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"Row": 666,
 	}
-	_, err = dbbus.Insert(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Insert(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -301,7 +301,7 @@ func Test_insert__take1_OK(t *testing.T) {
 		"Row": row,
 	}
 	pk := []string{"ID", "Field2"}
-	result, err := dbbus.Insert(db, params, fieldMap, pk, "Table")
+	result, err := dbbus.Insert(db, params, fieldMap, pk, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -351,7 +351,7 @@ func Test_update__undefined_row_ERROR(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := map[string]interface{}{}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -370,7 +370,7 @@ func Test_update__undefined_pk_ERROR(t *testing.T) {
 			"Field1": "whatever",
 		},
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -388,7 +388,7 @@ func Test_update__zeroparams_row_ERROR(t *testing.T) {
 		"Row": map[string]interface{}{},
 		"PK":  map[string]interface{}{},
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -408,7 +408,7 @@ func Test_update__zeroparams_pk_ERROR(t *testing.T) {
 		},
 		"PK": map[string]interface{}{},
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -426,7 +426,7 @@ func Test_update__malformed_row_ERROR(t *testing.T) {
 		"Row": 666,
 		"PK":  map[string]interface{}{},
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -446,7 +446,7 @@ func Test_update__malformed_pk_ERROR(t *testing.T) {
 		},
 		"PK": 666,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -470,7 +470,7 @@ func Test_update__emptycondition_ERROR(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -497,7 +497,7 @@ func Test_update__take1_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	result, err := dbbus.Update(db, params, fieldMap, PK, "Table")
+	result, err := dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -546,7 +546,7 @@ func Test_update__take2_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -583,7 +583,7 @@ func Test_update__take3_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -619,7 +619,7 @@ func Test_update__take4_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -655,7 +655,7 @@ func Test_update__take5_OK(t *testing.T) {
 		"Row": row,
 		"PK":  pk,
 	}
-	_, err = dbbus.Update(db, params, fieldMap, PK, "Table")
+	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -682,7 +682,7 @@ func Test_delete__undefined_pk_ERROR(t *testing.T) {
 		t.Fatal(err)
 	}
 	params := map[string]interface{}{}
-	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -699,7 +699,7 @@ func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": map[string]interface{}{},
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -716,7 +716,7 @@ func Test_delete__malformed_pk_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": 666,
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -736,7 +736,7 @@ func Test_delete__take1_OK(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": pk,
 	}
-	result, err := dbbus.Delete(db, params, fieldMap, PK, "Table")
+	result, err := dbbus.Delete(db, params, fieldMap, PK, "_Table")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -773,7 +773,7 @@ func Test_delete__emptycondition_ERROR(t *testing.T) {
 	params := map[string]interface{}{
 		"PK": pk,
 	}
-	_, err = dbbus.Delete(db, params, fieldMap, nil, "Table")
+	_, err = dbbus.Delete(db, params, fieldMap, nil, "_Table")
 	if err == nil {
 		t.Fatal("error expected")
 	}

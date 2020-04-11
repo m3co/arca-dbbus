@@ -8,7 +8,7 @@ begin
 end;
 $$;
 
-create table if not exists "Table"
+create table if not exists "_Table"
 (
   "ID" serial,
   "Field1" character varying(255),
@@ -21,14 +21,14 @@ with (
   OIDS=false
 );
 
-create or replace view "ViewTable"("ID", "Field1", "Field2", "Field3", "Field4") as (
+create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as (
   select
     "ID",
     "Field1",
     "Field2",
     "Field3",
     "Field4"
-  from "Table"
+  from "_Table"
 );
 
 create or replace function viewtable_insteadof()
@@ -163,8 +163,8 @@ begin
 end;
 $$;
 
-drop trigger if exists action_viewtable on "ViewTable" cascade;
+drop trigger if exists action_viewtable on "Table" cascade;
 create trigger action_viewtable
-  instead of insert or update or delete on "ViewTable"
+  instead of insert or update or delete on "Table"
   for each row
   execute procedure viewtable_insteadof();
