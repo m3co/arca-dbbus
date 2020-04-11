@@ -97,16 +97,7 @@ func PrepareAndExecute(
 		return PK, nil
 	}
 
-	row, err := query.Exec(values...)
-	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
-		}
-		return resultUnsuccess, err
-	}
-
-	_, err = row.RowsAffected()
-	if err != nil {
+	if _, err := query.Exec(values...); err != nil {
 		if err := tx.Rollback(); err != nil {
 			return resultUnsuccess, err
 		}
