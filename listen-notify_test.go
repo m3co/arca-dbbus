@@ -109,7 +109,9 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 		t.Fatal("Unexpected error")
 	}
 
-	srv.RegisterDB(connStr, db)
+	if err := srv.RegisterDB(connStr, db); err != nil {
+		t.Fatal(err)
+	}
 	srv.RegisterSourceIDU("Table", fieldmap, db)
 	srv.RegisterTargetIDU("_Table", fieldmap)
 

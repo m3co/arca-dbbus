@@ -20,9 +20,9 @@ func (s *Server) RegisterTarget(
 }
 
 // RegisterDB whatever
-func (s *Server) RegisterDB(connStr string, db *sql.DB) {
+func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 	s.dbs = append(s.dbs, db)
-	s.setupListenNotify(connStr)
+	return s.setupListenNotify(connStr)
 }
 
 // Close whatever
