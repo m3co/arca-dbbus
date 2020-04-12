@@ -33,7 +33,10 @@ func defineVariables() {
 	dbhost := "arca-dbbus-db"
 	err := godotenv.Load()
 	if err == nil {
-		dbhost = os.Getenv("DB_HOST")
+		envdbhost := os.Getenv("DB_HOST")
+		if envdbhost != "" {
+			dbhost = envdbhost
+		}
 	}
 	connStr = fmt.Sprintf("host=%s user=test dbname=test password=test port=5432 sslmode=disable", dbhost)
 	fmt.Println(connStr)
