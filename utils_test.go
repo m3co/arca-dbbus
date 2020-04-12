@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"os"
 
@@ -101,12 +102,10 @@ func send(conn net.Conn, request *jsonrpc.Request) {
 func receive(conn net.Conn) *jsonrpc.Response {
 	response := &jsonrpc.Response{}
 	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		raw := scanner.Bytes()
-		if err := json.Unmarshal(raw, response); err != nil {
-			panic(err)
-		}
-		break
+	scanner.Scan()
+	raw := scanner.Bytes()
+	if err := json.Unmarshal(raw, response); err != nil {
+		log.Fatal(err)
 	}
 	return response
 }
