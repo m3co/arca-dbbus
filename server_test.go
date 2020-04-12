@@ -1,7 +1,6 @@
 package dbbus_test
 
 import (
-	"fmt"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
@@ -134,7 +133,6 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	}
 	atLeastOneRun := false
 	for _, field := range fields {
-		fmt.Println(field.ID)
 		if field.ID != lastInsertedID {
 			continue
 		}
