@@ -15,18 +15,18 @@ Field4	not null	default
 
 func Test_check_db(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 }
 
 func Test_select_Table_empty__OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
 		t.Fatal(err)
@@ -38,10 +38,10 @@ func Test_select_Table_empty__OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	result, err := dbbus.PrepareAndExecute(db, []string{"ID", "Field2"},
 		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4) returning "ID", "Field2";`,
@@ -77,10 +77,10 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	_, err = dbbus.PrepareAndExecute(db, nil,
 		`insert into "_Table"("Field2", "Field3", "Field4")
 		 values ($1, $2, $3);`,
@@ -109,10 +109,10 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	_, err = dbbus.PrepareAndExecute(db, nil,
 		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
@@ -141,10 +141,10 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	_, err = dbbus.PrepareAndExecute(db, nil,
 		`insert into "_Table"("Field1", "Field2", "Field3", "Field4")
 		 values ($1, $2, $3, $4);`,
@@ -173,10 +173,10 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 
 func Test_insert__undefined_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{}
 	_, err = dbbus.Insert(db, params, fieldMap, nil, "_Table")
 	if err == nil {
@@ -189,10 +189,10 @@ func Test_insert__undefined_row_ERROR(t *testing.T) {
 
 func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{},
 	}
@@ -207,10 +207,10 @@ func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 
 func Test_insert__malformed_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": 666,
 	}
@@ -225,10 +225,10 @@ func Test_insert__malformed_row_ERROR(t *testing.T) {
 
 func Test_insert__take1_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field1": "insert - take 1 - field 1",
 		"Field2": "insert - take 1 - field 2",
@@ -285,10 +285,10 @@ func Test_insert__take1_OK(t *testing.T) {
 
 func Test_update__undefined_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{}
 	_, err = dbbus.Update(db, params, fieldMap, PK, "_Table")
 	if err == nil {
@@ -301,10 +301,10 @@ func Test_update__undefined_row_ERROR(t *testing.T) {
 
 func Test_update__undefined_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{
 			"Field1": "whatever",
@@ -321,10 +321,10 @@ func Test_update__undefined_pk_ERROR(t *testing.T) {
 
 func Test_update__zeroparams_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{},
 		"PK":  map[string]interface{}{},
@@ -340,10 +340,10 @@ func Test_update__zeroparams_row_ERROR(t *testing.T) {
 
 func Test_update__zeroparams_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{
 			"Field1": "whatever",
@@ -361,10 +361,10 @@ func Test_update__zeroparams_pk_ERROR(t *testing.T) {
 
 func Test_update__malformed_row_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": 666,
 		"PK":  map[string]interface{}{},
@@ -380,10 +380,10 @@ func Test_update__malformed_row_ERROR(t *testing.T) {
 
 func Test_update__malformed_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"Row": map[string]interface{}{
 			"Field1": "whatever",
@@ -401,10 +401,10 @@ func Test_update__malformed_pk_ERROR(t *testing.T) {
 
 func Test_update__emptycondition_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field1": "Whatever",
 	}
@@ -426,10 +426,10 @@ func Test_update__emptycondition_ERROR(t *testing.T) {
 
 func Test_update__take1_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field1": "update - take 1 - field 1",
 		"Field2": "update - take 1 - field 2",
@@ -477,10 +477,10 @@ func Test_update__take1_OK(t *testing.T) {
 
 func Test_update__take2_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field2": "update - take 2 - field 2",
 		"Field3": "update - take 2 - field 3",
@@ -516,10 +516,10 @@ func Test_update__take2_OK(t *testing.T) {
 
 func Test_update__take3_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field3": "update - take 3 - field 3",
 		"Field4": "update - take 3 - field 4",
@@ -554,10 +554,10 @@ func Test_update__take3_OK(t *testing.T) {
 
 func Test_update__take4_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field4": "update - take 4 - field 4",
 	}
@@ -591,10 +591,10 @@ func Test_update__take4_OK(t *testing.T) {
 
 func Test_update__take5_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	row := map[string]interface{}{
 		"Field1": nil,
 	}
@@ -628,10 +628,10 @@ func Test_update__take5_OK(t *testing.T) {
 
 func Test_delete__undefined_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{}
 	_, err = dbbus.Delete(db, params, fieldMap, nil, "_Table")
 	if err == nil {
@@ -644,10 +644,10 @@ func Test_delete__undefined_pk_ERROR(t *testing.T) {
 
 func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"PK": map[string]interface{}{},
 	}
@@ -662,10 +662,10 @@ func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 
 func Test_delete__malformed_pk_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	params := map[string]interface{}{
 		"PK": 666,
 	}
@@ -680,10 +680,10 @@ func Test_delete__malformed_pk_ERROR(t *testing.T) {
 
 func Test_delete__take1_OK(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	pk := map[string]interface{}{
 		"ID": lastInsertedID,
 	}
@@ -718,10 +718,10 @@ func Test_delete__take1_OK(t *testing.T) {
 
 func Test_delete__emptycondition_ERROR(t *testing.T) {
 	db, err := connect()
-	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Close()
 	pk := map[string]interface{}{
 		"Whatever": "Whatever",
 	}
