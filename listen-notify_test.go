@@ -25,7 +25,9 @@ func Test_connect_RegisterDB(t *testing.T) {
 		return
 	}
 	defer db.Close()
-	srv.RegisterDB(connStr, db)
+	if err := srv.RegisterDB(connStr, db); err != nil {
+		t.Fatal(err)
+	}
 
 	go func() {
 		if err := srv.Start(started); err != nil {
@@ -60,7 +62,9 @@ func Test_call_RegisterIDU(t *testing.T) {
 		t.Fatal("Unexpected error")
 	}
 
-	srv.RegisterDB(connStr, db)
+	if err := srv.RegisterDB(connStr, db); err != nil {
+		t.Fatal(err)
+	}
 	srv.RegisterSourceIDU("Table", fieldmap, db)
 	srv.RegisterTargetIDU("_Table", fieldmap)
 }
