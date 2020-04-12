@@ -2,6 +2,7 @@ package dbbus
 
 import (
 	"database/sql"
+	"log"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
@@ -35,21 +36,20 @@ func (s *Server) Close() {
 }
 
 // Start launches the grid server
-func (s *Server) Start() (err error) {
+func (s *Server) Start(started chan bool) error {
 	address := ":22345"
 	if s.Address != "" {
 		address = s.Address
 	}
 	s.rpc = &jsonrpc.Server{Address: address}
-
-	err = s.rpc.Start()
-	if err != nil {
+	if err := s.rpc.Start(); err != nil {
 		s.Close()
-		return
+		started <- false
+		return err
 	}
 
-	println("Serving...")
-
+	log.Println("Serving...")
+	started <- true
 	<-s.close
-	return
+	return nil
 }

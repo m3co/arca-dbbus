@@ -2,7 +2,6 @@ package dbbus
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
@@ -12,29 +11,29 @@ import (
 )
 
 // setupListenNotify whatever
-func (s *Server) setupListenNotify(connStr string) {
+func (s *Server) setupListenNotify(connStr string) error {
 	listener := pq.NewListener(connStr,
 		time.Second*2, time.Minute*5,
 		func(_ pq.ListenerEventType, err error) {
 			if err != nil {
-				fmt.Println(err.Error())
+				log.Println(err)
 			}
 		})
 
 	if err := listener.Listen("jsonrpc"); err != nil {
-		panic(err)
+		return err
 	}
 
 	for {
 		msg, ok := <-listener.Notify
 		if !ok {
 			log.Println("Disconnected")
-			return
+			return nil
 		}
 		var notification Notification
 		err := json.Unmarshal([]byte(msg.Extra), &notification)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		Row := notification.Row
@@ -70,7 +69,7 @@ func (s *Server) setupListenNotify(connStr string) {
 			request.Context = notification.Context
 			request.Params = Params
 			for _, db := range s.dbs {
-				s.rpc.ProcessNotification(&request, db)
+				go s.rpc.ProcessNotification(&request, db)
 			}
 			continue // favor, salir del ciclo presente*
 		}
