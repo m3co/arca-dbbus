@@ -86,7 +86,8 @@ func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 }
 
 func Test_check_db(t *testing.T) {
-	_, err := connect()
+	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,6 +95,7 @@ func Test_check_db(t *testing.T) {
 
 func Test_select_Table_empty__OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,6 +110,7 @@ func Test_select_Table_empty__OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,6 +149,7 @@ func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,6 +181,7 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -208,6 +213,7 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 
 func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,6 +245,7 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 
 func Test_insert__undefined_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,6 +261,7 @@ func Test_insert__undefined_row_ERROR(t *testing.T) {
 
 func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -271,6 +279,7 @@ func Test_insert__zeroparams_row_ERROR(t *testing.T) {
 
 func Test_insert__malformed_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -288,6 +297,7 @@ func Test_insert__malformed_row_ERROR(t *testing.T) {
 
 func Test_insert__take1_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -347,6 +357,7 @@ func Test_insert__take1_OK(t *testing.T) {
 
 func Test_update__undefined_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,6 +373,7 @@ func Test_update__undefined_row_ERROR(t *testing.T) {
 
 func Test_update__undefined_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -381,6 +393,7 @@ func Test_update__undefined_pk_ERROR(t *testing.T) {
 
 func Test_update__zeroparams_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -399,6 +412,7 @@ func Test_update__zeroparams_row_ERROR(t *testing.T) {
 
 func Test_update__zeroparams_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,6 +433,7 @@ func Test_update__zeroparams_pk_ERROR(t *testing.T) {
 
 func Test_update__malformed_row_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -437,6 +452,7 @@ func Test_update__malformed_row_ERROR(t *testing.T) {
 
 func Test_update__malformed_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -457,6 +473,7 @@ func Test_update__malformed_pk_ERROR(t *testing.T) {
 
 func Test_update__emptycondition_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -481,6 +498,7 @@ func Test_update__emptycondition_ERROR(t *testing.T) {
 
 func Test_update__take1_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -531,6 +549,7 @@ func Test_update__take1_OK(t *testing.T) {
 
 func Test_update__take2_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -569,6 +588,7 @@ func Test_update__take2_OK(t *testing.T) {
 
 func Test_update__take3_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -606,6 +626,7 @@ func Test_update__take3_OK(t *testing.T) {
 
 func Test_update__take4_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -642,6 +663,7 @@ func Test_update__take4_OK(t *testing.T) {
 
 func Test_update__take5_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -678,6 +700,7 @@ func Test_update__take5_OK(t *testing.T) {
 
 func Test_delete__undefined_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -693,6 +716,7 @@ func Test_delete__undefined_pk_ERROR(t *testing.T) {
 
 func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -710,6 +734,7 @@ func Test_delete__zeroparams_pk_ERROR(t *testing.T) {
 
 func Test_delete__malformed_pk_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -727,6 +752,7 @@ func Test_delete__malformed_pk_ERROR(t *testing.T) {
 
 func Test_delete__take1_OK(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -764,6 +790,7 @@ func Test_delete__take1_OK(t *testing.T) {
 
 func Test_delete__emptycondition_ERROR(t *testing.T) {
 	db, err := connect()
+	defer db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
