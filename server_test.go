@@ -1,6 +1,7 @@
 package dbbus_test
 
 import (
+	"fmt"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
@@ -94,6 +95,7 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	atLeastOneRun := false
 	for _, field := range fields {
 		if field.ID != lastInsertedID {
 			continue
@@ -104,6 +106,10 @@ func Test_prepareAndExecute_do_insert__take2_OK(t *testing.T) {
 			*field.Field4 == "take 2 - field 4") {
 			t.Fatal("Unexpected row at take 2")
 		}
+		atLeastOneRun = true
+	}
+	if atLeastOneRun == false {
+		t.Fatal("Nothing was tested at Test_prepareAndExecute_do_insert__take2_OK")
 	}
 }
 
@@ -126,7 +132,9 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	atLeastOneRun := false
 	for _, field := range fields {
+		fmt.Println(field.ID)
 		if field.ID != lastInsertedID {
 			continue
 		}
@@ -136,6 +144,10 @@ func Test_prepareAndExecute_do_insert__take3_OK(t *testing.T) {
 			*field.Field4 == "take 3 - field 4") {
 			t.Fatal("Unexpected row at take 3")
 		}
+		atLeastOneRun = true
+	}
+	if atLeastOneRun == false {
+		t.Fatal("Nothing was tested at Test_prepareAndExecute_do_insert__take3_OK")
 	}
 }
 
@@ -158,6 +170,7 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	atLeastOneRun := false
 	for _, field := range fields {
 		if field.ID != lastInsertedID {
 			continue
@@ -168,6 +181,10 @@ func Test_prepareAndExecute_do_insert__take4_OK(t *testing.T) {
 			*field.Field4 == "take 4 - field 4") {
 			t.Fatal("Unexpected row at take 4")
 		}
+		atLeastOneRun = true
+	}
+	if atLeastOneRun == false {
+		t.Fatal("Nothing was tested at Test_prepareAndExecute_do_insert__take3_OK")
 	}
 }
 
@@ -240,6 +257,7 @@ func Test_insert__take1_OK(t *testing.T) {
 	}
 	pk := []string{"ID", "Field2"}
 	result, err := dbbus.Insert(db, params, fieldMap, pk, "_Table")
+	lastInsertedID++
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +265,6 @@ func Test_insert__take1_OK(t *testing.T) {
 	if !ok {
 		t.Fatal("Expecting ID in result")
 	}
-	lastInsertedID++
 	if id, ok := ID.(int64); ok {
 		if id != lastInsertedID {
 			t.Fatal("Unexpected ID")

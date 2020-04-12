@@ -90,6 +90,6 @@ type fieldMap func() (map[string]string, []string)
 
 // Result shows if a request
 type Result struct {
-	Sucess bool
-	PK     map[string]interface{} `json:",omitempty"`
+	Success bool
+	PK      map[string]interface{} `json:",omitempty"`
 }

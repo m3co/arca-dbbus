@@ -35,10 +35,10 @@ func (s *Server) Close() {
 // Start launches the grid server
 func (s *Server) Start(started chan bool) error {
 	address := ":22345"
-	if s.Address != "" {
-		address = s.Address
+	if s.Address == "" {
+		s.Address = address
 	}
-	s.rpc = &jsonrpc.Server{Address: address}
+	s.rpc = &jsonrpc.Server{Address: s.Address}
 	if err := s.rpc.Start(); err != nil {
 		s.Close()
 		started <- false

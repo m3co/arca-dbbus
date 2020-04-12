@@ -40,6 +40,7 @@ declare
 begin
   -- Construcciones genericas para INSERT, DELETE, UPDATE
   if tg_op = 'INSERT' then
+    new."ID" = nextval('"_Table_ID_seq"');
     raise notice 'insert';
     raise notice 'new = %', to_json(new);
     for r in (

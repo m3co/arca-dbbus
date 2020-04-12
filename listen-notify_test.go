@@ -1,6 +1,7 @@
 package dbbus_test
 
 import (
+	"net"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
@@ -62,4 +63,26 @@ func Test_call_RegisterIDU(t *testing.T) {
 	srv.RegisterDB(connStr, db)
 	srv.RegisterSourceIDU("Table", fieldmap, db)
 	srv.RegisterTargetIDU("_Table", fieldmap)
+}
+
+func Test_call_RegisterIDU_connect(t *testing.T) {
+	srv := dbbus.Server{}
+	defer srv.Close()
+	started := make(chan bool)
+
+	go func() {
+		if err := srv.Start(started); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	if <-started != true {
+		t.Fatal("Unexpected error")
+	}
+
+	conn, err := net.Dial("tcp", srv.Address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
 }

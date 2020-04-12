@@ -77,7 +77,7 @@ func PrepareAndExecute(
 		for i, key := range pk {
 			PK[key] = *retL[i]
 		}
-		return &Result{Sucess: true, PK: PK}, nil
+		return &Result{Success: true, PK: PK}, nil
 	}
 
 	if _, err := query.Exec(values...); err != nil {
@@ -90,7 +90,7 @@ func PrepareAndExecute(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-	return &Result{Sucess: true}, nil
+	return &Result{Success: true}, nil
 }
 
 func generateReturning(pk []string) string {

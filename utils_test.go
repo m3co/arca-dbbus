@@ -1,11 +1,15 @@
 package dbbus_test
 
 import (
+	"bufio"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/joho/godotenv"
+	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
 var (
@@ -61,7 +65,7 @@ func connect() (db *sql.DB, err error) {
 func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 	var rows *sql.Rows
 	fields = []Fields{}
-	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table" order by "ID"`)
+	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table" order by "ID" desc`)
 	if err != nil {
 		return
 	}
@@ -83,4 +87,23 @@ func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 	}
 	err = rows.Err()
 	return
+}
+
+func send(conn net.Conn, request *jsonrpc.Request) {
+	msg, _ := json.Marshal(request)
+	conn.Write(msg)
+	conn.Write([]byte("\n"))
+}
+
+func receive(conn net.Conn) *jsonrpc.Response {
+	response := &jsonrpc.Response{}
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		raw := scanner.Bytes()
+		if err := json.Unmarshal(raw, response); err != nil {
+			panic(err)
+		}
+		break
+	}
+	return response
 }
