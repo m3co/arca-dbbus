@@ -95,8 +95,12 @@ func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 
 func send(conn net.Conn, request *jsonrpc.Request) {
 	msg, _ := json.Marshal(request)
-	conn.Write(msg)
-	conn.Write([]byte("\n"))
+	if _, err := conn.Write(msg); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := conn.Write([]byte("\n")); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func receive(conn net.Conn) *jsonrpc.Response {
