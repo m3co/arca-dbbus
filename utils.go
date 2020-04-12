@@ -271,7 +271,7 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap(params)
+				fields, pk := getFieldMap()
 				return Insert(db, params, fields, pk, table)
 			}
 			return nil, ErrorUndefinedParams
@@ -282,7 +282,7 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap(params)
+				fields, pk := getFieldMap()
 				return Delete(db, params, fields, pk, table)
 			}
 			return nil, ErrorUndefinedParams
@@ -293,7 +293,7 @@ func setupIDU(
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
 				params := request.Params.(map[string]interface{})
-				fields, keys := getFieldMap(params)
+				fields, keys := getFieldMap()
 				return Update(db, params, fields, keys, table)
 			}
 			return nil, ErrorUndefinedParams
@@ -304,10 +304,9 @@ func setupIDU(
 }
 
 // RegisterSourceIDU whatever
-func RegisterSourceIDU(
+func (server *Server) RegisterSourceIDU(
 	source string,
 	getFieldMap fieldMap,
-	server *Server,
 	db *sql.DB,
 ) {
 	// IDU(Table) :: Public
@@ -318,10 +317,9 @@ func RegisterSourceIDU(
 }
 
 // RegisterTargetIDU whatever
-func RegisterTargetIDU(
+func (server *Server) RegisterTargetIDU(
 	target string,
 	getFieldMap fieldMap,
-	server *Server,
 ) {
 	// idu(_Table) :: Private
 	handlers := setupIDU(target, getFieldMap)

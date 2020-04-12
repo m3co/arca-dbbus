@@ -21,6 +21,10 @@ var (
 	lastInsertedID int64 = 0
 )
 
+func fieldmap() (map[string]string, []string) {
+	return fieldMap, PK
+}
+
 func defineVariables() {
 	dbhost := "arca-dbbus-db"
 	err := godotenv.Load()

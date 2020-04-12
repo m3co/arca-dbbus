@@ -30,7 +30,6 @@ func (s *Server) Close() {
 	if s.rpc != nil {
 		s.rpc.Close()
 	}
-	s.close <- true
 }
 
 // Start launches the grid server
@@ -48,6 +47,5 @@ func (s *Server) Start(started chan bool) error {
 
 	log.Println("Serving...")
 	started <- true
-	<-s.close
 	return nil
 }

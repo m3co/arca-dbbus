@@ -78,7 +78,6 @@ type Server struct {
 	dbs     []*sql.DB
 	rpc     *jsonrpc.Server
 	Address string
-	close   chan bool
 }
 
 type handlerIDU struct {
@@ -87,7 +86,7 @@ type handlerIDU struct {
 	Update func(db *sql.DB) jsonrpc.RemoteProcedure
 }
 
-type fieldMap func(params map[string]interface{}) (map[string]string, []string)
+type fieldMap func() (map[string]string, []string)
 
 // Result shows if a request
 type Result struct {
