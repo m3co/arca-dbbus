@@ -21,21 +21,6 @@ func Test_check_db(t *testing.T) {
 	defer db.Close()
 }
 
-func Test_select_Table_empty__OK(t *testing.T) {
-	db, err := connect()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	fields, err := selectFieldsFromTable(db)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(fields) > 0 {
-		t.Fatal("Table must be empty")
-	}
-}
-
 func Test_prepareAndExecute_do_insert__take1_OK(t *testing.T) {
 	db, err := connect()
 	if err != nil {

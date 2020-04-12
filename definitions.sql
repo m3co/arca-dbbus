@@ -40,7 +40,9 @@ declare
 begin
   -- Construcciones genericas para INSERT, DELETE, UPDATE
   if tg_op = 'INSERT' then
-    new."ID" = nextval('"_Table_ID_seq"');
+    if new."ID" is null then
+      new."ID" = nextval('"_Table_ID_seq"');
+    end if;
     raise notice 'insert';
     raise notice 'new = %', to_json(new);
     for r in (
@@ -56,6 +58,7 @@ begin
           true as "Prime"
         ) as ctx, (
           select
+            new."ID" as "ID",
             case when new."Field1" is null -- null,     not default
               then null
               else new."Field1"

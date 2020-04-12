@@ -22,7 +22,7 @@ func (s *Server) RegisterTarget(
 // RegisterDB whatever
 func (s *Server) RegisterDB(connStr string, db *sql.DB) {
 	s.dbs = append(s.dbs, db)
-	go s.setupListenNotify(connStr)
+	s.setupListenNotify(connStr)
 }
 
 // Close whatever

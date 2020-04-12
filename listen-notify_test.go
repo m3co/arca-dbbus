@@ -49,7 +49,6 @@ func Test_call_RegisterIDU(t *testing.T) {
 		return
 	}
 	defer db.Close()
-	srv.RegisterDB(connStr, db)
 
 	go func() {
 		if err := srv.Start(started); err != nil {
@@ -99,7 +98,6 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 		return
 	}
 	defer db.Close()
-	srv.RegisterDB(connStr, db)
 
 	go func() {
 		if err := srv.Start(started); err != nil {
