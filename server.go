@@ -20,11 +20,9 @@ func (s *Server) RegisterTarget(
 }
 
 // RegisterDB whatever
-func (s *Server) RegisterDB(connStr string, connect func() *sql.DB) *sql.DB {
-	db := connect()
+func (s *Server) RegisterDB(connStr string, db *sql.DB) {
 	s.dbs = append(s.dbs, db)
 	go s.setupListenNotify(connStr)
-	return db
 }
 
 // Close whatever

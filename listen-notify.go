@@ -14,9 +14,9 @@ import (
 func (s *Server) setupListenNotify(connStr string) error {
 	listener := pq.NewListener(connStr,
 		time.Second*2, time.Minute*5,
-		func(_ pq.ListenerEventType, err error) {
+		func(lt pq.ListenerEventType, err error) {
 			if err != nil {
-				log.Println(err)
+				log.Println(lt, err)
 			}
 		})
 
@@ -24,16 +24,20 @@ func (s *Server) setupListenNotify(connStr string) error {
 		return err
 	}
 
+	go s.processNotification(listener)
+	return nil
+}
+
+func (s *Server) processNotification(listener *pq.Listener) {
 	for {
 		msg, ok := <-listener.Notify
 		if !ok {
 			log.Println("Disconnected")
-			return nil
 		}
 		var notification Notification
 		err := json.Unmarshal([]byte(msg.Extra), &notification)
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 
 		Row := notification.Row
