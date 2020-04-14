@@ -153,6 +153,28 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 			if PK, ok := successAndPK["PK"].(map[string]interface{}); ok {
 				if ID, ok := PK["ID"].(float64); ok {
 					if success && ID > 0 {
+
+						fields, err := selectFieldsFromTable(db)
+						if err != nil {
+							t.Fatal(err)
+						}
+						atLeastOneRun := false
+						for _, field := range fields {
+							if field.ID != lastInsertedID {
+								continue
+							}
+							if !(*field.Field1 == "field 1 - case 1 - IDU" &&
+								field.Field2 == "field 2 - case 1 - IDU" &&
+								field.Field3 == "field 3 - case 1 - IDU" &&
+								*field.Field4 == "field 4 - case 1 - IDU") {
+								t.Fatal("Unexpected row at case 1")
+							}
+							atLeastOneRun = true
+						}
+						if atLeastOneRun == false {
+							t.Fatal("Nothing was tested at Test_prepareAndExecute_do_insert__take3_OK")
+						}
+
 					} else {
 						t.Fatal("unexpected result")
 					}
