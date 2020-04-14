@@ -14,6 +14,7 @@ var (
 	ErrorZeroParamsInRow = errors.New("Zero params in Row")
 	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
 	ErrorUndefinedParams = errors.New("Params are not defined")
+	ErrorMalformedParams = errors.New("Params is not a map of values")
 	ErrorUndefinedRow    = errors.New("Row is not defined")
 	ErrorMalformedRow    = errors.New("Row is not a map of values")
 	ErrorMalformedPK     = errors.New("PK is not a map of values")
@@ -270,9 +271,12 @@ func setupIDU(
 	handlers.Insert = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap()
-				return Insert(db, params, fields, pk, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, pk := getFieldMap()
+					return Insert(db, params, fields, pk, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -281,9 +285,12 @@ func setupIDU(
 	handlers.Delete = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap()
-				return Delete(db, params, fields, pk, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, pk := getFieldMap()
+					return Delete(db, params, fields, pk, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -292,9 +299,12 @@ func setupIDU(
 	handlers.Update = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, keys := getFieldMap()
-				return Update(db, params, fields, keys, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, keys := getFieldMap()
+					return Update(db, params, fields, keys, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
