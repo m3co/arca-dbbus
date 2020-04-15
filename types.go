@@ -19,10 +19,10 @@ type Notification struct {
 
 	/*
 		Context contiene las variables auxiliares del contexto contiene
-		 * Source es de que tabla/vista proviene el JSON-RPC
-		 * Target es a que tabla/vista está dirigido el JSON-RPC
+		 * Source es de qué tabla/vista proviene el JSON-RPC
+		 * Target es a qué tabla/vista está dirigido el JSON-RPC
 		 * Db es el nombre de la base de datos
-		 * Prime es si Target esta dirigido a una Tabla
+		 * Prime es si Target esta dirigido a una Tabla primaria
 		    true  - Target va hacia una tabla "primaria"
 			false - Target va hacia una vista
 	*/
