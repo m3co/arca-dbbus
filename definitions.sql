@@ -1,4 +1,11 @@
 
+/*
+  Definamos la documentacion sobre el estilo de codigo en pl/pgSQL
+*/
+
+/*
+  send_jsonrpc - es para enviar por el canal jsonrpc la informacion a go
+*/
 create or replace function send_jsonrpc(request json)
   returns void
   language 'plpgsql' volatile
@@ -8,6 +15,15 @@ begin
 end;
 $$;
 
+/*
+  "_Table" es un ejemplo de una tabla primaria
+  Nótese que tiene un _ al principio.
+  Una tabla primaria NO debe ser modificada por ningún cliente directamente.
+  Cualquier interación a realizar sobre una tabla primaria debe pasar
+  por su vista. Una vista es el reflejo de una tabla primaria y debe
+  ser nombrada con el mismo nombre de la tabla primaria sin anteponerle _.
+  Es decir, "_Table" - es primaria y "Table" es la vista. Ver más abajo.
+*/
 create table if not exists "_Table"
 (
   "ID" serial,
@@ -21,6 +37,23 @@ with (
   OIDS=false
 );
 
+/*
+  notify__table_table_before tiene una forma sencilla de formar el nombre
+  _      - es el caractér para separar
+  notify - indica que la función es para realizar una notificación
+  _table - indica la fuente de la notificacion
+  table  - indica el destino de la notificación
+  before - indica la propiedad temporal impuesta por la naturaleza de los triggers
+
+  A manera de ejemplo, podriamos tener un nombre como
+  notify__taable_viewcomplextable_before y éste caso indica que una modificacion
+  realizada en _table dispara una notificación acerca que debe verse reflejado en
+  la vista viewcomplextable
+
+  Si viewcomplextable depende de _table entonces una modificación sobre _table
+  afecta una o más entradas en viewcomplextable. Los cambios en ésas entradas
+  deben ser notificados a las partes interesadas.
+*/
 create or replace function notify__table_table_before()
   returns trigger
   language plpgsql volatile as
@@ -62,6 +95,10 @@ begin
 end;
 $$;
 
+/*
+  notify__table_table_after la misma historia que el caso anterior, solo que
+  la diferencia radica en su propiedad temporal
+*/
 create or replace function notify__table_table_after()
   returns trigger
   language plpgsql volatile as
@@ -138,6 +175,15 @@ create trigger "notification__Table_to_Table_after"
   for each row
   execute procedure notify__table_table_after();
 
+/*
+ "Table" es un ejemplo de una vista sobre una tabla primaria
+ Nótese que el nombre de la vista es cási idéntico al nombre de la tabla primaria.
+ Medíante ésta vista es que se realizan los cambios sobre la tabla primaria, cambios
+ provenientes por parte de los clientes.
+ Una tabla primaria NO debe exponerse a los clientes finales.
+ La razón de ésta reestricción es que si un cambio cae directamente sobre una
+ tabla primaria entonces dicho cambio NO se va a propagar dentro del cluster.
+*/
 create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as (
   select
     "ID",
