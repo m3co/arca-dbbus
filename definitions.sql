@@ -21,6 +21,123 @@ with (
   OIDS=false
 );
 
+create or replace function notify__table_table_before()
+  returns trigger
+  language plpgsql volatile as
+$$
+declare
+  r record;
+begin
+  if tg_op = 'INSERT' then
+    return new;
+  elsif tg_op = 'DELETE' then
+    for r in (
+      select
+        row_to_json(ctx) as "Context",
+        lower(tg_op) as "Method",
+        row_to_json(t) as "Row",
+        row_to_json(h) as "PK"
+      from (
+        select
+          tg_table_name as "Source",
+          'Table' as "Target",
+          current_database() as "Db",
+          true as "Notification"
+      ) ctx, (
+        select *
+        from "Table"
+        where "ID"=old."ID"
+      ) t, (
+        select
+          old."ID" as "ID"
+      ) h
+    ) loop
+      perform send_jsonrpc(row_to_json(r));
+    end loop;
+    return old;
+  elsif tg_op = 'UPDATE' then
+    return new;
+  end if;
+  return null;
+end;
+$$;
+
+create or replace function notify__table_table_after()
+  returns trigger
+  language plpgsql volatile as
+$$
+declare
+  r record;
+begin
+  if tg_op = 'INSERT' then
+    for r in (
+      select
+        row_to_json(ctx) as "Context",
+        lower(tg_op) as "Method",
+        row_to_json(t) as "Row",
+        row_to_json(h) as "PK"
+      from (
+        select
+          tg_table_name as "Source",
+          'Table' as "Target",
+          current_database() as "Db",
+          true as "Notification"
+      ) ctx, (
+        select *
+        from "Table"
+        where "ID"=new."ID"
+      ) t, (
+        select
+          new."ID" as "ID"
+      ) h
+    ) loop
+      perform send_jsonrpc(row_to_json(r));
+    end loop;
+    return new;
+  elsif tg_op = 'DELETE' then
+    return old;
+  elsif tg_op = 'UPDATE' then
+    for r in (
+      select
+        row_to_json(ctx) as "Context",
+        lower(tg_op) as "Method",
+        row_to_json(t) as "Row",
+        row_to_json(h) as "PK"
+      from (
+        select
+          tg_table_name as "Source",
+          'Table' as "Target",
+          current_database() as "Db",
+          true as "Notification"
+      ) ctx, (
+        select *
+        from "Table"
+        where "ID"=new."ID"
+      ) t, (
+        select
+          old."ID" as "ID"
+      ) h
+    ) loop
+      perform send_jsonrpc(row_to_json(r));
+    end loop;
+    return old;
+  end if;
+  return null;
+end;
+$$;
+
+drop trigger if exists "notification__Table_to_Table_before" on "_Table" cascade;
+create trigger "notification__Table_to_Table_before"
+  before insert or update or delete on "_Table"
+  for each row
+  execute procedure notify__table_table_before();
+
+drop trigger if exists "notification__Table_to_Table_after" on "_Table" cascade;
+create trigger "notification__Table_to_Table_after"
+  after insert or update or delete on "_Table"
+  for each row
+  execute procedure notify__table_table_after();
+
 create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as (
   select
     "ID",

@@ -13,6 +13,12 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
+type ResponseOrNotification struct {
+	jsonrpc.Response
+	Row map[string]interface{} `json:",omitempty"`
+	PK  map[string]interface{} `json:",omitempty"`
+}
+
 var (
 	connStr  = ""
 	fieldMap = map[string]string{
@@ -103,8 +109,8 @@ func send(conn net.Conn, request *jsonrpc.Request) {
 	}
 }
 
-func receive(conn net.Conn) *jsonrpc.Response {
-	response := &jsonrpc.Response{}
+func receive(conn net.Conn) *ResponseOrNotification {
+	response := &ResponseOrNotification{}
 	scanner := bufio.NewScanner(conn)
 	scanner.Scan()
 	raw := scanner.Bytes()

@@ -190,6 +190,76 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 	} else {
 		t.Fatal("response.Result.(map[string]interface{}) error")
 	}
+
+	notification := receive(conn)
+	context, ok := notification.Context.(map[string]interface{})
+	if ok {
+		iNotification, ok := context["Notification"]
+		if ok {
+			isNotifcation, ok := iNotification.(bool)
+			if ok {
+				if isNotifcation {
+					method := notification.Method
+					if method != "insert" {
+						t.Fatal("notification's method expected as insert")
+					}
+					row := notification.Row
+					field1, ok := row["Field1"]
+					if ok {
+						sfield1, ok := field1.(string)
+						if ok {
+							if sfield1 != "field 1 - case 1 - IDU" {
+								t.Fatal("field1 unexpected")
+							}
+						} else {
+							t.Fatal("field1.(string) error")
+						}
+					}
+					field2, ok := row["Field2"]
+					if ok {
+						sfield2, ok := field2.(string)
+						if ok {
+							if sfield2 != "field 2 - case 1 - IDU" {
+								t.Fatal("field2 unexpected")
+							}
+						} else {
+							t.Fatal("field2.(string) error")
+						}
+					}
+					field3, ok := row["Field3"]
+					if ok {
+						sfield3, ok := field3.(string)
+						if ok {
+							if sfield3 != "field 3 - case 1 - IDU" {
+								t.Fatal("field3 unexpected")
+							}
+						} else {
+							t.Fatal("field3.(string) error")
+						}
+					}
+					field4, ok := row["Field4"]
+					if ok {
+						sfield4, ok := field4.(string)
+						if ok {
+							if sfield4 != "field 4 - case 1 - IDU" {
+								t.Fatal("field4 unexpected")
+							}
+						} else {
+							t.Fatal("field4.(string) error")
+						}
+					}
+				} else {
+					t.Fatal("received notification is not a notification error")
+				}
+			} else {
+				t.Fatal("iNotification.(bool) error")
+			}
+		} else {
+			t.Fatal(`context has no Notification field, error`)
+		}
+	} else {
+		t.Fatal("notification.Context.(map[string]interface{}) error")
+	}
 }
 
 func Test_RegisterIDU_call_Update(t *testing.T) {
@@ -313,6 +383,76 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 	} else {
 		t.Fatal("response.Result.(map[string]interface{}) error")
 	}
+
+	notification := receive(conn)
+	context, ok := notification.Context.(map[string]interface{})
+	if ok {
+		iNotification, ok := context["Notification"]
+		if ok {
+			isNotifcation, ok := iNotification.(bool)
+			if ok {
+				if isNotifcation {
+					method := notification.Method
+					if method != "update" {
+						t.Fatal("notification's method expected as insert")
+					}
+					row := notification.Row
+					field1, ok := row["Field1"]
+					if ok {
+						sfield1, ok := field1.(string)
+						if ok {
+							if sfield1 != "field 1 - case 1 - IDU update" {
+								t.Fatal("field1 unexpected")
+							}
+						} else {
+							t.Fatal("field1.(string) error")
+						}
+					}
+					field2, ok := row["Field2"]
+					if ok {
+						sfield2, ok := field2.(string)
+						if ok {
+							if sfield2 != "field 2 - case 1 - IDU update" {
+								t.Fatal("field2 unexpected")
+							}
+						} else {
+							t.Fatal("field2.(string) error")
+						}
+					}
+					field3, ok := row["Field3"]
+					if ok {
+						sfield3, ok := field3.(string)
+						if ok {
+							if sfield3 != "field 3 - case 1 - IDU update" {
+								t.Fatal("field3 unexpected")
+							}
+						} else {
+							t.Fatal("field3.(string) error")
+						}
+					}
+					field4, ok := row["Field4"]
+					if ok {
+						sfield4, ok := field4.(string)
+						if ok {
+							if sfield4 != "field 4 - case 1 - IDU update" {
+								t.Fatal("field4 unexpected")
+							}
+						} else {
+							t.Fatal("field4.(string) error")
+						}
+					}
+				} else {
+					t.Fatal("received notification is not a notification error")
+				}
+			} else {
+				t.Fatal("iNotification.(bool) error")
+			}
+		} else {
+			t.Fatal(`context has no Notification field, error`)
+		}
+	} else {
+		t.Fatal("notification.Context.(map[string]interface{}) error")
+	}
 }
 
 func Test_RegisterIDU_call_Delete(t *testing.T) {
@@ -423,5 +563,75 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 		}
 	} else {
 		t.Fatal("response.Result.(map[string]interface{}) error")
+	}
+
+	notification := receive(conn)
+	context, ok := notification.Context.(map[string]interface{})
+	if ok {
+		iNotification, ok := context["Notification"]
+		if ok {
+			isNotifcation, ok := iNotification.(bool)
+			if ok {
+				if isNotifcation {
+					method := notification.Method
+					if method != "delete" {
+						t.Fatal("notification's method expected as insert")
+					}
+					row := notification.Row
+					field1, ok := row["Field1"]
+					if ok {
+						sfield1, ok := field1.(string)
+						if ok {
+							if sfield1 != "field 1 - case 1 - IDU update" {
+								t.Fatal("field1 unexpected")
+							}
+						} else {
+							t.Fatal("field1.(string) error")
+						}
+					}
+					field2, ok := row["Field2"]
+					if ok {
+						sfield2, ok := field2.(string)
+						if ok {
+							if sfield2 != "field 2 - case 1 - IDU update" {
+								t.Fatal("field2 unexpected")
+							}
+						} else {
+							t.Fatal("field2.(string) error")
+						}
+					}
+					field3, ok := row["Field3"]
+					if ok {
+						sfield3, ok := field3.(string)
+						if ok {
+							if sfield3 != "field 3 - case 1 - IDU update" {
+								t.Fatal("field3 unexpected")
+							}
+						} else {
+							t.Fatal("field3.(string) error")
+						}
+					}
+					field4, ok := row["Field4"]
+					if ok {
+						sfield4, ok := field4.(string)
+						if ok {
+							if sfield4 != "field 4 - case 1 - IDU update" {
+								t.Fatal("field4 unexpected")
+							}
+						} else {
+							t.Fatal("field4.(string) error")
+						}
+					}
+				} else {
+					t.Fatal("received notification is not a notification error")
+				}
+			} else {
+				t.Fatal("iNotification.(bool) error")
+			}
+		} else {
+			t.Fatal(`context has no Notification field, error`)
+		}
+	} else {
+		t.Fatal("notification.Context.(map[string]interface{}) error")
 	}
 }
