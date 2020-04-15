@@ -31,7 +31,7 @@ create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as 
   from "_Table"
 );
 
-create or replace function viewtable_insteadof()
+create or replace function action_process_table()
   returns trigger
   language 'plpgsql' volatile
 as $$
@@ -43,8 +43,6 @@ begin
     if new."ID" is null then
       new."ID" = nextval('"_Table_ID_seq"');
     end if;
-    raise notice 'insert';
-    raise notice 'new = %', to_json(new);
     for r in (
       select
         row_to_json(ctx) as "Context",
@@ -83,9 +81,6 @@ begin
   end if;
 
   if tg_op = 'UPDATE' then
-    raise notice 'update';
-    raise notice 'new = %', row_to_json(new);
-    raise notice 'old = %', row_to_json(old);
     for r in (
       select
         row_to_json(ctx) as "Context",
@@ -140,8 +135,6 @@ begin
   end if;
 
   if tg_op = 'DELETE' then
-    raise notice 'delete';
-    raise notice 'old = %', row_to_json(old);
     for r in (
       select
         row_to_json(ctx) as "Context",
@@ -167,8 +160,8 @@ begin
 end;
 $$;
 
-drop trigger if exists action_viewtable on "Table" cascade;
-create trigger action_viewtable
+drop trigger if exists "Action_process_table" on "Table" cascade;
+create trigger "Action_process_table"
   instead of insert or update or delete on "Table"
   for each row
-  execute procedure viewtable_insteadof();
+  execute procedure action_process_table();
