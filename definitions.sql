@@ -194,6 +194,13 @@ create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as 
   from "_Table"
 );
 
+/*
+  action_process_table tiene una forma sencilla de formar el nombre
+  _       - es el caractér para separar
+  action  - indica que la función es para realizar procesar una accion
+  process - deberia borrarlo...
+  table   - indica la fuente(necesariamente una vista) de la accion a procesar
+*/
 create or replace function action_process_table()
   returns trigger
   language 'plpgsql' volatile
@@ -328,3 +335,19 @@ create trigger "Action_process_table"
   instead of insert or update or delete on "Table"
   for each row
   execute procedure action_process_table();
+
+/*
+  En resumen, tenemos
+
+  Una tabla primaria ("Source") se nombra con un prefijo: "_Source"
+  Una tabla primaria debe tener sus notificaciones mediante
+  "notify_[_source]_[target]_[before/after]"
+
+  La vista sobre "Source" se nombra sin prefijo: "Source"
+  La vista sobre "Source" debe procesar las acciones IDU mediante
+  "action_process_[source]"
+
+  A modo de sugerencia,
+  - notify podria simplificarse con el mnemonico ntf_[_source]_[target]_[b/a]
+  - action podria simplificarse con el mnemonico act_[source]
+*/
