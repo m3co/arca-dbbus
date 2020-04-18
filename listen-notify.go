@@ -30,13 +30,12 @@ func (s *Server) setupListenNotify(connStr string) error {
 
 func (s *Server) processNotification(listener *pq.Listener) {
 	for {
+		var notification Notification
 		msg, ok := <-listener.Notify
 		if !ok {
 			log.Println("Disconnected")
 		}
-		var notification Notification
-		err := json.Unmarshal([]byte(msg.Extra), &notification)
-		if err != nil {
+		if err := json.Unmarshal([]byte(msg.Extra), &notification); err != nil {
 			log.Println(err)
 		}
 
