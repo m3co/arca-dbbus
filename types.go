@@ -52,3 +52,28 @@ type Result struct {
 	Success bool
 	PK      map[string]interface{} `json:",omitempty"`
 }
+
+type ComboboxInfo struct {
+	Source  string
+	Display string
+	Value   string
+	Params  map[string]string
+}
+type FieldInfo struct {
+	Name     string
+	Type     string
+	Primary  bool
+	Required bool
+	Editable bool
+	Combobox *ComboboxInfo
+	Select   *[]string
+}
+type ActionsInfo struct {
+	Insert bool
+	Delete bool
+	Update bool
+}
+type ModelInfo struct {
+	Actions ActionsInfo
+	Fields  []FieldInfo
+}
