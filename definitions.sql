@@ -73,7 +73,7 @@ begin
       from (
         select
           tg_table_name as "Source",
-          'Table' as "Target",
+          substring(tg_table_name, '^_(.*)') as "Target",
           current_database() as "Db",
           true as "Notification"
       ) ctx, (
@@ -116,7 +116,7 @@ begin
       from (
         select
           tg_table_name as "Source",
-          'Table' as "Target",
+          substring(tg_table_name, '^_(.*)') as "Target",
           current_database() as "Db",
           true as "Notification"
       ) ctx, (
@@ -143,7 +143,7 @@ begin
       from (
         select
           tg_table_name as "Source",
-          'Table' as "Target",
+          substring(tg_table_name, '^_(.*)') as "Target",
           current_database() as "Db",
           true as "Notification"
       ) ctx, (
