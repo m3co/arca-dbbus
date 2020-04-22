@@ -93,38 +93,7 @@ func Test_call_RegisterIDU_connect(t *testing.T) {
 }
 
 func Test_RegisterIDU_call_Insert(t *testing.T) {
-	srv := dbbus.Server{}
-	defer srv.Close()
-	started := make(chan bool)
-
-	db, err := connect()
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-	defer db.Close()
-
-	go func() {
-		if err := srv.Start(started); err != nil {
-			t.Error(err)
-		}
-	}()
-
-	if <-started != true {
-		t.Fatal("Unexpected error")
-	}
-
-	if err := srv.RegisterDB(connStr, db); err != nil {
-		t.Fatal(err)
-	}
-	srv.RegisterSourceIDU("Table", fieldmap, db)
-	srv.RegisterTargetIDU("_Table", fieldmap)
-
-	conn, err := net.Dial("tcp", srv.Address)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
+	_, db, conn := singleConn(t)
 
 	request := &jsonrpc.Request{}
 	request.ID = "jsonrpc-mock-id-case1"
@@ -154,38 +123,7 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 }
 
 func Test_RegisterIDU_call_Update(t *testing.T) {
-	srv := dbbus.Server{}
-	defer srv.Close()
-	started := make(chan bool)
-
-	db, err := connect()
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-	defer db.Close()
-
-	go func() {
-		if err := srv.Start(started); err != nil {
-			t.Error(err)
-		}
-	}()
-
-	if <-started != true {
-		t.Fatal("Unexpected error")
-	}
-
-	if err := srv.RegisterDB(connStr, db); err != nil {
-		t.Fatal(err)
-	}
-	srv.RegisterSourceIDU("Table", fieldmap, db)
-	srv.RegisterTargetIDU("_Table", fieldmap)
-
-	conn, err := net.Dial("tcp", srv.Address)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
+	_, db, conn := singleConn(t)
 
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -239,38 +177,7 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 }
 
 func Test_RegisterIDU_call_Delete(t *testing.T) {
-	srv := dbbus.Server{}
-	defer srv.Close()
-	started := make(chan bool)
-
-	db, err := connect()
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-	defer db.Close()
-
-	go func() {
-		if err := srv.Start(started); err != nil {
-			t.Error(err)
-		}
-	}()
-
-	if <-started != true {
-		t.Fatal("Unexpected error")
-	}
-
-	if err := srv.RegisterDB(connStr, db); err != nil {
-		t.Fatal(err)
-	}
-	srv.RegisterSourceIDU("Table", fieldmap, db)
-	srv.RegisterTargetIDU("_Table", fieldmap)
-
-	conn, err := net.Dial("tcp", srv.Address)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
+	_, db, conn := singleConn(t)
 
 	row := map[string]string{
 		"Field1": "field 1 - case 1 - IDU update",

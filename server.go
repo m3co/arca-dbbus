@@ -28,7 +28,10 @@ func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 // Close whatever
 func (s *Server) Close() {
 	if s.rpc != nil {
-		s.rpc.Close()
+		log.Println("Closing...", len(s.dbs))
+		if err := s.rpc.Close(); err != nil {
+			log.Println(err, "at Close()")
+		}
 	}
 }
 

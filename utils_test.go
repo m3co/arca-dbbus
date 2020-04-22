@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
@@ -32,13 +33,81 @@ var (
 	}
 	PK                   = []string{"ID"}
 	lastInsertedID int64 = 0
+	srvDb0         *dbbus.Server
+	dbDb0          *sql.DB
+	connDb0        net.Conn
 )
 
 func fieldmap() (map[string]string, []string) {
 	return fieldMap, PK
 }
 
+func singleConn(t *testing.T) (srv *dbbus.Server, db *sql.DB, conn net.Conn) {
+	if srvDb0 != nil && dbDb0 != nil && connDb0 != nil {
+		srv = srvDb0
+		db = dbDb0
+		conn = connDb0
+		return
+	}
+
+	var err error
+	srv = &dbbus.Server{}
+	srvDb0 = srv
+	started := make(chan bool)
+
+	db, err = connect()
+	if err != nil {
+		t.Fatal(err)
+		srv.Close()
+		db.Close()
+		srvDb0 = nil
+		return
+	}
+	dbDb0 = db
+
+	go func() {
+		if err = srv.Start(started); err != nil {
+			srv.Close()
+			db.Close()
+			srvDb0 = nil
+			dbDb0 = nil
+			t.Error(err)
+		}
+	}()
+
+	if <-started != true {
+		t.Fatal("Unexpected error")
+	}
+
+	if err = srv.RegisterDB(connStr, db); err != nil {
+		srv.Close()
+		db.Close()
+		srvDb0 = nil
+		dbDb0 = nil
+		t.Fatal(err)
+		return
+	}
+	srv.RegisterSourceIDU("Table", fieldmap, db)
+	srv.RegisterTargetIDU("_Table", fieldmap)
+
+	conn, err = net.Dial("tcp", srv.Address)
+	if err != nil {
+		srv.Close()
+		db.Close()
+		conn.Close()
+		srvDb0 = nil
+		dbDb0 = nil
+		connDb0 = nil
+		t.Fatal(err)
+		return
+	}
+	connDb0 = conn
+	return
+}
+
 func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, expectedField map[string]string) {
+	msg, _ := json.Marshal(response)
+	t.Log("Response", string(msg))
 	// the following is a hell but I won't care
 	if successAndPK, ok := response.Result.(map[string]interface{}); ok {
 		if success, ok := successAndPK["Success"].(bool); ok {
@@ -84,6 +153,8 @@ func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, e
 }
 
 func checkNotification(t *testing.T, notification *ResponseOrNotification, expectedField map[string]string, method string) {
+	msg, _ := json.Marshal(notification)
+	t.Log("Notification", string(msg))
 	context, ok := notification.Context.(map[string]interface{})
 	if ok {
 		iNotification, ok := context["Notification"]

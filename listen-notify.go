@@ -35,6 +35,7 @@ func (s *Server) processNotification(listener *pq.Listener) {
 		if !ok {
 			log.Println("Disconnected")
 		}
+		log.Println("FROM DB:", msg.BePid, len(s.dbs), msg.Extra)
 		if err := json.Unmarshal([]byte(msg.Extra), &notification); err != nil {
 			log.Println(err)
 		}
