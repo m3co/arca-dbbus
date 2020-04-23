@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"testing"
-	"time"
 
 	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -108,14 +107,9 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
-	response := receive(conn)
-	if response.Error != nil {
-		t.Fatal(response.Error.Code, response.Error.Message)
-	}
 	lastInsertedIDDB0++
-	checkResponse(t, response, db, row)
-	notification := receive(conn)
-	checkNotification(t, notification, row, "insert")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "insert")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "insert")
 }
 
 func Test_RegisterIDU_call_Update(t *testing.T) {
@@ -162,14 +156,8 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 	}
 
 	send(conn, request)
-	response := receive(conn)
-	if response.Error != nil {
-		t.Fatal(response.Error.Code, response.Error.Message)
-	}
-
-	checkResponse(t, response, db, row)
-	notification := receive(conn)
-	checkNotification(t, notification, row, "update")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "update")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "update")
 }
 
 func Test_RegisterIDU_call_Delete(t *testing.T) {
@@ -215,48 +203,6 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 	}
 
 	send(conn, request)
-	response := receive(conn)
-	if response.Error != nil {
-		t.Fatal(response.Error.Code, response.Error.Message)
-	}
-
-	// the following is a hell but I won't care
-	if successAndPK, ok := response.Result.(map[string]interface{}); ok {
-		if success, ok := successAndPK["Success"].(bool); ok {
-			if PK, ok := successAndPK["PK"].(map[string]interface{}); ok {
-				if ID, ok := PK["ID"].(float64); ok {
-					if success && ID > 0 {
-						time.Sleep(100 * time.Millisecond) // let's wait for the DB to complete the transaction
-						fields, err := selectFieldsFromTable(db)
-						if err != nil {
-							t.Fatal(err)
-						}
-						atLeastOneRun := false
-						for _, field := range fields {
-							if field.ID != lastInsertedIDDB0 {
-								continue
-							}
-							atLeastOneRun = true
-						}
-						if atLeastOneRun == true {
-							t.Fatal("Expecting Nothing")
-						}
-					} else {
-						t.Fatal("unexpected result")
-					}
-				} else {
-					t.Fatal(`PK["ID"].(float64) error`)
-				}
-			} else {
-				t.Fatal(`successAndPK["PK"].(map[string]interface{}) error`)
-			}
-		} else {
-			t.Fatal(`successAndPK["Success"].(bool) error`)
-		}
-	} else {
-		t.Fatal("response.Result.(map[string]interface{}) error")
-	}
-
-	notification := receive(conn)
-	checkNotification(t, notification, row, "delete")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "delete")
+	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "delete")
 }

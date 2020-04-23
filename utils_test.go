@@ -105,9 +105,6 @@ func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, con
 }
 
 func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, expectedField map[string]string) {
-	msg, _ := json.Marshal(response)
-	t.Log("Response", string(msg))
-	// the following is a hell but I won't care
 	if successAndPK, ok := response.Result.(map[string]interface{}); ok {
 		if success, ok := successAndPK["Success"].(bool); ok {
 			if PK, ok := successAndPK["PK"].(map[string]interface{}); ok {
@@ -118,21 +115,34 @@ func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, e
 						if err != nil {
 							t.Fatal(err)
 						}
-						atLeastOneRun := false
-						for _, field := range fields {
-							if field.ID != lastInsertedIDDB0 {
-								continue
+						if response.Method == "Delete" {
+							atLeastOneRun := false
+							for _, field := range fields {
+								if field.ID != lastInsertedIDDB0 {
+									continue
+								}
+								atLeastOneRun = true
 							}
-							if !(*field.Field1 == expectedField["Field1"] &&
-								field.Field2 == expectedField["Field2"] &&
-								field.Field3 == expectedField["Field3"] &&
-								*field.Field4 == expectedField["Field4"]) {
-								t.Fatal("Unexpected row at case 1 when inserting")
+							if atLeastOneRun == true {
+								t.Fatal("Expecting Nothing")
 							}
-							atLeastOneRun = true
-						}
-						if atLeastOneRun == false {
-							t.Fatal("Nothing was tested at Test_RegisterIDU_call_Insert")
+						} else {
+							atLeastOneRun := false
+							for _, field := range fields {
+								if field.ID != lastInsertedIDDB0 {
+									continue
+								}
+								if !(*field.Field1 == expectedField["Field1"] &&
+									field.Field2 == expectedField["Field2"] &&
+									field.Field3 == expectedField["Field3"] &&
+									*field.Field4 == expectedField["Field4"]) {
+									t.Fatal("Unexpected row at case 1 when inserting")
+								}
+								atLeastOneRun = true
+							}
+							if atLeastOneRun == false {
+								t.Fatal("Nothing was tested at Test_RegisterIDU_call_", response.Method)
+							}
 						}
 					} else {
 						t.Fatal("unexpected result")
@@ -152,8 +162,6 @@ func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, e
 }
 
 func checkNotification(t *testing.T, notification *ResponseOrNotification, expectedField map[string]string, method string) {
-	msg, _ := json.Marshal(notification)
-	t.Log("Notification", string(msg))
 	context, ok := notification.Context.(map[string]interface{})
 	if ok {
 		iNotification, ok := context["Notification"]
@@ -224,6 +232,28 @@ func checkNotification(t *testing.T, notification *ResponseOrNotification, expec
 	}
 }
 
+func testIfResponseOrNotificationOrWhatever(t *testing.T, conn net.Conn, db *sql.DB, row map[string]string, method string) {
+	msg := receive(conn)
+	if msg.ID != "" {
+		response := msg
+		if response.Error != nil {
+			t.Fatal(response.Error.Code, response.Error.Message)
+		}
+		checkResponse(t, response, db, row)
+	} else {
+		context, ok := msg.Context.(map[string]interface{})
+		if ok {
+			_, ok := context["Notification"]
+			if ok {
+				notification := msg
+				checkNotification(t, notification, row, method)
+			}
+		} else {
+			t.Fatal("WHAT IS THIS?", msg)
+		}
+	}
+}
+
 func makeConnStr(currdb string) string {
 	res := fmt.Sprintf("user=test dbname=test password=test port=5432 sslmode=disable host=%s", currdb)
 	return res
@@ -238,7 +268,6 @@ type Fields struct {
 
 func connect(currdb string) (conn string, db *sql.DB, err error) {
 	conn = makeConnStr(currdb)
-	log.Println(conn, "as conn")
 	db, err = sql.Open("postgres", conn)
 	if err != nil {
 		log.Fatal(err)
