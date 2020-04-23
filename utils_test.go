@@ -328,3 +328,94 @@ func receive(conn net.Conn) *ResponseOrNotification {
 	}
 	return response
 }
+
+func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.DB) {
+
+	connDBMaster, dbMaster, err := connect("arca-dbbus-db-master")
+	if err != nil {
+		dbMaster.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+
+	connDBView12, dbView12, err := connect("arca-dbbus-db-view12")
+	if err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+
+	connDBView23, dbView23, err := connect("arca-dbbus-db-view23")
+	if err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+
+	connDBView123, dbView123, err := connect("arca-dbbus-db-view123")
+	if err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+
+	srv := &dbbus.Server{Address: ":22346"}
+	started := make(chan bool)
+
+	go func() {
+		if err := srv.Start(started); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	if <-started != true {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		srv.Close()
+		t.Fatal("Unexpected error")
+		return nil, nil, nil, nil, nil
+	}
+
+	if err := srv.RegisterDB(connDBMaster, dbMaster); err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+	if err := srv.RegisterDB(connDBView12, dbView12); err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+	if err := srv.RegisterDB(connDBView23, dbView23); err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+	if err := srv.RegisterDB(connDBView123, dbView123); err != nil {
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return nil, nil, nil, nil, nil
+	}
+
+	return srv, dbMaster, dbView12, dbView23, dbView123
+}
