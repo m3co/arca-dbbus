@@ -26,12 +26,11 @@ func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 }
 
 // Close whatever
-func (s *Server) Close() {
+func (s *Server) Close() error {
 	if s.rpc != nil {
-		log.Println("Closing...", len(s.dbs))
-		if err := s.rpc.Close(); err != nil {
-			log.Println(err, "at Close()")
-		}
+		return s.rpc.Close()
+	} else {
+		return ErrorRPCNotFound
 	}
 }
 
@@ -43,7 +42,9 @@ func (s *Server) Start(started chan bool) error {
 	}
 	s.rpc = &jsonrpc.Server{Address: s.Address}
 	if err := s.rpc.Start(); err != nil {
-		s.Close()
+		if err1 := s.Close(); err1 != nil {
+			log.Println(err1)
+		}
 		started <- false
 		return err
 	}

@@ -2,9 +2,12 @@ package dbbus
 
 import (
 	"database/sql"
+	"errors"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
+
+var ErrorRPCNotFound = errors.New("RPC Server not found")
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
 type Notification struct {
