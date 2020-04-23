@@ -8,3 +8,4 @@ ENV POSTGRES_USER="test"
 ENV POSTGRES_DB="test"
 
 COPY definitions.sql /docker-entrypoint-initdb.d
+EXPOSE 5432

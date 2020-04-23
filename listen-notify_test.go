@@ -1,6 +1,7 @@
 package dbbus_test
 
 import (
+	"log"
 	"net"
 	"testing"
 	"time"
@@ -9,18 +10,12 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-func init() {
-	if connStr == "" {
-		defineVariables()
-	}
-}
-
 func Test_connect_RegisterDB(t *testing.T) {
 	srv := dbbus.Server{}
 	defer srv.Close()
 	started := make(chan bool)
 
-	db, err := connect()
+	connStr, db, err := connect("arca-dbbus-db")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -46,7 +41,8 @@ func Test_call_RegisterIDU(t *testing.T) {
 	defer srv.Close()
 	started := make(chan bool)
 
-	db, err := connect()
+	log.Println("Que cosa tan hijueputa...")
+	connStr, db, err := connect("arca-dbbus-db")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -93,7 +89,7 @@ func Test_call_RegisterIDU_connect(t *testing.T) {
 }
 
 func Test_RegisterIDU_call_Insert(t *testing.T) {
-	_, db, conn := singleConn(t)
+	_, db, conn := singleConn(t, "arca-dbbus-db0")
 
 	request := &jsonrpc.Request{}
 	request.ID = "jsonrpc-mock-id-case1"
@@ -116,14 +112,14 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 	if response.Error != nil {
 		t.Fatal(response.Error.Code, response.Error.Message)
 	}
-	lastInsertedID++
+	lastInsertedIDDB0++
 	checkResponse(t, response, db, row)
 	notification := receive(conn)
 	checkNotification(t, notification, row, "insert")
 }
 
 func Test_RegisterIDU_call_Update(t *testing.T) {
-	_, db, conn := singleConn(t)
+	_, db, conn := singleConn(t, "arca-dbbus-db0")
 
 	fields, err := selectFieldsFromTable(db)
 	if err != nil {
@@ -131,7 +127,7 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 	}
 	atLeastOneRun := false
 	for _, field := range fields {
-		if field.ID != lastInsertedID {
+		if field.ID != lastInsertedIDDB0 {
 			continue
 		}
 		if !(*field.Field1 == "field 1 - case 1 - IDU" &&
@@ -161,7 +157,7 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 	request.Params = map[string]interface{}{
 		"Row": row,
 		"PK": map[string]int64{
-			"ID": lastInsertedID,
+			"ID": lastInsertedIDDB0,
 		},
 	}
 
@@ -177,7 +173,7 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 }
 
 func Test_RegisterIDU_call_Delete(t *testing.T) {
-	_, db, conn := singleConn(t)
+	_, db, conn := singleConn(t, "arca-dbbus-db0")
 
 	row := map[string]string{
 		"Field1": "field 1 - case 1 - IDU update",
@@ -191,7 +187,7 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 	}
 	atLeastOneRun := false
 	for _, field := range fields {
-		if field.ID != lastInsertedID {
+		if field.ID != lastInsertedIDDB0 {
 			continue
 		}
 		if !(*field.Field1 == row["Field1"] &&
@@ -214,7 +210,7 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 	}
 	request.Params = map[string]interface{}{
 		"PK": map[string]int64{
-			"ID": lastInsertedID,
+			"ID": lastInsertedIDDB0,
 		},
 	}
 
@@ -237,7 +233,7 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 						}
 						atLeastOneRun := false
 						for _, field := range fields {
-							if field.ID != lastInsertedID {
+							if field.ID != lastInsertedIDDB0 {
 								continue
 							}
 							atLeastOneRun = true

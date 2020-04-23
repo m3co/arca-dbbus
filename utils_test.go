@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/joho/godotenv"
 	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
@@ -31,18 +29,19 @@ var (
 		"Field3": "character varying(255)",
 		"Field4": "character varying(255)",
 	}
-	PK                   = []string{"ID"}
-	lastInsertedID int64 = 0
-	srvDb0         *dbbus.Server
-	dbDb0          *sql.DB
-	connDb0        net.Conn
+	PK                      = []string{"ID"}
+	lastInsertedID    int64 = 0
+	lastInsertedIDDB0 int64 = 0
+	srvDb0            *dbbus.Server
+	dbDb0             *sql.DB
+	connDb0           net.Conn
 )
 
 func fieldmap() (map[string]string, []string) {
 	return fieldMap, PK
 }
 
-func singleConn(t *testing.T) (srv *dbbus.Server, db *sql.DB, conn net.Conn) {
+func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, conn net.Conn) {
 	if srvDb0 != nil && dbDb0 != nil && connDb0 != nil {
 		srv = srvDb0
 		db = dbDb0
@@ -55,7 +54,7 @@ func singleConn(t *testing.T) (srv *dbbus.Server, db *sql.DB, conn net.Conn) {
 	srvDb0 = srv
 	started := make(chan bool)
 
-	db, err = connect()
+	connStr, db, err = connect(currdb)
 	if err != nil {
 		t.Fatal(err)
 		srv.Close()
@@ -121,7 +120,7 @@ func checkResponse(t *testing.T, response *ResponseOrNotification, db *sql.DB, e
 						}
 						atLeastOneRun := false
 						for _, field := range fields {
-							if field.ID != lastInsertedID {
+							if field.ID != lastInsertedIDDB0 {
 								continue
 							}
 							if !(*field.Field1 == expectedField["Field1"] &&
@@ -225,23 +224,9 @@ func checkNotification(t *testing.T, notification *ResponseOrNotification, expec
 	}
 }
 
-func defineVariables() {
-	dbhost := "arca-dbbus-db"
-	err := godotenv.Load()
-	if err == nil {
-		envdbhost := os.Getenv("DB_HOST")
-		if envdbhost != "" {
-			dbhost = envdbhost
-		}
-	}
-	connStr = fmt.Sprintf("host=%s user=test dbname=test password=test port=5432 sslmode=disable", dbhost)
-	fmt.Println(connStr)
-}
-
-func init() {
-	if connStr == "" {
-		defineVariables()
-	}
+func makeConnStr(currdb string) string {
+	res := fmt.Sprintf("user=test dbname=test password=test port=5432 sslmode=disable host=%s", currdb)
+	return res
 }
 
 // Fields is the struct for the Table
@@ -251,13 +236,19 @@ type Fields struct {
 	Field2, Field3 string
 }
 
-func connect() (db *sql.DB, err error) {
-	db, err = sql.Open("postgres", connStr)
+func connect(currdb string) (conn string, db *sql.DB, err error) {
+	conn = makeConnStr(currdb)
+	log.Println(conn, "as conn")
+	db, err = sql.Open("postgres", conn)
 	if err != nil {
+		log.Fatal(err)
 		return
 	}
 
 	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return
 }
 

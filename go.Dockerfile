@@ -16,4 +16,3 @@ RUN ln -s ~/go/bin/dlv /bin/
 RUN dep ensure --vendor-only
 
 COPY . .
-RUN rm .env
