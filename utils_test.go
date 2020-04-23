@@ -249,7 +249,7 @@ func testIfResponseOrNotificationOrWhatever(t *testing.T, conn net.Conn, db *sql
 				checkNotification(t, notification, row, method)
 			}
 		} else {
-			t.Fatal("WHAT IS THIS?", msg)
+			t.Fatal("Unexpected response", msg)
 		}
 	}
 }
