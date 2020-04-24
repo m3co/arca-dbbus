@@ -54,7 +54,7 @@ func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, con
 	srvDb0 = srv
 	started := make(chan bool)
 
-	connStr, db, err = connect(currdb)
+	connStr, db, err = connect(currdb, "test")
 	if err != nil {
 		t.Fatal(err)
 		srv.Close()
@@ -254,8 +254,8 @@ func testIfResponseOrNotificationOrWhatever(t *testing.T, conn net.Conn, db *sql
 	}
 }
 
-func makeConnStr(currdb string) string {
-	res := fmt.Sprintf("user=test dbname=test password=test port=5432 sslmode=disable host=%s", currdb)
+func makeConnStr(host, db string) string {
+	res := fmt.Sprintf("user=test dbname=%s password=test port=5432 sslmode=disable host=%s", db, host)
 	return res
 }
 
@@ -266,8 +266,8 @@ type Fields struct {
 	Field2, Field3 string
 }
 
-func connect(currdb string) (conn string, db *sql.DB, err error) {
-	conn = makeConnStr(currdb)
+func connect(host, dbname string) (conn string, db *sql.DB, err error) {
+	conn = makeConnStr(host, dbname)
 	db, err = sql.Open("postgres", conn)
 	if err != nil {
 		log.Fatal(err)
@@ -331,14 +331,14 @@ func receive(conn net.Conn) *ResponseOrNotification {
 
 func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.DB) {
 
-	connDBMaster, dbMaster, err := connect("arca-dbbus-db-master")
+	connDBMaster, dbMaster, err := connect("arca-dbbus-db-master", "test-master")
 	if err != nil {
 		dbMaster.Close()
 		t.Fatal(err)
 		return nil, nil, nil, nil, nil
 	}
 
-	connDBView12, dbView12, err := connect("arca-dbbus-db-view12")
+	connDBView12, dbView12, err := connect("arca-dbbus-db-view12", "test-view12")
 	if err != nil {
 		dbMaster.Close()
 		dbView12.Close()
@@ -346,7 +346,7 @@ func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.D
 		return nil, nil, nil, nil, nil
 	}
 
-	connDBView23, dbView23, err := connect("arca-dbbus-db-view23")
+	connDBView23, dbView23, err := connect("arca-dbbus-db-view23", "test-view23")
 	if err != nil {
 		dbMaster.Close()
 		dbView12.Close()
@@ -355,7 +355,7 @@ func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.D
 		return nil, nil, nil, nil, nil
 	}
 
-	connDBView123, dbView123, err := connect("arca-dbbus-db-view123")
+	connDBView123, dbView123, err := connect("arca-dbbus-db-view123", "test-view123")
 	if err != nil {
 		dbMaster.Close()
 		dbView12.Close()

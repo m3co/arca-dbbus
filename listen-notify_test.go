@@ -13,7 +13,7 @@ func Test_connect_RegisterDB(t *testing.T) {
 	defer srv.Close()
 	started := make(chan bool)
 
-	connStr, db, err := connect("arca-dbbus-db")
+	connStr, db, err := connect("arca-dbbus-db", "test")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -39,7 +39,7 @@ func Test_call_RegisterIDU(t *testing.T) {
 	defer srv.Close()
 	started := make(chan bool)
 
-	connStr, db, err := connect("arca-dbbus-db")
+	connStr, db, err := connect("arca-dbbus-db", "test")
 	if err != nil {
 		t.Fatal(err)
 		return

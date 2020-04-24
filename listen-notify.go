@@ -39,6 +39,7 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			log.Println(err)
 		}
 
+		log.Println("DB", msg.Extra)
 		Row := notification.Row
 		PK := notification.PK
 		Params := make(map[string]interface{})
