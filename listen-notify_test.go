@@ -59,8 +59,8 @@ func Test_call_RegisterIDU(t *testing.T) {
 	if err := srv.RegisterDB(connStr, db); err != nil {
 		t.Fatal(err)
 	}
-	srv.RegisterSourceIDU("Table", fieldmap, db)
-	srv.RegisterTargetIDU("_Table", fieldmap)
+	srv.RegisterSourceIDU("Table1", fieldmap, db)
+	srv.RegisterTargetIDU("_Table1", fieldmap)
 }
 
 func Test_call_RegisterIDU_connect(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 	request.ID = "jsonrpc-mock-id-case1"
 	request.Method = "Insert"
 	request.Context = map[string]string{
-		"Source": "Table",
+		"Source": "Table1",
 	}
 	row := map[string]string{
 		"Field1": "field 1 - case 1 - IDU",
@@ -105,7 +105,7 @@ func Test_RegisterIDU_call_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
-	lastInsertedIDDB0++
+	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, db, row, "insert")
 }
@@ -138,7 +138,7 @@ func Test_RegisterIDU_call_Update(t *testing.T) {
 	request.ID = "jsonrpc-mock-id-case1"
 	request.Method = "Update"
 	request.Context = map[string]string{
-		"Source": "Table",
+		"Source": "Table1",
 	}
 	row := map[string]string{
 		"Field1": "field 1 - case 1 - IDU update",
@@ -192,7 +192,7 @@ func Test_RegisterIDU_call_Delete(t *testing.T) {
 	request.ID = "jsonrpc-mock-id-case1"
 	request.Method = "Delete"
 	request.Context = map[string]string{
-		"Source": "Table",
+		"Source": "Table1",
 	}
 	request.Params = map[string]interface{}{
 		"PK": map[string]int64{

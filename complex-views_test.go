@@ -124,7 +124,7 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-case1"
+	request.ID = "jsonrpc-mock-id-complex-case1"
 	request.Method = "Insert"
 	request.Context = map[string]string{
 		"Source": "Table1",
@@ -140,12 +140,50 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
+	lastInsertedIDDB0 = 1
+	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
+	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 
-	msg1 := receive(conn)
-	t.Log(msg1, 1)
+	fieldsAtView12, err := selectFieldsFromTable(dbView12)
+	fieldsAtView23, err := selectFieldsFromTable(dbView23)
+	fieldsAtView123, err := selectFieldsFromTable(dbView123)
 
-	msg2 := receive(conn)
-	t.Log(msg2, 2)
+	if len(fieldsAtView12) != 1 ||
+		len(fieldsAtView23) != 1 ||
+		len(fieldsAtView123) != 1 {
+		t.Fatal("Unexpected amount of rows at Test_DBMaster_Table1_Insert")
+	} else {
+		fieldAtView12 := fieldsAtView12[0]
+		fieldAtView23 := fieldsAtView23[0]
+		fieldAtView123 := fieldsAtView123[0]
+
+		if fieldAtView12.ID != lastInsertedIDDB0 ||
+			fieldAtView23.ID != lastInsertedIDDB0 ||
+			fieldAtView123.ID != lastInsertedIDDB0 {
+			t.Fatal("Unexpected IDs in rows at Test_DBMaster_Table1_Insert")
+		}
+
+		if *fieldAtView12.Field1 != row["Field1"] ||
+			fieldAtView12.Field2 != row["Field2"] ||
+			fieldAtView12.Field3 != row["Field3"] ||
+			*fieldAtView12.Field4 != row["Field4"] {
+			t.Fatal("Unexpected rows from View12 at Test_DBMaster_Table1_Insert")
+		}
+
+		if *fieldAtView23.Field1 != row["Field1"] ||
+			fieldAtView23.Field2 != row["Field2"] ||
+			fieldAtView23.Field3 != row["Field3"] ||
+			*fieldAtView23.Field4 != row["Field4"] {
+			t.Fatal("Unexpected rows from View23 at Test_DBMaster_Table1_Insert")
+		}
+
+		if *fieldAtView123.Field1 != row["Field1"] ||
+			fieldAtView123.Field2 != row["Field2"] ||
+			fieldAtView123.Field3 != row["Field3"] ||
+			*fieldAtView123.Field4 != row["Field4"] {
+			t.Fatal("Unexpected rows from View123 at Test_DBMaster_Table1_Insert")
+		}
+	}
 
 	time.Sleep(600 * time.Millisecond)
 	srv.Close()

@@ -16,45 +16,45 @@ end;
 $$;
 
 /*
-  "_Table" es un ejemplo de una tabla primaria
+  "_Table1" es un ejemplo de una tabla primaria
   Nótese que tiene un _ al principio.
   Una tabla primaria NO debe ser modificada por ningún cliente directamente.
   Cualquier interación a realizar sobre una tabla primaria debe pasar
   por su vista. Una vista es el reflejo de una tabla primaria y debe
   ser nombrada con el mismo nombre de la tabla primaria sin anteponerle _.
-  Es decir, "_Table" - es primaria y "Table" es la vista. Ver más abajo.
+  Es decir, "_Table1" - es primaria y "Table1" es la vista. Ver más abajo.
 */
-create table if not exists "_Table"
+create table if not exists "_Table1"
 (
   "ID" serial,
   "Field1" character varying(255),
   "Field2" character varying(255) not null,
   "Field3" character varying(255) default 'default field3',
   "Field4" character varying(255) not null default 'default field4',
-  constraint "Table_pkey" primary key ("ID")
+  constraint "Table1_pkey" primary key ("ID")
 )
 with (
   OIDS=false
 );
 
 /*
-  notify__table_table_before tiene una forma sencilla de formar el nombre
+  notify__table1_table1_before tiene una forma sencilla de formar el nombre
   _      - es el caractér para separar
   notify - indica que la función es para realizar una notificación
-  _table - indica la fuente de la notificacion
-  table  - indica el destino de la notificación
+  _table1 - indica la fuente de la notificacion
+  table1  - indica el destino de la notificación
   before - indica la propiedad temporal impuesta por la naturaleza de los triggers
 
   A manera de ejemplo, podriamos tener un nombre como
-  notify__taable_viewcomplextable_before y éste caso indica que una modificacion
-  realizada en _table dispara una notificación acerca que debe verse reflejado en
-  la vista viewcomplextable
+  notify__taable_viewcomplextable1_before y éste caso indica que una modificacion
+  realizada en _table1 dispara una notificación acerca que debe verse reflejado en
+  la vista viewcomplextable1
 
-  Si viewcomplextable depende de _table entonces una modificación sobre _table
-  afecta una o más entradas en viewcomplextable. Los cambios en ésas entradas
+  Si viewcomplextable1 depende de _table1 entonces una modificación sobre _table1
+  afecta una o más entradas en viewcomplextable1. Los cambios en ésas entradas
   deben ser notificados a las partes interesadas.
 */
-create or replace function notify__table_table_before()
+create or replace function notify__table1_table1_before()
   returns trigger
   language plpgsql volatile as
 $$
@@ -78,7 +78,7 @@ begin
           true as "Notification"
       ) ctx, (
         select *
-        from "Table"
+        from "Table1"
         where "ID"=old."ID"
       ) t, (
         select
@@ -96,10 +96,10 @@ end;
 $$;
 
 /*
-  notify__table_table_after la misma historia que el caso anterior, solo que
+  notify__table1_table1_after la misma historia que el caso anterior, solo que
   la diferencia radica en su propiedad temporal
 */
-create or replace function notify__table_table_after()
+create or replace function notify__table1_table1_after()
   returns trigger
   language plpgsql volatile as
 $$
@@ -121,7 +121,7 @@ begin
           true as "Notification"
       ) ctx, (
         select *
-        from "Table"
+        from "Table1"
         where "ID"=new."ID"
       ) t, (
         select
@@ -148,7 +148,7 @@ begin
           true as "Notification"
       ) ctx, (
         select *
-        from "Table"
+        from "Table1"
         where "ID"=new."ID"
       ) t, (
         select
@@ -163,20 +163,20 @@ begin
 end;
 $$;
 
-drop trigger if exists "notification__Table_to_Table_before" on "_Table" cascade;
-create trigger "notification__Table_to_Table_before"
-  before insert or update or delete on "_Table"
+drop trigger if exists "notification__Table1_to_Table1_before" on "_Table1" cascade;
+create trigger "notification__Table1_to_Table1_before"
+  before insert or update or delete on "_Table1"
   for each row
-  execute procedure notify__table_table_before();
+  execute procedure notify__table1_table1_before();
 
-drop trigger if exists "notification__Table_to_Table_after" on "_Table" cascade;
-create trigger "notification__Table_to_Table_after"
-  after insert or update or delete on "_Table"
+drop trigger if exists "notification__Table1_to_Table1_after" on "_Table1" cascade;
+create trigger "notification__Table1_to_Table1_after"
+  after insert or update or delete on "_Table1"
   for each row
-  execute procedure notify__table_table_after();
+  execute procedure notify__table1_table1_after();
 
 /*
- "Table" es un ejemplo de una vista sobre una tabla primaria
+ "Table1" es un ejemplo de una vista sobre una tabla primaria
  Nótese que el nombre de la vista es cási idéntico al nombre de la tabla primaria.
  Medíante ésta vista es que se realizan los cambios sobre la tabla primaria, cambios
  provenientes por parte de los clientes.
@@ -184,24 +184,24 @@ create trigger "notification__Table_to_Table_after"
  La razón de ésta reestricción es que si un cambio cae directamente sobre una
  tabla primaria entonces dicho cambio NO se va a propagar dentro del cluster.
 */
-create or replace view "Table"("ID", "Field1", "Field2", "Field3", "Field4") as (
+create or replace view "Table1"("ID", "Field1", "Field2", "Field3", "Field4") as (
   select
     "ID",
     "Field1",
     "Field2",
     "Field3",
     "Field4"
-  from "_Table"
+  from "_Table1"
 );
 
 /*
-  action_process_table tiene una forma sencilla de formar el nombre
+  action_process_table1 tiene una forma sencilla de formar el nombre
   _       - es el caractér para separar
   action  - indica que la función es para realizar procesar una accion
   process - deberia borrarlo...
-  table   - indica la fuente(necesariamente una vista) de la accion a procesar
+  table1   - indica la fuente(necesariamente una vista) de la accion a procesar
 */
-create or replace function action_process_table()
+create or replace function action_process_table1()
   returns trigger
   language 'plpgsql' volatile
 as $$
@@ -211,7 +211,7 @@ begin
   -- Construcciones genericas para INSERT, DELETE, UPDATE
   if tg_op = 'INSERT' then
     if new."ID" is null then
-      new."ID" = nextval('"_Table_ID_seq"');
+      new."ID" = nextval('"_Table1_ID_seq"');
     end if;
     for r in (
       select
@@ -330,11 +330,11 @@ begin
 end;
 $$;
 
-drop trigger if exists "Action_process_table" on "Table" cascade;
-create trigger "Action_process_table"
-  instead of insert or update or delete on "Table"
+drop trigger if exists "Action_process_table1" on "Table1" cascade;
+create trigger "Action_process_table1"
+  instead of insert or update or delete on "Table1"
   for each row
-  execute procedure action_process_table();
+  execute procedure action_process_table1();
 
 /*
   En resumen, tenemos

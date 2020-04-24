@@ -86,8 +86,8 @@ func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, con
 		t.Fatal(err)
 		return
 	}
-	srv.RegisterSourceIDU("Table", fieldmap, db)
-	srv.RegisterTargetIDU("_Table", fieldmap)
+	srv.RegisterSourceIDU("Table1", fieldmap, db)
+	srv.RegisterTargetIDU("_Table1", fieldmap)
 
 	conn, err = net.Dial("tcp", srv.Address)
 	if err != nil {
@@ -284,7 +284,7 @@ func connect(host, dbname string) (conn string, db *sql.DB, err error) {
 func selectFieldsFromTable(db *sql.DB) (fields []Fields, err error) {
 	var rows *sql.Rows
 	fields = []Fields{}
-	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table" order by "ID" desc`)
+	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table1" order by "ID" desc`)
 	if err != nil {
 		return
 	}
