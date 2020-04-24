@@ -124,7 +124,7 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-complex-case1"
+	request.ID = "jsonrpc-mock-id-complex-case-insert"
 	request.Method = "Insert"
 	request.Context = map[string]string{
 		"Source": "Table1",
@@ -144,45 +144,21 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 
-	fieldsAtView12, err := selectFieldsFromTable(dbView12)
-	fieldsAtView23, err := selectFieldsFromTable(dbView23)
-	fieldsAtView123, err := selectFieldsFromTable(dbView123)
-
-	if len(fieldsAtView12) != 1 ||
-		len(fieldsAtView23) != 1 ||
-		len(fieldsAtView123) != 1 {
-		t.Fatal("Unexpected amount of rows at Test_DBMaster_Table1_Insert")
-	} else {
-		fieldAtView12 := fieldsAtView12[0]
-		fieldAtView23 := fieldsAtView23[0]
-		fieldAtView123 := fieldsAtView123[0]
-
-		if fieldAtView12.ID != lastInsertedIDDB0 ||
-			fieldAtView23.ID != lastInsertedIDDB0 ||
-			fieldAtView123.ID != lastInsertedIDDB0 {
-			t.Fatal("Unexpected IDs in rows at Test_DBMaster_Table1_Insert")
-		}
-
-		if *fieldAtView12.Field1 != row["Field1"] ||
-			fieldAtView12.Field2 != row["Field2"] ||
-			fieldAtView12.Field3 != row["Field3"] ||
-			*fieldAtView12.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View12 at Test_DBMaster_Table1_Insert")
-		}
-
-		if *fieldAtView23.Field1 != row["Field1"] ||
-			fieldAtView23.Field2 != row["Field2"] ||
-			fieldAtView23.Field3 != row["Field3"] ||
-			*fieldAtView23.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View23 at Test_DBMaster_Table1_Insert")
-		}
-
-		if *fieldAtView123.Field1 != row["Field1"] ||
-			fieldAtView123.Field2 != row["Field2"] ||
-			fieldAtView123.Field3 != row["Field3"] ||
-			*fieldAtView123.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View123 at Test_DBMaster_Table1_Insert")
-		}
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
 	}
 
 	time.Sleep(600 * time.Millisecond)
@@ -218,7 +194,7 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-complex-case1"
+	request.ID = "jsonrpc-mock-id-complex-case-update"
 	request.Method = "Update"
 	request.Context = map[string]string{
 		"Source": "Table1",
@@ -236,49 +212,26 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 		},
 	}
 
+	lastInsertedIDDB0 = 1
 	send(conn, request)
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 
-	fieldsAtView12, err := selectFieldsFromTable(dbView12)
-	fieldsAtView23, err := selectFieldsFromTable(dbView23)
-	fieldsAtView123, err := selectFieldsFromTable(dbView123)
-
-	if len(fieldsAtView12) != 1 ||
-		len(fieldsAtView23) != 1 ||
-		len(fieldsAtView123) != 1 {
-		t.Fatal("Unexpected amount of rows at Test_DBMaster_Table1_Update")
-	} else {
-		fieldAtView12 := fieldsAtView12[0]
-		fieldAtView23 := fieldsAtView23[0]
-		fieldAtView123 := fieldsAtView123[0]
-
-		if fieldAtView12.ID != lastInsertedIDDB0 ||
-			fieldAtView23.ID != lastInsertedIDDB0 ||
-			fieldAtView123.ID != lastInsertedIDDB0 {
-			t.Fatal("Unexpected IDs in rows at Test_DBMaster_Table1_Update")
-		}
-
-		if *fieldAtView12.Field1 != row["Field1"] ||
-			fieldAtView12.Field2 != row["Field2"] ||
-			fieldAtView12.Field3 != row["Field3"] ||
-			*fieldAtView12.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View12 at Test_DBMaster_Table1_Update")
-		}
-
-		if *fieldAtView23.Field1 != row["Field1"] ||
-			fieldAtView23.Field2 != row["Field2"] ||
-			fieldAtView23.Field3 != row["Field3"] ||
-			*fieldAtView23.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View23 at Test_DBMaster_Table1_Update")
-		}
-
-		if *fieldAtView123.Field1 != row["Field1"] ||
-			fieldAtView123.Field2 != row["Field2"] ||
-			fieldAtView123.Field3 != row["Field3"] ||
-			*fieldAtView123.Field4 != row["Field4"] {
-			t.Fatal("Unexpected rows from View123 at Test_DBMaster_Table1_Update")
-		}
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+		t.Fatal(err)
+		return
 	}
 
 	time.Sleep(600 * time.Millisecond)
@@ -314,7 +267,7 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-complex-case1"
+	request.ID = "jsonrpc-mock-id-complex-case-delete"
 	request.Method = "Delete"
 	request.Context = map[string]string{
 		"Source": "Table1",
@@ -333,6 +286,124 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	}
 
 	send(conn, request)
+	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
+
+	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		} else {
+			t.Fatal(err)
+			return
+		}
+	}
+	if fields, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		} else {
+			t.Fatal(err)
+			return
+		}
+	}
+	if fields, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		} else {
+			t.Fatal(err)
+			return
+		}
+	}
+	if fields, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		} else {
+			t.Fatal(err)
+			return
+		}
+	}
+
+	time.Sleep(600 * time.Millisecond)
+	srv.Close()
+}
+
+func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
+	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
+
+	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
+	srv.RegisterTargetIDU("_Table1", Table1Map)
+
+	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
+	srv.RegisterTargetIDU("_Table2", Table2Map)
+
+	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
+	srv.RegisterTargetIDU("_Table3", Table3Map)
+
+	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
+	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
+
+	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
+
+	conn, err := net.Dial("tcp", srv.Address)
+	if err != nil {
+		srv.Close()
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-table1-table2-case-insert"
+	request.Method = "Insert"
+	request.Context = map[string]string{
+		"Source": "Table1-Table2",
+	}
+	row12 := map[string]string{
+		"Field1": "field 1 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field2": "field 2 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field3": "field 3 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field4": "field 4 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field5": "field 5 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field6": "field 6 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field7": "field 7 - Test_DBView12_Table1_Table2_Insert - IDU",
+		"Field8": "field 8 - Test_DBView12_Table1_Table2_Insert - IDU",
+	}
+	request.Params = map[string]interface{}{
+		"Row": row12,
+	}
+
+	send(conn, request)
+	lastInsertedIDDB0 = 1 // ESTO ES UN ERROR! // ESTO ES UN ERROR! // ESTO ES UN ERROR!
+	checkResponseOrNotification(t, conn)
+	checkResponseOrNotification(t, conn)
+	checkResponseOrNotification(t, conn)
+
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	time.Sleep(600 * time.Millisecond)
+	srv.Close()
+}
+
+func checkResponseOrNotification(t *testing.T, conn net.Conn) {
+	msg := receive(conn)
+	if msg.ID != "" {
+		t.Log("Revisar Response")
+	} else {
+		t.Log("Revisar Notification")
+	}
+	t.Log(msg)
 }

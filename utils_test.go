@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -418,4 +419,58 @@ func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.D
 	}
 
 	return srv, dbMaster, dbView12, dbView23, dbView123
+}
+
+// Fields is the struct for the Table
+type Table1Fields struct {
+	ID             int64
+	Field1, Field4 *string
+	Field2, Field3 string
+}
+
+var (
+	errorField1Unexpected = errors.New("Field1 unexpected")
+	errorField1NotOnlyOne = errors.New("Expected only one result")
+)
+
+func checkFromTable1(t *testing.T, db *sql.DB, ID int64, row map[string]string) ([]Table1Fields, error) {
+	var rows *sql.Rows
+	fields := []Table1Fields{}
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table1" where "ID" = %d`, ID))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field1, Field4 *string
+		var Field2, Field3 string
+		if err := rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+			t.Fatal(err)
+		}
+		fields = append(fields, Table1Fields{
+			ID:     ID,
+			Field1: Field1,
+			Field2: Field2,
+			Field3: Field3,
+			Field4: Field4,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return fields, err
+	}
+
+	if len(fields) == 1 {
+		field := fields[0]
+		if *field.Field1 == row["Field1"] &&
+			field.Field2 == row["Field2"] &&
+			field.Field3 == row["Field3"] &&
+			*field.Field4 == row["Field4"] {
+			return fields, nil
+		} else {
+			return fields, errorField1Unexpected
+		}
+	} else {
+		return fields, errorField1NotOnlyOne
+	}
 }
