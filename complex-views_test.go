@@ -147,18 +147,6 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	msg2 := receive(conn)
 	t.Log(msg2, 2)
 
-	msg3 := receive(conn)
-	t.Log(msg3, 3)
-
-	msg4 := receive(conn)
-	t.Log(msg4, 4)
-
-	msg5 := receive(conn)
-	t.Log(msg5, 5)
-
-	msg6 := receive(conn)
-	t.Log(msg6, 6)
-
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(600 * time.Millisecond)
 	srv.Close()
 }

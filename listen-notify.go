@@ -41,9 +41,9 @@ func (s *Server) processNotification(listener *pq.Listener) {
 		}
 		if err := json.Unmarshal([]byte(msg.Extra), &notification); err != nil {
 			log.Println(err)
+			return
 		}
 
-		log.Println("DB", msg.Extra)
 		Row := notification.Row
 		PK := notification.PK
 		Params := make(map[string]interface{})

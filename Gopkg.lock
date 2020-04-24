@@ -15,11 +15,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8b4ebfa8cf8885b7f91a3a50ff64589f9d24e3b423c7f64df8dd314d0da12baf"
+  digest = "1:ae674ed2f4c34793b7441d35cdb7a60751c86ae0e408c148bf2184d4567c5991"
   name = "github.com/m3co/arca-jsonrpc"
   packages = ["."]
   pruneopts = "UT"
-  revision = "94cebb56b3eeafbc747903666ae5c33da21a571f"
+  revision = "70369b46cdc808708c0fc5be630d2ed399ff9411"
 
 [solve-meta]
   analyzer-name = "dep"
