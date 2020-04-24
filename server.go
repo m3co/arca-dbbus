@@ -28,6 +28,14 @@ func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 // Close whatever
 func (s *Server) Close() error {
 	if s.rpc != nil {
+		for _, listener := range s.listeners {
+			listener.UnlistenAll()
+			listener.Close()
+		}
+
+		for _, db := range s.dbs {
+			db.Close()
+		}
 		return s.rpc.Close()
 	} else {
 		return ErrorRPCNotFound

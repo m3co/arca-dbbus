@@ -159,11 +159,6 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	msg6 := receive(conn)
 	t.Log(msg6, 6)
 
-	srv.Close()
-	dbMaster.Close()
-	dbView12.Close()
-	dbView23.Close()
-	dbView123.Close()
-
 	time.Sleep(500 * time.Millisecond)
+	srv.Close()
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/lib/pq"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
@@ -37,9 +38,10 @@ type Notification struct {
 
 // Server grid that binds all the DBs with the json-rpc arca server
 type Server struct {
-	dbs     []*sql.DB
-	rpc     *jsonrpc.Server
-	Address string
+	dbs       []*sql.DB
+	listeners []*pq.Listener
+	rpc       *jsonrpc.Server
+	Address   string
 }
 
 type handlerIDU struct {

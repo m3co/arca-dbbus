@@ -21,9 +21,12 @@ func (s *Server) setupListenNotify(connStr string) error {
 		})
 
 	if err := listener.Listen("jsonrpc"); err != nil {
+		listener.UnlistenAll()
+		listener.Close()
 		return err
 	}
 
+	s.listeners = append(s.listeners, listener)
 	go s.processNotification(listener)
 	return nil
 }
@@ -33,7 +36,8 @@ func (s *Server) processNotification(listener *pq.Listener) {
 		var notification Notification
 		msg, ok := <-listener.Notify
 		if !ok {
-			log.Println("Disconnected")
+			log.Println("Listener disconnected")
+			return
 		}
 		if err := json.Unmarshal([]byte(msg.Extra), &notification); err != nil {
 			log.Println(err)
