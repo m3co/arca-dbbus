@@ -284,3 +284,55 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	time.Sleep(600 * time.Millisecond)
 	srv.Close()
 }
+
+func Test_DBMaster_Table1_Delete(t *testing.T) {
+	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
+
+	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
+	srv.RegisterTargetIDU("_Table1", Table1Map)
+
+	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
+	srv.RegisterTargetIDU("_Table2", Table2Map)
+
+	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
+	srv.RegisterTargetIDU("_Table3", Table3Map)
+
+	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
+	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
+
+	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
+
+	conn, err := net.Dial("tcp", srv.Address)
+	if err != nil {
+		srv.Close()
+		dbMaster.Close()
+		dbView12.Close()
+		dbView23.Close()
+		dbView123.Close()
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-complex-case1"
+	request.Method = "Delete"
+	request.Context = map[string]string{
+		"Source": "Table1",
+	}
+	row := map[string]string{
+		"Field1": "field 1 - Test_DBMaster_Table1_Update - IDU",
+		"Field2": "field 2 - Test_DBMaster_Table1_Update - IDU",
+		"Field3": "field 3 - Test_DBMaster_Table1_Update - IDU",
+		"Field4": "field 4 - Test_DBMaster_Table1_Update - IDU",
+	}
+	request.Params = map[string]interface{}{
+		"Row": row,
+		"PK": map[string]int64{
+			"ID": lastInsertedIDDB0,
+		},
+	}
+
+	send(conn, request)
+	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
+	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
+}
