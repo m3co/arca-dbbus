@@ -446,7 +446,7 @@ func checkFromTable1(t *testing.T, db *sql.DB, ID int64, row map[string]string) 
 		var Field1, Field4 *string
 		var Field2, Field3 string
 		if err := rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
-			t.Fatal(err)
+			return fields, err
 		}
 		fields = append(fields, Table1Fields{
 			ID:     ID,
@@ -473,4 +473,29 @@ func checkFromTable1(t *testing.T, db *sql.DB, ID int64, row map[string]string) 
 	} else {
 		return fields, errorField1NotOnlyOne
 	}
+}
+
+func showTable1(t *testing.T, db *sql.DB) error {
+	var rows *sql.Rows
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field1", "Field2", "Field3", "Field4" from "_Table1" order by "ID" asc`))
+	if err != nil {
+		t.Fatal(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field1, Field4 *string
+		var Field2, Field3 string
+		if err := rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+			t.Fatal(err)
+			return err
+
+		}
+		t.Log(ID, *Field1, Field2, Field3, *Field4, "< Table1")
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,11 +1,19 @@
 package dbbus_test
 
 import (
+	"database/sql"
 	"net"
 	"testing"
 	"time"
 
+	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
+)
+
+var (
+	srvCmplx                                *dbbus.Server
+	dbMaster, dbView12, dbView23, dbView123 *sql.DB
+	conn                                    net.Conn
 )
 
 func Table1Map() (map[string]string, []string) {
@@ -84,41 +92,46 @@ func Table1Table2Table3Map() (map[string]string, []string) {
 	}, []string{"ID1-ID2-ID3"}
 }
 
-func Test_check_allDBs(t *testing.T) {
-	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
-	srv.Close()
-	dbMaster.Close()
-	dbView12.Close()
-	dbView23.Close()
-	dbView123.Close()
+func showTable1FromAllDBs(t *testing.T) {
+	t.Log("dbMaster <")
+	showTable1(t, dbMaster)
+	t.Log("dbMaster >")
 
-	time.Sleep(500 * time.Millisecond)
+	t.Log("dbView12 <")
+	showTable1(t, dbView12)
+	t.Log("dbView12 >")
+
+	t.Log("dbView23 <")
+	showTable1(t, dbView23)
+	t.Log("dbView23 >")
+
+	t.Log("dbView123 <")
+	showTable1(t, dbView123)
+	t.Log("dbView123 >")
+}
+
+func Test_check_allDBs(t *testing.T) {
+	srvCmplx, dbMaster, dbView12, dbView23, dbView123 = createSwarm(t)
+
+	srvCmplx.RegisterSourceIDU("Table1", Table1Map, dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table1", Table1Map)
+
+	srvCmplx.RegisterSourceIDU("Table2", Table2Map, dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table2", Table2Map)
+
+	srvCmplx.RegisterSourceIDU("Table3", Table3Map, dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table3", Table3Map)
+
+	srvCmplx.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
+	srvCmplx.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
+	srvCmplx.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
+
+	showTable1FromAllDBs(t)
 }
 
 func Test_DBMaster_Table1_Insert(t *testing.T) {
-	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
-
-	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
-	srv.RegisterTargetIDU("_Table1", Table1Map)
-
-	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
-	srv.RegisterTargetIDU("_Table2", Table2Map)
-
-	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
-	srv.RegisterTargetIDU("_Table3", Table3Map)
-
-	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
-	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
-
-	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
-
-	conn, err := net.Dial("tcp", srv.Address)
+	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
-		srv.Close()
-		dbMaster.Close()
-		dbView12.Close()
-		dbView23.Close()
-		dbView123.Close()
 		t.Fatal(err)
 		return
 	}
@@ -143,6 +156,7 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
+	conn.Close()
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
 		t.Fatal(err)
@@ -161,34 +175,13 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 		return
 	}
 
+	showTable1FromAllDBs(t)
 	time.Sleep(600 * time.Millisecond)
-	srv.Close()
 }
 
 func Test_DBMaster_Table1_Update(t *testing.T) {
-	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
-
-	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
-	srv.RegisterTargetIDU("_Table1", Table1Map)
-
-	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
-	srv.RegisterTargetIDU("_Table2", Table2Map)
-
-	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
-	srv.RegisterTargetIDU("_Table3", Table3Map)
-
-	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
-	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
-
-	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
-
-	conn, err := net.Dial("tcp", srv.Address)
+	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
-		srv.Close()
-		dbMaster.Close()
-		dbView12.Close()
-		dbView23.Close()
-		dbView123.Close()
 		t.Fatal(err)
 		return
 	}
@@ -216,6 +209,7 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	send(conn, request)
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
+	conn.Close()
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
 		t.Fatal(err)
@@ -234,34 +228,13 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 		return
 	}
 
+	showTable1FromAllDBs(t)
 	time.Sleep(600 * time.Millisecond)
-	srv.Close()
 }
 
 func Test_DBMaster_Table1_Delete(t *testing.T) {
-	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
-
-	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
-	srv.RegisterTargetIDU("_Table1", Table1Map)
-
-	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
-	srv.RegisterTargetIDU("_Table2", Table2Map)
-
-	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
-	srv.RegisterTargetIDU("_Table3", Table3Map)
-
-	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
-	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
-
-	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
-
-	conn, err := net.Dial("tcp", srv.Address)
+	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
-		srv.Close()
-		dbMaster.Close()
-		dbView12.Close()
-		dbView23.Close()
-		dbView123.Close()
 		t.Fatal(err)
 		return
 	}
@@ -289,6 +262,7 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
+	conn.Close()
 
 	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
 		if err == errorField1NotOnlyOne && len(fields) == 0 {
@@ -319,34 +293,14 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 		}
 	}
 
+	showTable1FromAllDBs(t)
 	time.Sleep(600 * time.Millisecond)
-	srv.Close()
 }
 
+/*
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
-	srv, dbMaster, dbView12, dbView23, dbView123 := createSwarm(t)
-
-	srv.RegisterSourceIDU("Table1", Table1Map, dbMaster)
-	srv.RegisterTargetIDU("_Table1", Table1Map)
-
-	srv.RegisterSourceIDU("Table2", Table2Map, dbMaster)
-	srv.RegisterTargetIDU("_Table2", Table2Map)
-
-	srv.RegisterSourceIDU("Table3", Table3Map, dbMaster)
-	srv.RegisterTargetIDU("_Table3", Table3Map)
-
-	srv.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
-	srv.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
-
-	srv.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
-
-	conn, err := net.Dial("tcp", srv.Address)
+	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
-		srv.Close()
-		dbMaster.Close()
-		dbView12.Close()
-		dbView23.Close()
-		dbView123.Close()
 		t.Fatal(err)
 		return
 	}
@@ -376,6 +330,7 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
+	conn.Close()
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row12); err != nil {
 		t.Fatal(err)
@@ -395,8 +350,8 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	}
 
 	time.Sleep(600 * time.Millisecond)
-	srv.Close()
 }
+*/
 
 func checkResponseOrNotification(t *testing.T, conn net.Conn) {
 	msg := receive(conn)
