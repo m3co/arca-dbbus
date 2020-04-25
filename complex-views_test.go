@@ -14,6 +14,7 @@ var (
 	srvCmplx                                *dbbus.Server
 	dbMaster, dbView12, dbView23, dbView123 *sql.DB
 	conn                                    net.Conn
+	lastInsertedIDTable1                    int64 = 0
 )
 
 func Table1Map() (map[string]string, []string) {
@@ -153,24 +154,25 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
-	lastInsertedIDDB0 = 1
+	lastInsertedIDTable1++
+	lastInsertedIDDB0 = lastInsertedIDTable1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	conn.Close()
 
-	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
@@ -201,29 +203,28 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	request.Params = map[string]interface{}{
 		"Row": row,
 		"PK": map[string]int64{
-			"ID": lastInsertedIDDB0,
+			"ID": lastInsertedIDTable1,
 		},
 	}
 
 	send(conn, request)
-	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	conn.Close()
 
-	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
 		return
 	}
@@ -254,38 +255,37 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	request.Params = map[string]interface{}{
 		"Row": row,
 		"PK": map[string]int64{
-			"ID": lastInsertedIDDB0,
+			"ID": lastInsertedIDTable1,
 		},
 	}
 
 	send(conn, request)
-	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	conn.Close()
 
-	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row); err != nil {
+	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		if err == errorField1NotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
-	if fields, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row); err != nil {
+	if fields, err := checkFromTable1(t, dbView12, lastInsertedIDTable1, row); err != nil {
 		if err == errorField1NotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
-	if fields, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row); err != nil {
+	if fields, err := checkFromTable1(t, dbView23, lastInsertedIDTable1, row); err != nil {
 		if err == errorField1NotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
-	if fields, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row); err != nil {
+	if fields, err := checkFromTable1(t, dbView123, lastInsertedIDTable1, row); err != nil {
 		if err == errorField1NotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
@@ -326,30 +326,30 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
-	lastInsertedIDDB0 = 1 // ESTO ES UN ERROR! // ESTO ES UN ERROR! // ESTO ES UN ERROR!
+	//lastInsertedIDTable1++ // ESTO ES UN ERROR! // ESTO ES UN ERROR! // ESTO ES UN ERROR!
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
 	conn.Close()
-
-	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDDB0, row12); err != nil {
-		t.Fatal(err)
-		return
-	}
-	if _, err := checkFromTable1(t, dbView12, lastInsertedIDDB0, row12); err != nil {
-		t.Fatal(err)
-		return
-	}
-	if _, err := checkFromTable1(t, dbView23, lastInsertedIDDB0, row12); err != nil {
-		t.Fatal(err)
-		return
-	}
-	if _, err := checkFromTable1(t, dbView123, lastInsertedIDDB0, row12); err != nil {
-		t.Fatal(err)
-		return
-	}
-
 	showTable1FromAllDBs(t)
+
+	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView12, lastInsertedIDTable1, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView23, lastInsertedIDTable1, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable1(t, dbView123, lastInsertedIDTable1, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+
 	time.Sleep(600 * time.Millisecond)
 }
 
