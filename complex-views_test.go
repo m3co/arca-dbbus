@@ -205,8 +205,8 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 		},
 	}
 
-	lastInsertedIDDB0 = 1
 	send(conn, request)
+	lastInsertedIDDB0 = 1
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	conn.Close()
@@ -297,8 +297,8 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	time.Sleep(600 * time.Millisecond)
 }
 
-/*
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
+	showTable1FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -349,9 +349,9 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 		return
 	}
 
+	showTable1FromAllDBs(t)
 	time.Sleep(600 * time.Millisecond)
 }
-*/
 
 func checkResponseOrNotification(t *testing.T, conn net.Conn) {
 	msg := receive(conn)
