@@ -1,3 +1,4 @@
+create extension dblink;
 
 create or replace function send_jsonrpc(request json)
   returns void
@@ -46,6 +47,56 @@ create table if not exists "_Table3"
 with (
   OIDS=false
 );
+
+-- Esto es nuevo... Hay que documentarlo de algúna u otra forma
+create or replace function fixlastval_table1()
+  returns trigger
+  language plpgsql volatile as
+$$
+begin
+  perform setval('"_Table1_ID_seq"', new."ID");
+  return new;
+end;
+$$;
+
+drop trigger if exists "fixlastval_Table1_after" on "_Table1" cascade;
+create trigger "fixlastval_Table1_after"
+  after insert on "_Table1"
+  for each row
+  execute procedure fixlastval_table1();
+
+create or replace function fixlastval_table2()
+  returns trigger
+  language plpgsql volatile as
+$$
+begin
+  perform setval('"_Table2_ID_seq"', new."ID");
+  return new;
+end;
+$$;
+
+drop trigger if exists "fixlastval_Table2_after" on "_Table2" cascade;
+create trigger "fixlastval_Table2_after"
+  after insert on "_Table2"
+  for each row
+  execute procedure fixlastval_table2();
+
+create or replace function fixlastval_table3()
+  returns trigger
+  language plpgsql volatile as
+$$
+begin
+  perform setval('"_Table3_ID_seq"', new."ID");
+  return new;
+end;
+$$;
+
+drop trigger if exists "fixlastval_Table3_after" on "_Table3" cascade;
+create trigger "fixlastval_Table3_after"
+  after insert on "_Table3"
+  for each row
+  execute procedure fixlastval_table3();
+
 
 create or replace view "Table2-Table3"("ID2-ID3",
     "Field5", "Field6", "Field7", "Field8",

@@ -326,11 +326,12 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	}
 
 	send(conn, request)
-	//lastInsertedIDTable1++ // ESTO ES UN ERROR! // ESTO ES UN ERROR! // ESTO ES UN ERROR!
+	lastInsertedIDTable1++
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
 	checkResponseOrNotification(t, conn)
 	conn.Close()
+	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row12); err != nil {
@@ -350,7 +351,6 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 		return
 	}
 
-	time.Sleep(600 * time.Millisecond)
 }
 
 func checkResponseOrNotification(t *testing.T, conn net.Conn) {
