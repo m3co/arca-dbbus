@@ -435,6 +435,13 @@ type Table2Fields struct {
 	Field6, Field7 string
 }
 
+// Fields is the struct for the Table
+type Table3Fields struct {
+	ID               int64
+	Field9, Field12  *string
+	Field10, Field11 string
+}
+
 var (
 	errorFieldUnexpected = errors.New("Field1 unexpected")
 	errorFieldNotOnlyOne = errors.New("Expected only one result")
@@ -567,6 +574,73 @@ func showTable2(t *testing.T, db *sql.DB) error {
 
 		}
 		t.Log(ID, *Field5, Field6, Field7, *Field8, "< Table2")
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkFromTable3(t *testing.T, db *sql.DB, ID int64, row map[string]string) ([]Table3Fields, error) {
+	var rows *sql.Rows
+	fields := []Table3Fields{}
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field9", "Field10", "Field11", "Field12" from "_Table3" where "ID" = %d`, ID))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field9, Field12 *string
+		var Field10, Field11 string
+		if err := rows.Scan(&ID, &Field9, &Field10, &Field11, &Field12); err != nil {
+			return fields, err
+		}
+		fields = append(fields, Table3Fields{
+			ID:      ID,
+			Field9:  Field9,
+			Field10: Field10,
+			Field11: Field11,
+			Field12: Field12,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return fields, err
+	}
+
+	if len(fields) == 1 {
+		field := fields[0]
+		if *field.Field9 == row["Field9"] &&
+			field.Field10 == row["Field10"] &&
+			field.Field11 == row["Field11"] &&
+			*field.Field12 == row["Field12"] {
+			return fields, nil
+		} else {
+			return fields, errorFieldUnexpected
+		}
+	} else {
+		return fields, errorFieldNotOnlyOne
+	}
+}
+
+func showTable3(t *testing.T, db *sql.DB) error {
+	var rows *sql.Rows
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field9", "Field10", "Field11", "Field12" from "_Table3" order by "ID" asc`))
+	if err != nil {
+		t.Fatal(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field9, Field12 *string
+		var Field10, Field11 string
+		if err := rows.Scan(&ID, &Field9, &Field10, &Field11, &Field12); err != nil {
+			t.Fatal(err)
+			return err
+
+		}
+		t.Log(ID, *Field9, Field10, Field11, *Field12, "< Table3")
 	}
 	if err := rows.Err(); err != nil {
 		return err

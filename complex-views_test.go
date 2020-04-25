@@ -17,6 +17,7 @@ var (
 	conn                                    net.Conn
 	lastInsertedIDTable1                    int64 = 0
 	lastInsertedIDTable2                    int64 = 0
+	lastInsertedIDTable3                    int64 = 0
 )
 
 func Table1Map() (map[string]string, []string) {
@@ -121,6 +122,20 @@ func showTable2FromAllDBs(t *testing.T) {
 
 	t.Log("dbView123 <")
 	showTable2(t, dbView123)
+}
+
+func showTable3FromAllDBs(t *testing.T) {
+	t.Log("dbMaster <")
+	showTable3(t, dbMaster)
+
+	t.Log("dbView12 <")
+	showTable3(t, dbView12)
+
+	t.Log("dbView23 <")
+	showTable3(t, dbView23)
+
+	t.Log("dbView123 <")
+	showTable3(t, dbView123)
 }
 
 func Test_check_allDBs(t *testing.T) {
@@ -311,6 +326,7 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	showTable1FromAllDBs(t)
+	showTable2FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -378,6 +394,81 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 		return
 	}
 	if _, err := checkFromTable2(t, dbView123, lastInsertedIDTable2, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+}
+
+func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
+	showTable2FromAllDBs(t)
+	showTable3FromAllDBs(t)
+	conn, err := net.Dial("tcp", srvCmplx.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-table2-table3-case-insert"
+	request.Method = "Insert"
+	request.Context = map[string]string{
+		"Source": "Table2-Table3",
+	}
+	row23 := map[string]string{
+		"Field5":  "field 5 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field6":  "field 6 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field7":  "field 7 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field8":  "field 8 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field9":  "field 9 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field10": "field 10 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field11": "field 11 - Test_DBView23_Table2_Table3_Insert - IDU",
+		"Field12": "field 12 - Test_DBView23_Table2_Table3_Insert - IDU",
+	}
+	request.Params = map[string]interface{}{
+		"Row": row23,
+	}
+
+	send(conn, request)
+	lastInsertedIDTable2++
+	lastInsertedIDTable3++
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
+	conn.Close()
+	time.Sleep(600 * time.Millisecond)
+	showTable2FromAllDBs(t)
+	showTable3FromAllDBs(t)
+
+	if _, err := checkFromTable2(t, dbMaster, lastInsertedIDTable2, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView12, lastInsertedIDTable2, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView23, lastInsertedIDTable2, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView123, lastInsertedIDTable2, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	if _, err := checkFromTable3(t, dbMaster, lastInsertedIDTable3, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable3(t, dbView12, lastInsertedIDTable3, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable3(t, dbView23, lastInsertedIDTable3, row23); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable3(t, dbView123, lastInsertedIDTable3, row23); err != nil {
 		t.Fatal(err)
 		return
 	}
