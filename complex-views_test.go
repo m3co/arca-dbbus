@@ -3,6 +3,7 @@ package dbbus_test
 import (
 	"database/sql"
 	"net"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,6 +16,7 @@ var (
 	dbMaster, dbView12, dbView23, dbView123 *sql.DB
 	conn                                    net.Conn
 	lastInsertedIDTable1                    int64 = 0
+	lastInsertedIDTable2                    int64 = 0
 )
 
 func Table1Map() (map[string]string, []string) {
@@ -96,19 +98,29 @@ func Table1Table2Table3Map() (map[string]string, []string) {
 func showTable1FromAllDBs(t *testing.T) {
 	t.Log("dbMaster <")
 	showTable1(t, dbMaster)
-	t.Log("dbMaster >")
 
 	t.Log("dbView12 <")
 	showTable1(t, dbView12)
-	t.Log("dbView12 >")
 
 	t.Log("dbView23 <")
 	showTable1(t, dbView23)
-	t.Log("dbView23 >")
 
 	t.Log("dbView123 <")
 	showTable1(t, dbView123)
-	t.Log("dbView123 >")
+}
+
+func showTable2FromAllDBs(t *testing.T) {
+	t.Log("dbMaster <")
+	showTable2(t, dbMaster)
+
+	t.Log("dbView12 <")
+	showTable2(t, dbView12)
+
+	t.Log("dbView23 <")
+	showTable2(t, dbView23)
+
+	t.Log("dbView123 <")
+	showTable2(t, dbView123)
 }
 
 func Test_check_allDBs(t *testing.T) {
@@ -265,28 +277,28 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	conn.Close()
 
 	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
-		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		if err == errorFieldNotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
 	if fields, err := checkFromTable1(t, dbView12, lastInsertedIDTable1, row); err != nil {
-		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		if err == errorFieldNotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
 	if fields, err := checkFromTable1(t, dbView23, lastInsertedIDTable1, row); err != nil {
-		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		if err == errorFieldNotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
 		}
 	}
 	if fields, err := checkFromTable1(t, dbView123, lastInsertedIDTable1, row); err != nil {
-		if err == errorField1NotOnlyOne && len(fields) == 0 {
+		if err == errorFieldNotOnlyOne && len(fields) == 0 {
 		} else {
 			t.Fatal(err)
 			return
@@ -327,12 +339,14 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 
 	send(conn, request)
 	lastInsertedIDTable1++
-	checkResponseOrNotification(t, conn)
-	checkResponseOrNotification(t, conn)
-	checkResponseOrNotification(t, conn)
+	lastInsertedIDTable2++
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
 	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
+	showTable2FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row12); err != nil {
 		t.Fatal(err)
@@ -351,14 +365,79 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 		return
 	}
 
+	if _, err := checkFromTable2(t, dbMaster, lastInsertedIDTable2, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView12, lastInsertedIDTable2, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView23, lastInsertedIDTable2, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
+	if _, err := checkFromTable2(t, dbView123, lastInsertedIDTable2, row12); err != nil {
+		t.Fatal(err)
+		return
+	}
 }
 
-func checkResponseOrNotification(t *testing.T, conn net.Conn) {
+func checkResponseOrNotification(t *testing.T, conn net.Conn, method string) {
 	msg := receive(conn)
-	if msg.ID != "" {
-		t.Log("Revisar Response")
-	} else {
-		t.Log("Revisar Notification")
-	}
 	t.Log(msg)
+	if msg.ID != "" {
+		checkResponseComplex(t, msg, method)
+	} else {
+		checkNotificationComplex(t, msg, method)
+	}
+}
+
+func checkResponseComplex(t *testing.T, response *ResponseOrNotification, method string) {
+	if successAndPK, ok := response.Result.(map[string]interface{}); ok {
+		if success, ok := successAndPK["Success"].(bool); ok {
+			if _, ok := successAndPK["PK"].(map[string]interface{}); ok {
+				if success {
+
+				} else {
+					t.Fatal("Unexpected to see success = false")
+				}
+			} else {
+				t.Fatal(`successAndPK["PK"].(map[string]interface{}) error`)
+			}
+		} else {
+			t.Fatal(`successAndPK["Success"].(bool) error`)
+		}
+
+		if response.Method != method {
+			t.Fatal("notification's method expected as insert")
+		}
+	} else {
+		t.Fatal("response.Result.(map[string]interface{}) error")
+	}
+}
+
+func checkNotificationComplex(t *testing.T, notification *ResponseOrNotification, method string) {
+	context, ok := notification.Context.(map[string]interface{})
+	if ok {
+		iNotification, ok := context["Notification"]
+		if ok {
+			isNotifcation, ok := iNotification.(bool)
+			if ok {
+				if isNotifcation {
+					if notification.Method != strings.ToLower(method) {
+						t.Fatal("notification's method expected as insert")
+					}
+				} else {
+					t.Fatal("received notification is not a notification error")
+				}
+			} else {
+				t.Fatal("iNotification.(bool) error")
+			}
+		} else {
+			t.Fatal(`context has no Notification field, error`)
+		}
+	} else {
+		t.Fatal("notification.Context.(map[string]interface{}) error")
+	}
 }

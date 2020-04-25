@@ -428,9 +428,16 @@ type Table1Fields struct {
 	Field2, Field3 string
 }
 
+// Fields is the struct for the Table
+type Table2Fields struct {
+	ID             int64
+	Field5, Field8 *string
+	Field6, Field7 string
+}
+
 var (
-	errorField1Unexpected = errors.New("Field1 unexpected")
-	errorField1NotOnlyOne = errors.New("Expected only one result")
+	errorFieldUnexpected = errors.New("Field1 unexpected")
+	errorFieldNotOnlyOne = errors.New("Expected only one result")
 )
 
 func checkFromTable1(t *testing.T, db *sql.DB, ID int64, row map[string]string) ([]Table1Fields, error) {
@@ -468,10 +475,10 @@ func checkFromTable1(t *testing.T, db *sql.DB, ID int64, row map[string]string) 
 			*field.Field4 == row["Field4"] {
 			return fields, nil
 		} else {
-			return fields, errorField1Unexpected
+			return fields, errorFieldUnexpected
 		}
 	} else {
-		return fields, errorField1NotOnlyOne
+		return fields, errorFieldNotOnlyOne
 	}
 }
 
@@ -493,6 +500,73 @@ func showTable1(t *testing.T, db *sql.DB) error {
 
 		}
 		t.Log(ID, *Field1, Field2, Field3, *Field4, "< Table1")
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkFromTable2(t *testing.T, db *sql.DB, ID int64, row map[string]string) ([]Table2Fields, error) {
+	var rows *sql.Rows
+	fields := []Table2Fields{}
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field5", "Field6", "Field7", "Field8" from "_Table2" where "ID" = %d`, ID))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field5, Field8 *string
+		var Field6, Field7 string
+		if err := rows.Scan(&ID, &Field5, &Field6, &Field7, &Field8); err != nil {
+			return fields, err
+		}
+		fields = append(fields, Table2Fields{
+			ID:     ID,
+			Field5: Field5,
+			Field6: Field6,
+			Field7: Field7,
+			Field8: Field8,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return fields, err
+	}
+
+	if len(fields) == 1 {
+		field := fields[0]
+		if *field.Field5 == row["Field5"] &&
+			field.Field6 == row["Field6"] &&
+			field.Field7 == row["Field7"] &&
+			*field.Field8 == row["Field8"] {
+			return fields, nil
+		} else {
+			return fields, errorFieldUnexpected
+		}
+	} else {
+		return fields, errorFieldNotOnlyOne
+	}
+}
+
+func showTable2(t *testing.T, db *sql.DB) error {
+	var rows *sql.Rows
+	rows, err := db.Query(fmt.Sprintf(`select "ID", "Field5", "Field6", "Field7", "Field8" from "_Table2" order by "ID" asc`))
+	if err != nil {
+		t.Fatal(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ID int64
+		var Field5, Field8 *string
+		var Field6, Field7 string
+		if err := rows.Scan(&ID, &Field5, &Field6, &Field7, &Field8); err != nil {
+			t.Fatal(err)
+			return err
+
+		}
+		t.Log(ID, *Field5, Field6, Field7, *Field8, "< Table2")
 	}
 	if err := rows.Err(); err != nil {
 		return err

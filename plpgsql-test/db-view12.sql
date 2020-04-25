@@ -207,7 +207,7 @@ begin
   end if;
 
   if tg_op = 'UPDATE' then
-    select regexp_matches(new."ID1-ID2", '(\d+)-(\d+)') into ids;
+    select regexp_matches(old."ID1-ID2", '(\d+)-(\d+)') into ids;
     id1 := ids[1]::integer;
     id2 := ids[2]::integer;
 
