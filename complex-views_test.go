@@ -245,6 +245,8 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	conn.Close()
+	time.Sleep(600 * time.Millisecond)
+	showTable1FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
@@ -262,9 +264,6 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-
-	showTable1FromAllDBs(t)
-	time.Sleep(600 * time.Millisecond)
 }
 
 func Test_DBMaster_Table1_Update(t *testing.T) {
@@ -297,6 +296,8 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	conn.Close()
+	time.Sleep(600 * time.Millisecond)
+	showTable1FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
@@ -314,9 +315,6 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-
-	showTable1FromAllDBs(t)
-	time.Sleep(600 * time.Millisecond)
 }
 
 func Test_DBMaster_Table1_Delete(t *testing.T) {
@@ -349,6 +347,8 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	conn.Close()
+	time.Sleep(600 * time.Millisecond)
+	showTable1FromAllDBs(t)
 
 	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		if err == errorFieldNotOnlyOne && len(fields) == 0 {
@@ -378,9 +378,6 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 			return
 		}
 	}
-
-	showTable1FromAllDBs(t)
-	time.Sleep(600 * time.Millisecond)
 }
 
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
@@ -571,14 +568,12 @@ func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
 	lastInsertedIDTable1++
 	lastInsertedIDTable2++
 	lastInsertedIDTable3++
-	/*
-		checkResponseOrNotification(t, conn, "Insert")
-		checkResponseOrNotification(t, conn, "Insert")
-		checkResponseOrNotification(t, conn, "Insert")
-		checkResponseOrNotification(t, conn, "Insert")
-	*/
-	time.Sleep(600 * time.Millisecond)
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
+	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
+	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 	showTable2FromAllDBs(t)
 	showTable3FromAllDBs(t)

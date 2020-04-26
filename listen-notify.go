@@ -3,6 +3,7 @@ package dbbus
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -105,10 +106,9 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			sobre una vista determinada.
 		*/
 		request := jsonrpc.Request{}
-		request.Method = notification.Method
+		request.Method = strings.Title(notification.Method)
 		request.Context = notification.Context
 		request.Params = Params
-
 		s.rpc.ProcessRequest(&request, nil)
 	}
 }
