@@ -5,7 +5,6 @@ RUN apt-get -y install postgresql-10-pgtap
 
 ENV POSTGRES_PASSWORD="test"
 ENV POSTGRES_USER="test"
-ENV POSTGRES_DB="test"
+ENV POSTGRES_DB="test-view123"
 
-COPY definitions.sql /docker-entrypoint-initdb.d
-EXPOSE 5432
+COPY plpgsql-test/db-view123.sql /docker-entrypoint-initdb.d

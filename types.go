@@ -2,9 +2,13 @@ package dbbus
 
 import (
 	"database/sql"
+	"errors"
 
+	"github.com/lib/pq"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
+
+var ErrorRPCNotFound = errors.New("RPC Server not found")
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
 type Notification struct {
@@ -19,37 +23,47 @@ type Notification struct {
 
 	/*
 		Context contiene las variables auxiliares del contexto contiene
-		 * Source es de que tabla/vista proviene el JSON-RPC
-		 * Target es a que tabla/vista está dirigido el JSON-RPC
-		 * Db es el nombre de la base de datos
-		 * Prime es si Target esta dirigido a una Tabla
-		     true  - Target va hacia una tabla "primaria"
-				 false - Target va hacia una vista
+			* Source es de qué tabla/vista proviene el JSON-RPC
+			* Target es a qué tabla/vista está dirigido el JSON-RPC
+			* Db es el nombre de la base de datos
+			* Prime es si Target esta dirigido a una Tabla primaria
+				true  - Target va hacia una tabla "primaria"
+				false - Target va hacia una vista
+			* Notification es si esta respuesta es tipo notificacion
+				true  - Broadcast a todos los interesados
+				false - No se indica y no hacer nada
 	*/
 	Context map[string]interface{}
 }
 
-// ComboboxInfo contiene la info sobre un combobox
-/* Ejemplo:
-```
-  Source: "FACAD-ParamsBIC",
-  Display: "Field",
-  Value: "Field",
-  Params: {
-    "BuiltInCategories": "BuiltInCategories",
-    "ReportType":  "ReportType",
-    "Field": "ConstraintField",
-  }
-```
-*/
+// Server grid that binds all the DBs with the json-rpc arca server
+type Server struct {
+	dbs       []*sql.DB
+	listeners []*pq.Listener
+	rpc       *jsonrpc.Server
+	Address   string
+}
+
+type handlerIDU struct {
+	Insert func(db *sql.DB) jsonrpc.RemoteProcedure
+	Delete func(db *sql.DB) jsonrpc.RemoteProcedure
+	Update func(db *sql.DB) jsonrpc.RemoteProcedure
+}
+
+type fieldMap func() (map[string]string, []string)
+
+// Result shows if a request
+type Result struct {
+	Success bool
+	PK      map[string]interface{} `json:",omitempty"`
+}
+
 type ComboboxInfo struct {
 	Source  string
 	Display string
 	Value   string
 	Params  map[string]string
 }
-
-// FieldInfo representa la informacion sobre un campo
 type FieldInfo struct {
 	Name     string
 	Type     string
@@ -59,24 +73,12 @@ type FieldInfo struct {
 	Combobox *ComboboxInfo
 	Select   *[]string
 }
-
-// ActionsInfo representa las acciones disponibles para una tabla o vista
 type ActionsInfo struct {
 	Insert bool
 	Delete bool
 	Update bool
 }
-
-// ModelInfo representa la informacion sobre una tabla o vista
 type ModelInfo struct {
 	Actions ActionsInfo
 	Fields  []FieldInfo
-}
-
-// Server grid that binds all the DBs with the json-rpc arca server
-type Server struct {
-	dbs     []*sql.DB
-	rpc     *jsonrpc.Server
-	Address string
-	close   chan bool
 }

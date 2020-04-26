@@ -2,15 +2,7 @@
 
 
 [[projects]]
-  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
-  name = "github.com/joho/godotenv"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "23d116af351c84513e1946b527c88823e476be13"
-  version = "v1.3.0"
-
-[[projects]]
-  digest = "1:12cb143f2148bf54bcd9fe622abac17325e85eeb1d84b8ec6caf1c80232108fd"
+  digest = "1:05de5942f7d2b280d098f18b7ebc72fdf1587d01d13979ebb413acc833cf3245"
   name = "github.com/lib/pq"
   packages = [
     ".",
@@ -18,22 +10,21 @@
     "scram",
   ]
   pruneopts = "UT"
-  revision = "3427c32cb71afc948325f299f040e53c1dd78979"
-  version = "v1.2.0"
+  revision = "11720195feb4140252d89ec87e6ec66810ca708b"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:cfb8e1ae2caa29205d531cc9ae6e4ef8551110ac21c26ae00ed1f4b67b551c10"
+  digest = "1:ae674ed2f4c34793b7441d35cdb7a60751c86ae0e408c148bf2184d4567c5991"
   name = "github.com/m3co/arca-jsonrpc"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2cf892ca9ae0e0d8ca7fcdca431dce15bc52ff79"
+  revision = "70369b46cdc808708c0fc5be630d2ed399ff9411"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/joho/godotenv",
     "github.com/lib/pq",
     "github.com/m3co/arca-jsonrpc",
   ]

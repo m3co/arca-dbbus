@@ -2,6 +2,7 @@ package dbbus
 
 import (
 	"database/sql"
+	"log"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
@@ -19,37 +20,44 @@ func (s *Server) RegisterTarget(
 }
 
 // RegisterDB whatever
-func (s *Server) RegisterDB(connStr string, connect func() *sql.DB) *sql.DB {
-	db := connect()
+func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 	s.dbs = append(s.dbs, db)
-	go s.setupListenNotify(connStr)
-	return db
+	return s.setupListenNotify(connStr)
 }
 
 // Close whatever
-func (s *Server) Close() {
+func (s *Server) Close() error {
 	if s.rpc != nil {
-		s.rpc.Close()
+		for _, listener := range s.listeners {
+			listener.UnlistenAll()
+			listener.Close()
+		}
+
+		for _, db := range s.dbs {
+			db.Close()
+		}
+		return s.rpc.Close()
+	} else {
+		return ErrorRPCNotFound
 	}
-	s.close <- true
 }
 
 // Start launches the grid server
-func (s *Server) Start() (err error) {
+func (s *Server) Start(started chan bool) error {
 	address := ":22345"
-	if s.Address != "" {
-		address = s.Address
+	if s.Address == "" {
+		s.Address = address
 	}
-	s.rpc = &jsonrpc.Server{Address: address}
-
-	err = s.rpc.Start()
-	if err != nil {
-		s.Close()
-		return
+	s.rpc = &jsonrpc.Server{Address: s.Address}
+	if err := s.rpc.Start(); err != nil {
+		if err1 := s.Close(); err1 != nil {
+			log.Println(err1)
+		}
+		started <- false
+		return err
 	}
 
-	println("Serving...")
-
-	<-s.close
-	return
+	log.Println("Serving...")
+	started <- true
+	return nil
 }

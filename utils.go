@@ -9,28 +9,12 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-type handlerIDU struct {
-	Insert func(db *sql.DB) jsonrpc.RemoteProcedure
-	Delete func(db *sql.DB) jsonrpc.RemoteProcedure
-	Update func(db *sql.DB) jsonrpc.RemoteProcedure
-}
-
-type fieldMap func(params map[string]interface{}) (map[string]string, []string)
-
-type result struct {
-	Sucess bool
-}
-
-var (
-	resultSuccess   = result{Sucess: true}
-	resultUnsuccess = result{Sucess: false}
-)
-
 // Error definitions
 var (
 	ErrorZeroParamsInRow = errors.New("Zero params in Row")
 	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
 	ErrorUndefinedParams = errors.New("Params are not defined")
+	ErrorMalformedParams = errors.New("Params is not a map of values")
 	ErrorUndefinedRow    = errors.New("Row is not defined")
 	ErrorMalformedRow    = errors.New("Row is not a map of values")
 	ErrorMalformedPK     = errors.New("PK is not a map of values")
@@ -50,21 +34,21 @@ func contains(s []string, e string) bool {
 // PrepareAndExecute whatever
 func PrepareAndExecute(
 	db *sql.DB, pk []string, queryPrepared string, values ...interface{},
-) (interface{}, error) {
+) (*Result, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 	defer query.Close()
 
@@ -81,33 +65,33 @@ func PrepareAndExecute(
 
 		if err := row.Scan(ret...); err != nil && err != sql.ErrNoRows {
 			if err := tx.Rollback(); err != nil {
-				return resultUnsuccess, err
+				return nil, err
 			}
-			return resultUnsuccess, err
+			return nil, err
 		}
 
 		if err := tx.Commit(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
 
 		PK := map[string]interface{}{}
 		for i, key := range pk {
 			PK[key] = *retL[i]
 		}
-		return PK, nil
+		return &Result{Success: true, PK: PK}, nil
 	}
 
 	if _, err := query.Exec(values...); err != nil {
 		if err := tx.Rollback(); err != nil {
-			return resultUnsuccess, err
+			return nil, err
 		}
-		return resultUnsuccess, err
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return resultUnsuccess, err
+		return nil, err
 	}
-	return resultSuccess, nil
+	return &Result{Success: true}, nil
 }
 
 func generateReturning(pk []string) string {
@@ -126,7 +110,7 @@ func generateReturning(pk []string) string {
 func Insert(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, pk []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	header := []string{}
 	body := []string{}
 	values := []interface{}{}
@@ -163,7 +147,7 @@ func Insert(
 func Delete(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, pk []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	condition := make([]string, 0)
 	values := make([]interface{}, 0)
 	var PK map[string]interface{}
@@ -201,7 +185,7 @@ func Delete(
 func Update(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, keys []string, table string,
-) (interface{}, error) {
+) (*Result, error) {
 	body := []string{}
 	values := []interface{}{}
 	condition := []string{}
@@ -287,9 +271,12 @@ func setupIDU(
 	handlers.Insert = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap(params)
-				return Insert(db, params, fields, pk, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, pk := getFieldMap()
+					return Insert(db, params, fields, pk, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -298,9 +285,12 @@ func setupIDU(
 	handlers.Delete = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, pk := getFieldMap(params)
-				return Delete(db, params, fields, pk, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, pk := getFieldMap()
+					return Delete(db, params, fields, pk, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -309,9 +299,12 @@ func setupIDU(
 	handlers.Update = func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			if request.Params != nil {
-				params := request.Params.(map[string]interface{})
-				fields, keys := getFieldMap(params)
-				return Update(db, params, fields, keys, table)
+				params, ok := request.Params.(map[string]interface{})
+				if ok {
+					fields, keys := getFieldMap()
+					return Update(db, params, fields, keys, table)
+				}
+				return nil, ErrorMalformedParams
 			}
 			return nil, ErrorUndefinedParams
 		}
@@ -321,10 +314,9 @@ func setupIDU(
 }
 
 // RegisterSourceIDU whatever
-func RegisterSourceIDU(
+func (server *Server) RegisterSourceIDU(
 	source string,
 	getFieldMap fieldMap,
-	server *Server,
 	db *sql.DB,
 ) {
 	// IDU(Table) :: Public
@@ -335,10 +327,9 @@ func RegisterSourceIDU(
 }
 
 // RegisterTargetIDU whatever
-func RegisterTargetIDU(
+func (server *Server) RegisterTargetIDU(
 	target string,
 	getFieldMap fieldMap,
-	server *Server,
 ) {
 	// idu(_Table) :: Private
 	handlers := setupIDU(target, getFieldMap)
