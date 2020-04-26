@@ -6,7 +6,6 @@ import (
 	"net"
 	"strings"
 	"testing"
-	"time"
 
 	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -246,7 +245,6 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
@@ -297,7 +295,6 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
@@ -348,7 +345,6 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 
 	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
@@ -417,7 +413,6 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 	showTable2FromAllDBs(t)
 
@@ -492,7 +487,6 @@ func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable2FromAllDBs(t)
 	showTable3FromAllDBs(t)
 
@@ -574,7 +568,6 @@ func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 	showTable2FromAllDBs(t)
 	showTable3FromAllDBs(t)
@@ -668,7 +661,6 @@ func Test_DBView12_Table1_Table2_Update(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Update")
 	checkResponseOrNotification(t, conn, "Update")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable1FromAllDBs(t)
 	showTable2FromAllDBs(t)
 
@@ -744,7 +736,6 @@ func Test_DBView23_Table2_Table3_Update(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Update")
 	checkResponseOrNotification(t, conn, "Update")
 	conn.Close()
-	time.Sleep(600 * time.Millisecond)
 	showTable2FromAllDBs(t)
 	showTable3FromAllDBs(t)
 
