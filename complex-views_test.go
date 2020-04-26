@@ -6,6 +6,7 @@ import (
 	"net"
 	"strings"
 	"testing"
+	"time"
 
 	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -140,7 +141,6 @@ func showTable3FromAllDBs(t *testing.T) {
 
 func checkResponseOrNotification(t *testing.T, conn net.Conn, method string) {
 	msg := receive(conn)
-	t.Log(msg)
 	if msg.ID != "" {
 		checkResponseComplex(t, msg, method)
 	} else {
@@ -213,7 +213,6 @@ func Test_check_allDBs(t *testing.T) {
 	srvCmplx.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
 	srvCmplx.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
 
-	showTable1FromAllDBs(t)
 }
 
 func Test_DBMaster_Table1_Insert(t *testing.T) {
@@ -245,7 +244,7 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "insert")
 	conn.Close()
-	showTable1FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
@@ -295,7 +294,7 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "update")
 	conn.Close()
-	showTable1FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		t.Fatal(err)
@@ -345,7 +344,7 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	testIfResponseOrNotificationOrWhatever(t, conn, dbMaster, row, "delete")
 	conn.Close()
-	showTable1FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if fields, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row); err != nil {
 		if err == errorFieldNotOnlyOne && len(fields) == 0 {
@@ -378,8 +377,6 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 }
 
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -413,8 +410,7 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row12); err != nil {
 		t.Fatal(err)
@@ -452,8 +448,6 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 }
 
 func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -487,8 +481,7 @@ func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable2(t, dbMaster, lastInsertedIDTable2, row23); err != nil {
 		t.Fatal(err)
@@ -526,9 +519,6 @@ func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
 }
 
 func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -568,9 +558,7 @@ func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Insert")
 	checkResponseOrNotification(t, conn, "Insert")
 	conn.Close()
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row123); err != nil {
 		t.Fatal(err)
@@ -625,8 +613,6 @@ func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
 }
 
 func Test_DBView12_Table1_Table2_Update(t *testing.T) {
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -661,8 +647,7 @@ func Test_DBView12_Table1_Table2_Update(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Update")
 	checkResponseOrNotification(t, conn, "Update")
 	conn.Close()
-	showTable1FromAllDBs(t)
-	showTable2FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable1(t, dbMaster, lastInsertedIDTable1, row12); err != nil {
 		t.Fatal(err)
@@ -700,8 +685,6 @@ func Test_DBView12_Table1_Table2_Update(t *testing.T) {
 }
 
 func Test_DBView23_Table2_Table3_Update(t *testing.T) {
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -736,8 +719,7 @@ func Test_DBView23_Table2_Table3_Update(t *testing.T) {
 	checkResponseOrNotification(t, conn, "Update")
 	checkResponseOrNotification(t, conn, "Update")
 	conn.Close()
-	showTable2FromAllDBs(t)
-	showTable3FromAllDBs(t)
+	time.Sleep(200 * time.Millisecond)
 
 	if _, err := checkFromTable2(t, dbMaster, lastInsertedIDTable2, row23); err != nil {
 		t.Fatal(err)

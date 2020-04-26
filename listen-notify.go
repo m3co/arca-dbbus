@@ -40,7 +40,6 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			log.Println("Listener disconnected")
 			return
 		}
-		log.Println(">", msg.Extra)
 		if err := json.Unmarshal([]byte(msg.Extra), &notification); err != nil {
 			log.Println(err)
 			return
@@ -105,10 +104,12 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			Es decir, en este caso ocurre que la notificación es para ejecutar el RPC
 			sobre una vista determinada.
 		*/
-		request := jsonrpc.Request{}
-		request.Method = strings.Title(notification.Method)
-		request.Context = notification.Context
-		request.Params = Params
-		s.rpc.ProcessRequest(&request, nil)
+		go func(notification Notification) {
+			request := jsonrpc.Request{}
+			request.Method = strings.Title(notification.Method)
+			request.Context = notification.Context
+			request.Params = Params
+			s.rpc.ProcessRequest(&request, nil)
+		}(notification)
 	}
 }
