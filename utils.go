@@ -155,19 +155,19 @@ func Delete(
 		if !ok {
 			return nil, ErrorMalformedPK
 		}
-		if len(PK) == 0 {
-			return nil, ErrorZeroParamsInPK
-		}
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	condition := WherePK(PK, fieldMap, keys, &values, 0)
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
-			table, strings.Join(condition, " and "),
-			generateReturning(keys))
+	if condition, err := WherePK(PK, fieldMap, keys, &values, 0); err != nil {
+		return nil, err
+	} else {
+		if len(condition) > 0 {
+			queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
+				table, strings.Join(condition, " and "),
+				generateReturning(keys))
 
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
+			return PrepareAndExecute(db, keys, queryPrepared, values...)
+		}
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -221,24 +221,28 @@ func Update(
 		if !ok {
 			return nil, ErrorMalformedPK
 		}
-		if len(PK) == 0 {
-			return nil, ErrorZeroParamsInPK
-		}
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	condition := WherePK(PK, fieldMap, keys, &values, i)
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-			table, strings.Join(body, ","), strings.Join(condition, " and "),
-			generateReturning(keys))
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
+	if condition, err := WherePK(PK, fieldMap, keys, &values, i); err != nil {
+		return nil, err
+	} else {
+		if len(condition) > 0 {
+			queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+				table, strings.Join(body, ","), strings.Join(condition, " and "),
+				generateReturning(keys))
+			return PrepareAndExecute(db, keys, queryPrepared, values...)
+		}
 	}
 	return nil, ErrorEmptyCondition
 }
 
 // WherePK creates the string to use in the "Where" section of an SQL-query
-func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) []string {
+func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) ([]string, error) {
+	if len(PK) == 0 {
+		return nil, ErrorZeroParamsInPK
+	}
+
 	condition := []string{}
 	j := 0
 	for _, field := range keys {
@@ -255,7 +259,7 @@ func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []strin
 			}
 		}
 	}
-	return condition
+	return condition, nil
 }
 
 // setupIDU whatever
