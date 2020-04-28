@@ -19,3 +19,59 @@ func Test_wherePK_case1(t *testing.T) {
 		}
 	}
 }
+
+// Case 2: fieldMap is empty
+func Test_wherePK_case2(t *testing.T) {
+	PK := map[string]interface{}{"ID": "integer"}
+	fieldMap := map[string]string{}
+	keys := []string{}
+	values := &([]interface{}{})
+
+	if _, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorZeroParamsInFieldMap {
+			t.Fatal(err)
+		}
+	}
+}
+
+// Case 3: keys is empty
+func Test_wherePK_case3(t *testing.T) {
+	PK := map[string]interface{}{"ID": 2}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{}
+	values := &([]interface{}{})
+
+	if _, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorZeroParamsInKeys {
+			t.Fatal(err)
+		}
+	}
+}
+
+// Case 4: values is not defined
+func Test_wherePK_case4(t *testing.T) {
+	PK := map[string]interface{}{"ID": 2}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{"ID"}
+	var values *[]interface{}
+
+	if _, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorUndefinedValuesArray {
+			t.Fatal(err)
+		}
+	}
+}
+
+// Case 5: index is a negative number
+func Test_wherePK_case5(t *testing.T) {
+	PK := map[string]interface{}{"ID": 2}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{"ID"}
+	values := &[]interface{}{}
+
+	if _, err := dbbus.WherePK(PK, fieldMap, keys, values, -1); err != nil {
+		if err != dbbus.ErrorIndexNegative {
+			t.Fatal(err)
+		}
+	}
+}

@@ -11,15 +11,19 @@ import (
 
 // Error definitions
 var (
-	ErrorZeroParamsInRow = errors.New("Zero params in Row")
-	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
-	ErrorUndefinedParams = errors.New("Params are not defined")
-	ErrorMalformedParams = errors.New("Params is not a map of values")
-	ErrorUndefinedRow    = errors.New("Row is not defined")
-	ErrorMalformedRow    = errors.New("Row is not a map of values")
-	ErrorMalformedPK     = errors.New("PK is not a map of values")
-	ErrorUndefinedPK     = errors.New("PK is not defined")
-	ErrorEmptyCondition  = errors.New("Condition ended up in empty")
+	ErrorZeroParamsInRow      = errors.New("Zero params in Row")
+	ErrorZeroParamsInPK       = errors.New("Zero params in PK")
+	ErrorZeroParamsInFieldMap = errors.New("Zero params in fieldMap")
+	ErrorZeroParamsInKeys     = errors.New("Zero params in keys")
+	ErrorUndefinedParams      = errors.New("Params are not defined")
+	ErrorMalformedParams      = errors.New("Params is not a map of values")
+	ErrorUndefinedRow         = errors.New("Row is not defined")
+	ErrorMalformedRow         = errors.New("Row is not a map of values")
+	ErrorMalformedPK          = errors.New("PK is not a map of values")
+	ErrorUndefinedPK          = errors.New("PK is not defined")
+	ErrorUndefinedValuesArray = errors.New("Values array is not defined")
+	ErrorEmptyCondition       = errors.New("Condition ended up in empty")
+	ErrorIndexNegative        = errors.New("Index cannot be negative")
 )
 
 func contains(s []string, e string) bool {
@@ -149,7 +153,11 @@ func Delete(
 	fieldMap map[string]string, keys []string, table string,
 ) (*Result, error) {
 	values := make([]interface{}, 0)
-	var PK map[string]interface{}
+	var (
+		PK        map[string]interface{}
+		condition []string
+		err       error
+	)
 	if value, ok := params["PK"]; ok {
 		PK, ok = value.(map[string]interface{})
 		if !ok {
@@ -158,16 +166,16 @@ func Delete(
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	if condition, err := WherePK(PK, fieldMap, keys, &values, 0); err != nil {
+	condition, err = WherePK(PK, fieldMap, keys, &values, 0)
+	if err != nil {
 		return nil, err
-	} else {
-		if len(condition) > 0 {
-			queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
-				table, strings.Join(condition, " and "),
-				generateReturning(keys))
+	}
+	if len(condition) > 0 {
+		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
+			table, strings.Join(condition, " and "),
+			generateReturning(keys))
 
-			return PrepareAndExecute(db, keys, queryPrepared, values...)
-		}
+		return PrepareAndExecute(db, keys, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -179,7 +187,12 @@ func Update(
 ) (*Result, error) {
 	body := []string{}
 	values := []interface{}{}
-	var Row, PK map[string]interface{}
+	var (
+		Row, PK   map[string]interface{}
+		condition []string
+		err       error
+	)
+
 	if value, ok := params["Row"]; ok {
 		Row, ok = value.(map[string]interface{})
 		if !ok {
@@ -224,15 +237,15 @@ func Update(
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	if condition, err := WherePK(PK, fieldMap, keys, &values, i); err != nil {
+	condition, err = WherePK(PK, fieldMap, keys, &values, i)
+	if err != nil {
 		return nil, err
-	} else {
-		if len(condition) > 0 {
-			queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-				table, strings.Join(body, ","), strings.Join(condition, " and "),
-				generateReturning(keys))
-			return PrepareAndExecute(db, keys, queryPrepared, values...)
-		}
+	}
+	if len(condition) > 0 {
+		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+			table, strings.Join(body, ","), strings.Join(condition, " and "),
+			generateReturning(keys))
+		return PrepareAndExecute(db, keys, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -241,6 +254,18 @@ func Update(
 func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) ([]string, error) {
 	if len(PK) == 0 {
 		return nil, ErrorZeroParamsInPK
+	}
+	if len(fieldMap) == 0 {
+		return nil, ErrorZeroParamsInFieldMap
+	}
+	if len(keys) == 0 {
+		return nil, ErrorZeroParamsInKeys
+	}
+	if values == nil {
+		return nil, ErrorUndefinedValuesArray
+	}
+	if i < 0 {
+		return nil, ErrorIndexNegative
 	}
 
 	condition := []string{}
