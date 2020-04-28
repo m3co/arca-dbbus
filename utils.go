@@ -146,9 +146,8 @@ func Insert(
 // Delete whatever
 func Delete(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, pk []string, table string,
+	fieldMap map[string]string, keys []string, table string,
 ) (*Result, error) {
-	condition := make([]string, 0)
 	values := make([]interface{}, 0)
 	var PK map[string]interface{}
 	if value, ok := params["PK"]; ok {
@@ -162,21 +161,13 @@ func Delete(
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	i := 0
-	for field, typefield := range fieldMap {
-		if value, ok := PK[field]; ok {
-			i++
-			values = append(values, value)
-			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-				field, i, typefield))
-		}
-	}
+	condition := WherePK(PK, fieldMap, keys, &values, 0)
 	if len(condition) > 0 {
 		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
 			table, strings.Join(condition, " and "),
-			generateReturning(pk))
+			generateReturning(keys))
 
-		return PrepareAndExecute(db, pk, queryPrepared, values...)
+		return PrepareAndExecute(db, keys, queryPrepared, values...)
 	}
 	return nil, ErrorEmptyCondition
 }
@@ -188,7 +179,6 @@ func Update(
 ) (*Result, error) {
 	body := []string{}
 	values := []interface{}{}
-	condition := []string{}
 	var Row, PK map[string]interface{}
 	if value, ok := params["Row"]; ok {
 		Row, ok = value.(map[string]interface{})
@@ -237,12 +227,25 @@ func Update(
 	} else {
 		return nil, ErrorUndefinedPK
 	}
+	condition := WherePK(PK, fieldMap, keys, &values, i)
+	if len(condition) > 0 {
+		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+			table, strings.Join(body, ","), strings.Join(condition, " and "),
+			generateReturning(keys))
+		return PrepareAndExecute(db, keys, queryPrepared, values...)
+	}
+	return nil, ErrorEmptyCondition
+}
+
+// WherePK creates the string to use in the "Where" section of an SQL-query
+func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) []string {
+	condition := []string{}
 	j := 0
 	for _, field := range keys {
 		if value, ok := PK[field]; ok {
 			if value != nil {
 				j++
-				values = append(values, value)
+				*values = append(*values, value)
 				typefield := fieldMap[field]
 				condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 					field, i+j, typefield))
@@ -252,13 +255,7 @@ func Update(
 			}
 		}
 	}
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-			table, strings.Join(body, ","), strings.Join(condition, " and "),
-			generateReturning(keys))
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
-	}
-	return nil, ErrorEmptyCondition
+	return condition
 }
 
 // setupIDU whatever
