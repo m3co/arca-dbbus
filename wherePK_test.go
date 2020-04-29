@@ -123,3 +123,22 @@ func Test_wherePK_result_case7(t *testing.T) {
 		}
 	}
 }
+
+// Case 8: two params in the same PK key
+func Test_wherePK_result_case8(t *testing.T) {
+	PK := map[string]interface{}{"ID": []int64{2, 3}}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{"ID"}
+	values := &[]interface{}{}
+
+	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		t.Fatal(err)
+	} else {
+		if len(*values) != 2 {
+			t.Fatal("Expecting &[2, 3], got", values)
+		}
+		if condition != `"ID"=$1::integer or "ID"=$2::integer` {
+			t.Fatal(`Expecting "ID"=$1::integer or "ID"=$2::integer, got`, condition)
+		}
+	}
+}
