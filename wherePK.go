@@ -44,7 +44,7 @@ func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []strin
 			}
 		}
 	}
-	if j == 0 {
+	if len(condition) == 0 {
 		return "", ErrorEmptyCondition
 	}
 	return strings.Join(condition, " and "), nil

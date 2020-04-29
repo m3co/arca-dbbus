@@ -84,12 +84,10 @@ func Test_wherePK_result_case5(t *testing.T) {
 	values := &[]interface{}{}
 
 	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
-		if err != dbbus.ErrorEmptyCondition {
-			t.Fatal(err)
-		}
+		t.Fatal(err)
 	} else {
 		if condition != `"ID"=$1::integer` {
-			t.Fatal(`Expecting "ID"=$1::integer, got`, condition[0])
+			t.Fatal(`Expecting "ID"=$1::integer, got`, condition)
 		}
 	}
 }
@@ -102,12 +100,26 @@ func Test_wherePK_result_case6(t *testing.T) {
 	values := &[]interface{}{}
 
 	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
-		if err != dbbus.ErrorEmptyCondition {
-			t.Fatal(err)
-		}
+		t.Fatal(err)
 	} else {
 		if condition != `"ID"=$1::integer and "Key"=$2::text` {
-			t.Fatal(`Expecting "ID"=$1::integer and "Key"=$2::text, got`, condition[0])
+			t.Fatal(`Expecting "ID"=$1::integer and "Key"=$2::text, got`, condition)
+		}
+	}
+}
+
+// Case 7: one PK with nil
+func Test_wherePK_result_case7(t *testing.T) {
+	PK := map[string]interface{}{"ID": nil}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{"ID"}
+	values := &[]interface{}{}
+
+	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		t.Fatal(err)
+	} else {
+		if condition != `"ID" is null` {
+			t.Fatal(`Expecting "ID"=$1::integer and "Key"=$2::text, got`, condition)
 		}
 	}
 }
