@@ -214,3 +214,19 @@ func Test_wherePK_result_case12(t *testing.T) {
 		}
 	}
 }
+
+// Case 13: keys contains some params, but one is missing at PK
+func Test_wherePK_result_case13(t *testing.T) {
+	PK := map[string]interface{}{"Key": "1.2"}
+	fieldMap := map[string]string{"ID": "boolean"}
+	keys := []string{"ID", "Key"}
+	values := &[]interface{}{}
+
+	if _, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorKeyNotInFieldMap {
+			t.Fatal(err)
+		}
+	} else {
+		t.Fatal("Expecting ErrorKeyNotInFieldMap")
+	}
+}

@@ -53,8 +53,11 @@ func WherePK(
 	j := 0
 	for _, field := range keys {
 		if value, ok := PK[field]; ok {
+			typefield := fieldMap[field]
+			if typefield == "" {
+				return "", ErrorKeyNotInFieldMap
+			}
 			if value != nil {
-				typefield := fieldMap[field]
 				t := reflect.TypeOf(value).Kind()
 				if (t == reflect.Array) || (t == reflect.Slice) {
 					ors := []string{}

@@ -25,6 +25,7 @@ var (
 	ErrorEmptyCondition       = errors.New("Condition ended up in empty")
 	ErrorIndexNegative        = errors.New("Index cannot be negative")
 	ErrorCastToBool           = errors.New("Cannot cast value into boolean")
+	ErrorKeyNotInFieldMap     = errors.New("Key is not in the fielMap")
 )
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
