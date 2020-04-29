@@ -93,3 +93,21 @@ func Test_wherePK_result_case5(t *testing.T) {
 		}
 	}
 }
+
+// Case 6: two PK entries
+func Test_wherePK_result_case6(t *testing.T) {
+	PK := map[string]interface{}{"ID": 2, "Key": "key"}
+	fieldMap := map[string]string{"ID": "integer", "Key": "text"}
+	keys := []string{"ID", "Key"}
+	values := &[]interface{}{}
+
+	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorEmptyCondition {
+			t.Fatal(err)
+		}
+	} else {
+		if condition != `"ID"=$1::integer and "Key"=$2::text` {
+			t.Fatal(`Expecting "ID"=$1::integer and "Key"=$2::text, got`, condition[0])
+		}
+	}
+}
