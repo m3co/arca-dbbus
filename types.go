@@ -32,10 +32,10 @@ type Notification struct {
 	Method string
 
 	// Row contiene la entrada
-	Row interface{}
+	Row map[string]interface{}
 
 	// PK contiene los campos "primary-key"
-	PK interface{}
+	PK map[string]interface{}
 
 	/*
 		Context contiene las variables auxiliares del contexto contiene
