@@ -8,7 +8,23 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-var ErrorRPCNotFound = errors.New("RPC Server not found")
+// Error definitions
+var (
+	ErrorRPCNotFound          = errors.New("RPC Server not found")
+	ErrorZeroParamsInRow      = errors.New("Zero params in Row")
+	ErrorZeroParamsInPK       = errors.New("Zero params in PK")
+	ErrorZeroParamsInFieldMap = errors.New("Zero params in fieldMap")
+	ErrorZeroParamsInKeys     = errors.New("Zero params in keys")
+	ErrorUndefinedParams      = errors.New("Params are not defined")
+	ErrorMalformedParams      = errors.New("Params is not a map of values")
+	ErrorUndefinedRow         = errors.New("Row is not defined")
+	ErrorMalformedRow         = errors.New("Row is not a map of values")
+	ErrorMalformedPK          = errors.New("PK is not a map of values")
+	ErrorUndefinedPK          = errors.New("PK is not defined")
+	ErrorUndefinedValuesArray = errors.New("Values array is not defined")
+	ErrorEmptyCondition       = errors.New("Condition ended up in empty")
+	ErrorIndexNegative        = errors.New("Index cannot be negative")
+)
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
 type Notification struct {
@@ -58,12 +74,15 @@ type Result struct {
 	PK      map[string]interface{} `json:",omitempty"`
 }
 
+// ComboboxInfo - deprecated. Do not use.
 type ComboboxInfo struct {
 	Source  string
 	Display string
 	Value   string
 	Params  map[string]string
 }
+
+// FieldInfo - deprecated. Do not use.
 type FieldInfo struct {
 	Name     string
 	Type     string
@@ -73,11 +92,15 @@ type FieldInfo struct {
 	Combobox *ComboboxInfo
 	Select   *[]string
 }
+
+// ActionsInfo - deprecated. Do not use.
 type ActionsInfo struct {
 	Insert bool
 	Delete bool
 	Update bool
 }
+
+// ModelInfo - deprecated. Do not use.
 type ModelInfo struct {
 	Actions ActionsInfo
 	Fields  []FieldInfo

@@ -2,28 +2,10 @@ package dbbus
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
-)
-
-// Error definitions
-var (
-	ErrorZeroParamsInRow      = errors.New("Zero params in Row")
-	ErrorZeroParamsInPK       = errors.New("Zero params in PK")
-	ErrorZeroParamsInFieldMap = errors.New("Zero params in fieldMap")
-	ErrorZeroParamsInKeys     = errors.New("Zero params in keys")
-	ErrorUndefinedParams      = errors.New("Params are not defined")
-	ErrorMalformedParams      = errors.New("Params is not a map of values")
-	ErrorUndefinedRow         = errors.New("Row is not defined")
-	ErrorMalformedRow         = errors.New("Row is not a map of values")
-	ErrorMalformedPK          = errors.New("PK is not a map of values")
-	ErrorUndefinedPK          = errors.New("PK is not defined")
-	ErrorUndefinedValuesArray = errors.New("Values array is not defined")
-	ErrorEmptyCondition       = errors.New("Condition ended up in empty")
-	ErrorIndexNegative        = errors.New("Index cannot be negative")
 )
 
 func contains(s []string, e string) bool {

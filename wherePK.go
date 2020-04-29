@@ -5,13 +5,12 @@ import (
 	"strings"
 )
 
-/* WherePK creates the string to use in the "Where" section of an SQL-query
-
-PK       - holds the object with the values to constructh the string query with
-fieldMap - describes the columns and their respective types (integer, varchar, text, boolean...)
-keys     - indicates which columns from the fieldMap are considered primary keys
-i        - an index for string-query-building purposes
-*/
+// WherePK creates the string to use in the "Where" section of an SQL-query
+//
+// PK       - holds the object with the values to constructh the string query with.
+// fieldMap - describes the columns and their respective types (integer, varchar, text, boolean...).
+// keys     - indicates which columns from the fieldMap are considered primary keys.
+// i        - an index for string-query-building purposes.
 func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) (string, error) {
 	if len(PK) == 0 {
 		return "", ErrorZeroParamsInPK
