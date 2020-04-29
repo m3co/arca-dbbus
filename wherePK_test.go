@@ -75,3 +75,25 @@ func Test_wherePK_case5(t *testing.T) {
 		}
 	}
 }
+
+// Case 5: index is a negative number
+func Test_wherePK_result_case1(t *testing.T) {
+	PK := map[string]interface{}{"ID": 2}
+	fieldMap := map[string]string{"ID": "integer"}
+	keys := []string{"ID"}
+	values := &[]interface{}{}
+
+	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		if err != dbbus.ErrorIndexNegative {
+			t.Fatal(err)
+		}
+	} else {
+		if len(condition) != 1 {
+			t.Fatal("Expecting only one result")
+			return
+		}
+		if condition[0] != `"ID"=$1::integer` {
+			t.Fatal(`Expecting "ID"=$1::integer, got`, condition[0])
+		}
+	}
+}
