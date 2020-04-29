@@ -67,9 +67,25 @@ func WherePK(
 					condition = append(condition, strings.Join(ors, " or "))
 				} else {
 					j++
-					*values = append(*values, value)
-					condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-						field, i+j, typefield))
+					t := reflect.TypeOf(value).Kind()
+					if t == reflect.Bool {
+						v, ok := value.(bool)
+						if ok {
+							if v {
+								condition = append(condition, fmt.Sprintf(`"%s" is true`,
+									field))
+							} else {
+								condition = append(condition, fmt.Sprintf(`"%s" is false`,
+									field))
+							}
+						} else {
+							return "", ErrorCastToBool
+						}
+					} else {
+						*values = append(*values, value)
+						condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+							field, i+j, typefield))
+					}
 				}
 			} else {
 				condition = append(condition, fmt.Sprintf(`"%s" is null`,

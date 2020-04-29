@@ -24,6 +24,7 @@ var (
 	ErrorUndefinedValuesArray = errors.New("Values array is not defined")
 	ErrorEmptyCondition       = errors.New("Condition ended up in empty")
 	ErrorIndexNegative        = errors.New("Index cannot be negative")
+	ErrorCastToBool           = errors.New("Cannot cast value into boolean")
 )
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
