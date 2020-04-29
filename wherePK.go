@@ -58,15 +58,35 @@ func WherePK(
 				t := reflect.TypeOf(value).Kind()
 				if (t == reflect.Array) || (t == reflect.Slice) {
 					ors := []string{}
-					for _, v := range interfaceSlice(value) {
-						j++
-						*values = append(*values, v)
-						ors = append(ors, fmt.Sprintf(`"%s"=$%d::%s`,
-							field, i+j, typefield))
+					for _, value := range interfaceSlice(value) {
+						if value != nil {
+							t := reflect.TypeOf(value).Kind()
+							if t == reflect.Bool {
+								v, ok := value.(bool)
+								if ok {
+									if v {
+										ors = append(ors, fmt.Sprintf(`"%s" is true`,
+											field))
+									} else {
+										ors = append(ors, fmt.Sprintf(`"%s" is false`,
+											field))
+									}
+								} else {
+									return "", ErrorCastToBool
+								}
+							} else {
+								j++
+								*values = append(*values, value)
+								ors = append(ors, fmt.Sprintf(`"%s"=$%d::%s`,
+									field, i+j, typefield))
+							}
+						} else {
+							ors = append(ors, fmt.Sprintf(`"%s" is null`,
+								field))
+						}
 					}
 					condition = append(condition, strings.Join(ors, " or "))
 				} else {
-					j++
 					t := reflect.TypeOf(value).Kind()
 					if t == reflect.Bool {
 						v, ok := value.(bool)
@@ -82,6 +102,7 @@ func WherePK(
 							return "", ErrorCastToBool
 						}
 					} else {
+						j++
 						*values = append(*values, value)
 						condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
 							field, i+j, typefield))

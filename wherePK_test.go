@@ -158,3 +158,19 @@ func Test_wherePK_result_case9(t *testing.T) {
 		}
 	}
 }
+
+// Case 10: one PK with boolean and null
+func Test_wherePK_result_case10(t *testing.T) {
+	PK := map[string]interface{}{"ID": []interface{}{true, nil}}
+	fieldMap := map[string]string{"ID": "boolean"}
+	keys := []string{"ID"}
+	values := &[]interface{}{}
+
+	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		t.Fatal(err)
+	} else {
+		if condition != `"ID" is true or "ID" is null` {
+			t.Fatal(`Expecting "ID" is true or "ID" is null, got`, condition)
+		}
+	}
+}
