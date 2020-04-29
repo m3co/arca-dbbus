@@ -155,7 +155,7 @@ func Delete(
 	values := make([]interface{}, 0)
 	var (
 		PK        map[string]interface{}
-		condition []string
+		condition string
 		err       error
 	)
 	if value, ok := params["PK"]; ok {
@@ -170,14 +170,10 @@ func Delete(
 	if err != nil {
 		return nil, err
 	}
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
-			table, strings.Join(condition, " and "),
-			generateReturning(keys))
+	queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
+		table, condition, generateReturning(keys))
 
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
-	}
-	return nil, ErrorEmptyCondition
+	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
 // Update whatever
@@ -189,7 +185,7 @@ func Update(
 	values := []interface{}{}
 	var (
 		Row, PK   map[string]interface{}
-		condition []string
+		condition string
 		err       error
 	)
 
@@ -241,50 +237,9 @@ func Update(
 	if err != nil {
 		return nil, err
 	}
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-			table, strings.Join(body, ","), strings.Join(condition, " and "),
-			generateReturning(keys))
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
-	}
-	return nil, ErrorEmptyCondition
-}
-
-// WherePK creates the string to use in the "Where" section of an SQL-query
-func WherePK(PK map[string]interface{}, fieldMap map[string]string, keys []string, values *[]interface{}, i int) ([]string, error) {
-	if len(PK) == 0 {
-		return nil, ErrorZeroParamsInPK
-	}
-	if len(fieldMap) == 0 {
-		return nil, ErrorZeroParamsInFieldMap
-	}
-	if len(keys) == 0 {
-		return nil, ErrorZeroParamsInKeys
-	}
-	if values == nil {
-		return nil, ErrorUndefinedValuesArray
-	}
-	if i < 0 {
-		return nil, ErrorIndexNegative
-	}
-
-	condition := []string{}
-	j := 0
-	for _, field := range keys {
-		if value, ok := PK[field]; ok {
-			if value != nil {
-				j++
-				*values = append(*values, value)
-				typefield := fieldMap[field]
-				condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-					field, i+j, typefield))
-			} else {
-				condition = append(condition, fmt.Sprintf(`"%s" is null`,
-					field))
-			}
-		}
-	}
-	return condition, nil
+	queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+		table, strings.Join(body, ","), condition, generateReturning(keys))
+	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
 // setupIDU whatever
