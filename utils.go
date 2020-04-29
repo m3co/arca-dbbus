@@ -2,24 +2,10 @@ package dbbus
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
-)
-
-// Error definitions
-var (
-	ErrorZeroParamsInRow = errors.New("Zero params in Row")
-	ErrorZeroParamsInPK  = errors.New("Zero params in PK")
-	ErrorUndefinedParams = errors.New("Params are not defined")
-	ErrorMalformedParams = errors.New("Params is not a map of values")
-	ErrorUndefinedRow    = errors.New("Row is not defined")
-	ErrorMalformedRow    = errors.New("Row is not a map of values")
-	ErrorMalformedPK     = errors.New("PK is not a map of values")
-	ErrorUndefinedPK     = errors.New("PK is not defined")
-	ErrorEmptyCondition  = errors.New("Condition ended up in empty")
 )
 
 func contains(s []string, e string) bool {
@@ -146,39 +132,30 @@ func Insert(
 // Delete whatever
 func Delete(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, pk []string, table string,
+	fieldMap map[string]string, keys []string, table string,
 ) (*Result, error) {
-	condition := make([]string, 0)
 	values := make([]interface{}, 0)
-	var PK map[string]interface{}
+	var (
+		PK        map[string]interface{}
+		condition string
+		err       error
+	)
 	if value, ok := params["PK"]; ok {
 		PK, ok = value.(map[string]interface{})
 		if !ok {
 			return nil, ErrorMalformedPK
 		}
-		if len(PK) == 0 {
-			return nil, ErrorZeroParamsInPK
-		}
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	i := 0
-	for field, typefield := range fieldMap {
-		if value, ok := PK[field]; ok {
-			i++
-			values = append(values, value)
-			condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-				field, i, typefield))
-		}
+	condition, err = WherePK(PK, fieldMap, keys, &values, 0)
+	if err != nil {
+		return nil, err
 	}
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
-			table, strings.Join(condition, " and "),
-			generateReturning(pk))
+	queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
+		table, condition, generateReturning(keys))
 
-		return PrepareAndExecute(db, pk, queryPrepared, values...)
-	}
-	return nil, ErrorEmptyCondition
+	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
 // Update whatever
@@ -188,8 +165,12 @@ func Update(
 ) (*Result, error) {
 	body := []string{}
 	values := []interface{}{}
-	condition := []string{}
-	var Row, PK map[string]interface{}
+	var (
+		Row, PK   map[string]interface{}
+		condition string
+		err       error
+	)
+
 	if value, ok := params["Row"]; ok {
 		Row, ok = value.(map[string]interface{})
 		if !ok {
@@ -231,34 +212,16 @@ func Update(
 		if !ok {
 			return nil, ErrorMalformedPK
 		}
-		if len(PK) == 0 {
-			return nil, ErrorZeroParamsInPK
-		}
 	} else {
 		return nil, ErrorUndefinedPK
 	}
-	j := 0
-	for _, field := range keys {
-		if value, ok := PK[field]; ok {
-			if value != nil {
-				j++
-				values = append(values, value)
-				typefield := fieldMap[field]
-				condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
-					field, i+j, typefield))
-			} else {
-				condition = append(condition, fmt.Sprintf(`"%s" is null`,
-					field))
-			}
-		}
+	condition, err = WherePK(PK, fieldMap, keys, &values, i)
+	if err != nil {
+		return nil, err
 	}
-	if len(condition) > 0 {
-		queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-			table, strings.Join(body, ","), strings.Join(condition, " and "),
-			generateReturning(keys))
-		return PrepareAndExecute(db, keys, queryPrepared, values...)
-	}
-	return nil, ErrorEmptyCondition
+	queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
+		table, strings.Join(body, ","), condition, generateReturning(keys))
+	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
 // setupIDU whatever

@@ -37,9 +37,8 @@ func (s *Server) Close() error {
 			db.Close()
 		}
 		return s.rpc.Close()
-	} else {
-		return ErrorRPCNotFound
 	}
+	return ErrorRPCNotFound
 }
 
 // Start launches the grid server
