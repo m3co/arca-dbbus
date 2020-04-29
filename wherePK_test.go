@@ -82,12 +82,13 @@ func Test_wherePK_result_case5(t *testing.T) {
 	fieldMap := map[string]string{"ID": "integer"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
+	expected := `"ID"=$1::integer`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
-		if condition != `"ID"=$1::integer` {
-			t.Fatal(`Expecting "ID"=$1::integer, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
@@ -98,12 +99,13 @@ func Test_wherePK_result_case6(t *testing.T) {
 	fieldMap := map[string]string{"ID": "integer", "Key": "text"}
 	keys := []string{"ID", "Key"}
 	values := &[]interface{}{}
+	expected := `"ID"=$1::integer and "Key"=$2::text`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
-		if condition != `"ID"=$1::integer and "Key"=$2::text` {
-			t.Fatal(`Expecting "ID"=$1::integer and "Key"=$2::text, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
@@ -114,12 +116,13 @@ func Test_wherePK_result_case7(t *testing.T) {
 	fieldMap := map[string]string{"ID": "integer"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
+	expected := `"ID" is null`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
-		if condition != `"ID" is null` {
-			t.Fatal(`Expecting "ID" is null, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
@@ -130,15 +133,16 @@ func Test_wherePK_result_case8(t *testing.T) {
 	fieldMap := map[string]string{"ID": "integer"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
+	expected := `"ID"=$1::integer or "ID"=$2::integer`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
 		if len(*values) != 2 {
-			t.Fatal("Expecting &[2, 3], got", values)
+			t.Fatal("\nExpect &[2 3]\nActual", values)
 		}
-		if condition != `"ID"=$1::integer or "ID"=$2::integer` {
-			t.Fatal(`Expecting "ID"=$1::integer or "ID"=$2::integer, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
@@ -149,12 +153,13 @@ func Test_wherePK_result_case9(t *testing.T) {
 	fieldMap := map[string]string{"ID": "boolean"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
+	expected := `"ID" is true`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
-		if condition != `"ID" is true` {
-			t.Fatal(`Expecting "ID" is true, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
@@ -165,12 +170,13 @@ func Test_wherePK_result_case10(t *testing.T) {
 	fieldMap := map[string]string{"ID": "boolean"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
+	expected := `"ID" is true or "ID" is null`
 
-	if condition, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
 	} else {
-		if condition != `"ID" is true or "ID" is null` {
-			t.Fatal(`Expecting "ID" is true or "ID" is null, got`, condition)
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
 		}
 	}
 }
