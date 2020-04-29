@@ -85,7 +85,7 @@ func WherePK(
 								field))
 						}
 					}
-					condition = append(condition, strings.Join(ors, " or "))
+					condition = append(condition, fmt.Sprintf("(%s)", strings.Join(ors, " or ")))
 				} else {
 					t := reflect.TypeOf(value).Kind()
 					if t == reflect.Bool {

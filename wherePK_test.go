@@ -133,7 +133,7 @@ func Test_wherePK_result_case8(t *testing.T) {
 	fieldMap := map[string]string{"ID": "integer"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
-	expected := `"ID"=$1::integer or "ID"=$2::integer`
+	expected := `("ID"=$1::integer or "ID"=$2::integer)`
 
 	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
@@ -170,7 +170,24 @@ func Test_wherePK_result_case10(t *testing.T) {
 	fieldMap := map[string]string{"ID": "boolean"}
 	keys := []string{"ID"}
 	values := &[]interface{}{}
-	expected := `"ID" is true or "ID" is null`
+	expected := `("ID" is true or "ID" is null)`
+
+	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
+		t.Fatal(err)
+	} else {
+		if actual != expected {
+			t.Fatalf("\nExpect %s\nActual %s", expected, actual)
+		}
+	}
+}
+
+// Case 11: one PK with boolean and null and other values mixed
+func Test_wherePK_result_case11(t *testing.T) {
+	PK := map[string]interface{}{"ID": []interface{}{true, 2, nil}, "Key": "1.2"}
+	fieldMap := map[string]string{"ID": "boolean", "Key": "text"}
+	keys := []string{"ID", "Key"}
+	values := &[]interface{}{}
+	expected := `("ID" is true or "ID"=$1::boolean or "ID" is null) and "Key"=$2::text`
 
 	if actual, err := dbbus.WherePK(PK, fieldMap, keys, values, 0); err != nil {
 		t.Fatal(err)
