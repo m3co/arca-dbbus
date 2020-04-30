@@ -334,15 +334,14 @@ func (server *Server) RegisterSourceIDU(
 	server.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var (
-				fields map[string]string
 				params map[string]interface{}
 				ok     bool
 			)
+			fields, _ := getFieldMap()
 
 			if request.Params != nil {
 				params, ok = request.Params.(map[string]interface{})
 				if ok {
-					fields, _ = getFieldMap()
 				}
 			}
 			return Select(db, params, fields, source)
