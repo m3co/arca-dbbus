@@ -315,25 +315,6 @@ func setupIDU(
 			return nil, ErrorUndefinedParams
 		}
 	}
-
-	handlers.Select = func(db *sql.DB) jsonrpc.RemoteProcedure {
-		return func(request *jsonrpc.Request) (interface{}, error) {
-			var (
-				fields map[string]string
-				params map[string]interface{}
-				ok     bool
-			)
-
-			if request.Params != nil {
-				params, ok = request.Params.(map[string]interface{})
-				if ok {
-					fields, _ = getFieldMap()
-				}
-			}
-			return Select(db, params, fields, table)
-		}
-	}
-
 	return handlers
 }
 
@@ -348,7 +329,23 @@ func (server *Server) RegisterSourceIDU(
 	server.RegisterSource("Insert", source, handlers.Insert(db))
 	server.RegisterSource("Delete", source, handlers.Delete(db))
 	server.RegisterSource("Update", source, handlers.Update(db))
-	server.RegisterSource("Select", source, handlers.Select(db))
+	server.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var (
+				fields map[string]string
+				params map[string]interface{}
+				ok     bool
+			)
+
+			if request.Params != nil {
+				params, ok = request.Params.(map[string]interface{})
+				if ok {
+					fields, _ = getFieldMap()
+				}
+			}
+			return Select(db, params, fields, source)
+		}
+	}(db))
 }
 
 // RegisterTargetIDU whatever

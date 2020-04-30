@@ -66,7 +66,6 @@ type handlerIDU struct {
 	Insert func(db *sql.DB) jsonrpc.RemoteProcedure
 	Delete func(db *sql.DB) jsonrpc.RemoteProcedure
 	Update func(db *sql.DB) jsonrpc.RemoteProcedure
-	Select func(db *sql.DB) jsonrpc.RemoteProcedure
 }
 
 type fieldMap func() (map[string]string, []string)
