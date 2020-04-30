@@ -232,28 +232,28 @@ func Select(
 
 	var rows *sql.Rows
 	fields := []map[string]interface{}{}
-	rows, err := db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "Table1" order by "ID" desc`)
+	columns := []string{}
+	for column := range fieldMap {
+		columns = append(columns, fmt.Sprintf(`"%s"`, column))
+	}
+	slots := make([]interface{}, len(columns))
+	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var (
-			ID     int64
-			Field1 *string
-			Field2 string
-			Field3 *string
-			Field4 *bool
-		)
-		if err := rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+		if err := rows.Scan(&slots[0], &slots[1], &slots[2], &slots[3], &slots[4]); err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 		fields = append(fields, map[string]interface{}{
-			"ID":     ID,
-			"Field1": Field1,
-			"Field2": Field2,
-			"Field3": Field3,
-			"Field4": Field4,
+			columns[0]: slots[0],
+			columns[1]: slots[1],
+			columns[2]: slots[2],
+			columns[3]: slots[3],
+			columns[4]: slots[4],
 		})
 	}
 	if err := rows.Err(); err != nil {
