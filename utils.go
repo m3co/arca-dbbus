@@ -228,11 +228,39 @@ func Update(
 func Select(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string,
-) ([]interface{}, error) {
-	rows := []interface{}{
-		map[string]string{"Select": "Under implementation"},
+) ([]map[string]interface{}, error) {
+
+	var rows *sql.Rows
+	fields := []map[string]interface{}{}
+	rows, err := db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "Table1" order by "ID" desc`)
+	if err != nil {
+		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			ID     int64
+			Field1 *string
+			Field2 string
+			Field3 *string
+			Field4 *bool
+		)
+		if err := rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+			return nil, err
+		}
+		fields = append(fields, map[string]interface{}{
+			"ID":     ID,
+			"Field1": Field1,
+			"Field2": Field2,
+			"Field3": Field3,
+			"Field4": Field4,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return fields, nil
 }
 
 // setupIDU whatever

@@ -3,7 +3,7 @@ package dbbus_test
 import (
 	"bufio"
 	"database/sql"
-	"fmt"
+	"encoding/json"
 	"net"
 	"testing"
 
@@ -366,5 +366,23 @@ func Test_SelectSearch_Select(t *testing.T) {
 	scanner.Scan()
 	raw := scanner.Bytes()
 
-	fmt.Println(string(raw))
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+	}
+
+	result, ok := response["Result"]
+	if ok {
+		rows, ok := result.([]interface{})
+		if ok {
+			for _, row := range rows {
+				_, ok := row.(map[string]interface{})
+				if !ok {
+					t.Fatal("Cannot conver row into table1-row", row)
+				}
+			}
+		} else {
+			t.Fatal("Cannot convert rows into array of objects")
+		}
+	}
 }
