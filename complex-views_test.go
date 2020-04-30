@@ -13,12 +13,12 @@ import (
 )
 
 var (
-	srvCmplx                                *dbbus.Server
-	dbMaster, dbView12, dbView23, dbView123 *sql.DB
-	conn                                    net.Conn
-	lastInsertedIDTable1                    int64 = 0
-	lastInsertedIDTable2                    int64 = 0
-	lastInsertedIDTable3                    int64 = 0
+	srvCmplx                                      *dbbus.Server
+	dbMaster, dbView12, dbView23, dbView123, dbSS *sql.DB
+	conn                                          net.Conn
+	lastInsertedIDTable1                          int64 = 0
+	lastInsertedIDTable2                          int64 = 0
+	lastInsertedIDTable3                          int64 = 0
 )
 
 func Table1Map() (map[string]string, []string) {
@@ -212,7 +212,6 @@ func Test_check_allDBs(t *testing.T) {
 	srvCmplx.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
 	srvCmplx.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
 	srvCmplx.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
-
 }
 
 func Test_DBMaster_Table1_Insert(t *testing.T) {

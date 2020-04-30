@@ -1,10 +1,60 @@
 package dbbus_test
 
 import (
+	"database/sql"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
 )
+
+func Table1SSMap() (map[string]string, []string) {
+	return map[string]string{
+		"ID":     "integer",
+		"Field1": "character varying(255)",
+		"Field2": "character varying(255)",
+		"Field3": "character varying(255)",
+		"Field4": "boolean",
+	}, []string{"ID"}
+}
+
+type Table1SS struct {
+	ID     int64
+	Field1 *string
+	Field2 string
+	Field3 *string
+	Field4 *bool
+}
+
+func selectFromTable1(db *sql.DB) (fields []Table1SS, err error) {
+	var rows *sql.Rows
+	fields = []Table1SS{}
+	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "Table1" order by "ID" desc`)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			ID     int64
+			Field1 *string
+			Field2 string
+			Field3 *string
+			Field4 *bool
+		)
+		if err = rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+			return
+		}
+		fields = append(fields, Table1SS{
+			ID:     ID,
+			Field1: Field1,
+			Field2: Field2,
+			Field3: Field3,
+			Field4: Field4,
+		})
+	}
+	err = rows.Err()
+	return
+}
 
 // Case 1: PK has no params
 func Test_wherePK_case1(t *testing.T) {
@@ -245,4 +295,12 @@ func Test_wherePK_result_case14(t *testing.T) {
 	} else {
 		t.Fatal("Expecting ErrorKeyNotInFieldMap")
 	}
+}
+
+func Test_Select_db(t *testing.T) {
+	rows, err := selectFromTable1(dbSS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(rows)
 }
