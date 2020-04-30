@@ -233,8 +233,10 @@ func Select(
 	var rows *sql.Rows
 	result := []map[string]interface{}{}
 	columns := []string{}
+	keys := []string{}
 	for column := range fieldMap {
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
+		keys = append(keys, column)
 	}
 	count := len(columns)
 	slots := make([]interface{}, count)
@@ -255,7 +257,7 @@ func Select(
 			return nil, err
 		}
 		row := map[string]interface{}{}
-		for i, key := range columns {
+		for i, key := range keys {
 			row[key] = slots[i]
 		}
 		result = append(result, row)
