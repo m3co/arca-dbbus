@@ -234,15 +234,25 @@ func Select(
 	result := []map[string]interface{}{}
 	columns := []string{}
 	keys := []string{}
-	for column := range fieldMap {
+	columnTypes := []string{}
+	for column, columnType := range fieldMap {
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
 		keys = append(keys, column)
+		columnTypes = append(columnTypes, columnType)
 	}
 	count := len(columns)
-	slots := make([]interface{}, count)
 	slotsPtrs := make([]interface{}, count)
-	for i := range slots {
-		slotsPtrs[i] = &slots[i]
+	for i, columnType := range columnTypes {
+		if columnType == "numeric(15, 2)" || columnType == "double precision" || columnType == "float" {
+			var numericFloat float64
+			slotsPtrs[i] = &numericFloat
+		} else if columnType == "integer" {
+			var numericInteger int64
+			slotsPtrs[i] = &numericInteger
+		} else {
+			var data interface{}
+			slotsPtrs[i] = &data
+		}
 	}
 
 	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
@@ -258,7 +268,7 @@ func Select(
 		}
 		row := map[string]interface{}{}
 		for i, key := range keys {
-			row[key] = slots[i]
+			row[key] = slotsPtrs[i]
 		}
 		result = append(result, row)
 	}
