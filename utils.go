@@ -231,11 +231,12 @@ func Select(
 ) ([]map[string]interface{}, error) {
 
 	var rows *sql.Rows
-	fields := []map[string]interface{}{}
+	result := []map[string]interface{}{}
 	columns := []string{}
 	for column := range fieldMap {
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
 	}
+
 	slots := make([]interface{}, len(columns))
 	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
 	rows, err := db.Query(query)
@@ -243,24 +244,23 @@ func Select(
 		return nil, err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		if err := rows.Scan(&slots[0], &slots[1], &slots[2], &slots[3], &slots[4]); err != nil {
 			fmt.Println(err)
 			return nil, err
 		}
-		fields = append(fields, map[string]interface{}{
-			columns[0]: slots[0],
-			columns[1]: slots[1],
-			columns[2]: slots[2],
-			columns[3]: slots[3],
-			columns[4]: slots[4],
-		})
+		row := map[string]interface{}{}
+		for i, key := range columns {
+			row[key] = slots[i]
+		}
+		result = append(result, row)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-
-	return fields, nil
+	return result, nil
 }
 
 // setupIDU whatever
