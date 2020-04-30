@@ -224,6 +224,17 @@ func Update(
 	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
+// Select whatever
+func Select(
+	db *sql.DB, params map[string]interface{},
+	fieldMap map[string]string, table string,
+) ([]interface{}, error) {
+	rows := []interface{}{
+		map[string]string{"Select": "Under implementation"},
+	}
+	return rows, nil
+}
+
 // setupIDU whatever
 func setupIDU(
 	table string,
@@ -273,6 +284,24 @@ func setupIDU(
 		}
 	}
 
+	handlers.Select = func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var (
+				fields map[string]string
+				params map[string]interface{}
+				ok     bool
+			)
+
+			if request.Params != nil {
+				params, ok = request.Params.(map[string]interface{})
+				if ok {
+					fields, _ = getFieldMap()
+				}
+			}
+			return Select(db, params, fields, table)
+		}
+	}
+
 	return handlers
 }
 
@@ -287,6 +316,7 @@ func (server *Server) RegisterSourceIDU(
 	server.RegisterSource("Insert", source, handlers.Insert(db))
 	server.RegisterSource("Delete", source, handlers.Delete(db))
 	server.RegisterSource("Update", source, handlers.Update(db))
+	server.RegisterSource("Select", source, handlers.Select(db))
 }
 
 // RegisterTargetIDU whatever

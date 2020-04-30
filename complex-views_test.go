@@ -13,12 +13,12 @@ import (
 )
 
 var (
-	srvCmplx                                      *dbbus.Server
-	dbMaster, dbView12, dbView23, dbView123, dbSS *sql.DB
-	conn                                          net.Conn
-	lastInsertedIDTable1                          int64 = 0
-	lastInsertedIDTable2                          int64 = 0
-	lastInsertedIDTable3                          int64 = 0
+	srvCmplx                                *dbbus.Server
+	dbMaster, dbView12, dbView23, dbView123 *sql.DB
+	conn                                    net.Conn
+	lastInsertedIDTable1                    int64 = 0
+	lastInsertedIDTable2                    int64 = 0
+	lastInsertedIDTable3                    int64 = 0
 )
 
 func Table1Map() (map[string]string, []string) {

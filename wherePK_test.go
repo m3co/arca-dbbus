@@ -1,10 +1,20 @@
 package dbbus_test
 
 import (
+	"bufio"
 	"database/sql"
+	"fmt"
+	"net"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
+	jsonrpc "github.com/m3co/arca-jsonrpc"
+)
+
+var (
+	srvSS  *dbbus.Server
+	dbSS   *sql.DB
+	connSS net.Conn
 )
 
 func Table1SSMap() (map[string]string, []string) {
@@ -297,10 +307,64 @@ func Test_wherePK_result_case14(t *testing.T) {
 	}
 }
 
-func Test_Select_db(t *testing.T) {
-	rows, err := selectFromTable1(dbSS)
+func Test_SelectSearch_create_server(t *testing.T) {
+	connStrSS := ""
+	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
+		db.Close()
+		t.Fatal(err)
+		return
+	} else {
+		dbSS = db
+		connStrSS = connStr
+	}
+
+	srv := &dbbus.Server{Address: ":22347"}
+	started := make(chan bool)
+
+	go func() {
+		if err := srv.Start(started); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	if <-started != true {
+		dbSS.Close()
+		srv.Close()
+		t.Fatal("Unexpected error")
+		return
+	}
+
+	srvSS = srv
+	if err := srvSS.RegisterDB(connStrSS, dbSS); err != nil {
+		dbSS.Close()
+		srv.Close()
+		t.Fatal(err)
+		return
+	}
+
+	srvSS.RegisterSourceIDU("Table1", Table1SSMap, dbSS)
+}
+
+func Test_SelectSearch_Select(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSS.Address)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
-	t.Log(rows)
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-sss-select-case-1"
+	request.Method = "Select"
+	request.Context = map[string]string{
+		"Source": "Table1",
+	}
+	request.Params = map[string]interface{}{}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	fmt.Println(string(raw))
 }

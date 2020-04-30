@@ -332,14 +332,6 @@ func receive(conn net.Conn) *ResponseOrNotification {
 
 func createSwarm(t *testing.T) (*dbbus.Server, *sql.DB, *sql.DB, *sql.DB, *sql.DB) {
 
-	if _, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
-		db.Close()
-		t.Fatal(err)
-		return nil, nil, nil, nil, nil
-	} else {
-		dbSS = db
-	}
-
 	connDBMaster, dbMaster, err := connect("arca-dbbus-db-master", "test-master")
 	if err != nil {
 		dbMaster.Close()
