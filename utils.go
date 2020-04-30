@@ -236,8 +236,13 @@ func Select(
 	for column := range fieldMap {
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
 	}
+	count := len(columns)
+	slots := make([]interface{}, count)
+	slotsPtrs := make([]interface{}, count)
+	for i := range slots {
+		slotsPtrs[i] = &slots[i]
+	}
 
-	slots := make([]interface{}, len(columns))
 	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
 	rows, err := db.Query(query)
 	if err != nil {
@@ -246,8 +251,7 @@ func Select(
 	defer rows.Close()
 
 	for rows.Next() {
-		if err := rows.Scan(&slots[0], &slots[1], &slots[2], &slots[3], &slots[4]); err != nil {
-			fmt.Println(err)
+		if err := rows.Scan(slotsPtrs...); err != nil {
 			return nil, err
 		}
 		row := map[string]interface{}{}
