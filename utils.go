@@ -224,6 +224,49 @@ func Update(
 	return PrepareAndExecute(db, keys, queryPrepared, values...)
 }
 
+// Select whatever
+func Select(
+	db *sql.DB, params map[string]interface{},
+	fieldMap map[string]string, table string,
+) ([]map[string]interface{}, error) {
+
+	var rows *sql.Rows
+	result := []map[string]interface{}{}
+	columns := []string{}
+	for column := range fieldMap {
+		columns = append(columns, fmt.Sprintf(`"%s"`, column))
+	}
+	count := len(columns)
+	slots := make([]interface{}, count)
+	slotsPtrs := make([]interface{}, count)
+	for i := range slots {
+		slotsPtrs[i] = &slots[i]
+	}
+
+	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(slotsPtrs...); err != nil {
+			return nil, err
+		}
+		row := map[string]interface{}{}
+		for i, key := range columns {
+			row[key] = slots[i]
+		}
+		result = append(result, row)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // setupIDU whatever
 func setupIDU(
 	table string,
@@ -272,7 +315,6 @@ func setupIDU(
 			return nil, ErrorUndefinedParams
 		}
 	}
-
 	return handlers
 }
 
@@ -287,6 +329,23 @@ func (server *Server) RegisterSourceIDU(
 	server.RegisterSource("Insert", source, handlers.Insert(db))
 	server.RegisterSource("Delete", source, handlers.Delete(db))
 	server.RegisterSource("Update", source, handlers.Update(db))
+	server.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var (
+				fields map[string]string
+				params map[string]interface{}
+				ok     bool
+			)
+
+			if request.Params != nil {
+				params, ok = request.Params.(map[string]interface{})
+				if ok {
+					fields, _ = getFieldMap()
+				}
+			}
+			return Select(db, params, fields, source)
+		}
+	}(db))
 }
 
 // RegisterTargetIDU whatever

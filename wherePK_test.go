@@ -1,10 +1,70 @@
 package dbbus_test
 
 import (
+	"bufio"
+	"database/sql"
+	"encoding/json"
+	"net"
 	"testing"
 
 	dbbus "github.com/m3co/arca-dbbus"
+	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
+
+var (
+	srvSS  *dbbus.Server
+	dbSS   *sql.DB
+	connSS net.Conn
+)
+
+func Table1SSMap() (map[string]string, []string) {
+	return map[string]string{
+		"ID":     "integer",
+		"Field1": "character varying(255)",
+		"Field2": "character varying(255)",
+		"Field3": "character varying(255)",
+		"Field4": "boolean",
+	}, []string{"ID"}
+}
+
+type Table1SS struct {
+	ID     int64
+	Field1 *string
+	Field2 string
+	Field3 *string
+	Field4 *bool
+}
+
+func selectFromTable1(db *sql.DB) (fields []Table1SS, err error) {
+	var rows *sql.Rows
+	fields = []Table1SS{}
+	rows, err = db.Query(`select "ID", "Field1", "Field2", "Field3", "Field4" from "Table1" order by "ID" desc`)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			ID     int64
+			Field1 *string
+			Field2 string
+			Field3 *string
+			Field4 *bool
+		)
+		if err = rows.Scan(&ID, &Field1, &Field2, &Field3, &Field4); err != nil {
+			return
+		}
+		fields = append(fields, Table1SS{
+			ID:     ID,
+			Field1: Field1,
+			Field2: Field2,
+			Field3: Field3,
+			Field4: Field4,
+		})
+	}
+	err = rows.Err()
+	return
+}
 
 // Case 1: PK has no params
 func Test_wherePK_case1(t *testing.T) {
@@ -244,5 +304,85 @@ func Test_wherePK_result_case14(t *testing.T) {
 		}
 	} else {
 		t.Fatal("Expecting ErrorKeyNotInFieldMap")
+	}
+}
+
+func Test_SelectSearch_create_server(t *testing.T) {
+	connStrSS := ""
+	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
+		db.Close()
+		t.Fatal(err)
+		return
+	} else {
+		dbSS = db
+		connStrSS = connStr
+	}
+
+	srv := &dbbus.Server{Address: ":22347"}
+	started := make(chan bool)
+
+	go func() {
+		if err := srv.Start(started); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	if <-started != true {
+		dbSS.Close()
+		srv.Close()
+		t.Fatal("Unexpected error")
+		return
+	}
+
+	srvSS = srv
+	if err := srvSS.RegisterDB(connStrSS, dbSS); err != nil {
+		dbSS.Close()
+		srv.Close()
+		t.Fatal(err)
+		return
+	}
+
+	srvSS.RegisterSourceIDU("Table1", Table1SSMap, dbSS)
+}
+
+func Test_SelectSearch_Select(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSS.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-sss-select-case-1"
+	request.Method = "Select"
+	request.Context = map[string]string{
+		"Source": "Table1",
+	}
+	request.Params = map[string]interface{}{}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+	}
+
+	result, ok := response["Result"]
+	if ok {
+		rows, ok := result.([]interface{})
+		if ok {
+			for _, row := range rows {
+				_, ok := row.(map[string]interface{})
+				if !ok {
+					t.Fatal("Cannot conver row into table1-row", row)
+				}
+			}
+		} else {
+			t.Fatal("Cannot convert rows into array of objects")
+		}
 	}
 }
