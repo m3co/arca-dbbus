@@ -2,7 +2,10 @@ package dbbus
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -15,6 +18,23 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func convert2Numeric(v interface{}) (res *float64, err error) {
+	if v != nil {
+		s, ok := v.([]byte)
+		if ok {
+			c, err := strconv.ParseFloat(string(s), 64)
+			if err != nil {
+				return nil, err
+			}
+			res = &c
+			err = nil
+		} else {
+			return nil, errors.New("Cannot convert interface{} to []byte")
+		}
+	}
+	return
 }
 
 // PrepareAndExecute whatever
@@ -241,18 +261,10 @@ func Select(
 		columnTypes = append(columnTypes, columnType)
 	}
 	count := len(columns)
+	slots := make([]interface{}, count)
 	slotsPtrs := make([]interface{}, count)
-	for i, columnType := range columnTypes {
-		if columnType == "numeric(15, 2)" || columnType == "double precision" || columnType == "float" {
-			var numericFloat float64
-			slotsPtrs[i] = &numericFloat
-		} else if columnType == "integer" {
-			var numericInteger int64
-			slotsPtrs[i] = &numericInteger
-		} else {
-			var data interface{}
-			slotsPtrs[i] = &data
-		}
+	for i := range slots {
+		slotsPtrs[i] = &slots[i]
 	}
 
 	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
@@ -264,11 +276,69 @@ func Select(
 
 	for rows.Next() {
 		if err := rows.Scan(slotsPtrs...); err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 		row := map[string]interface{}{}
 		for i, key := range keys {
-			row[key] = slotsPtrs[i]
+			columnType := columnTypes[i]
+			if strings.Contains(columnType, "numeric") {
+				v, err := convert2Numeric(slots[i])
+				if v != nil && err == nil {
+					row[key] = *v
+				} else if err != nil {
+					log.Println("Algo va mal", err)
+				} else {
+					row[key] = nil
+				}
+			} else if columnType == "double precision" {
+				v := slots[i]
+				if v != nil {
+					d, ok := v.(float64)
+					if ok {
+						row[key] = d
+					} else {
+						v, err := convert2Numeric(slots[i])
+						if v != nil && err == nil {
+							row[key] = *v
+							log.Println("at", table, "turn", key, columnType, "into numeric")
+						} else if err != nil {
+							fmt.Println("Algo va mal", err)
+						}
+					}
+				} else {
+					row[key] = nil
+				}
+			} else if columnType == "integer" {
+				v := slots[i]
+				if v != nil {
+					d, ok := v.(int64)
+					if ok {
+						row[key] = d
+					} else {
+						v, err := convert2Numeric(slots[i])
+						if v != nil && err == nil {
+							row[key] = *v
+							log.Println("at", table, "turn", key, columnType, "into numeric")
+						} else if err != nil {
+							fmt.Println("Algo va mal", err)
+						}
+					}
+				} else {
+					row[key] = nil
+				}
+			} else {
+				if slots[i] != nil {
+					v, ok := slots[i].([]byte)
+					if ok {
+						row[key] = string(v)
+					} else {
+						row[key] = slots[i]
+					}
+				} else {
+					row[key] = nil
+				}
+			}
 		}
 		result = append(result, row)
 	}
