@@ -2,7 +2,6 @@ package dbbus
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -31,7 +30,7 @@ func convert2Numeric(v interface{}) (res *float64, err error) {
 			res = &c
 			err = nil
 		} else {
-			return nil, errors.New("Cannot convert interface{} to []byte")
+			return nil, fmt.Errorf("Cannot process %v", v)
 		}
 	}
 	return
@@ -276,7 +275,6 @@ func Select(
 
 	for rows.Next() {
 		if err := rows.Scan(slotsPtrs...); err != nil {
-			fmt.Println(err)
 			return nil, err
 		}
 		row := map[string]interface{}{}
@@ -287,7 +285,7 @@ func Select(
 				if v != nil && err == nil {
 					row[key] = *v
 				} else if err != nil {
-					log.Println("Algo va mal", err)
+					row[key] = err
 				} else {
 					row[key] = nil
 				}
@@ -303,7 +301,7 @@ func Select(
 							row[key] = *v
 							log.Println("at", table, "turn", key, columnType, "into numeric")
 						} else if err != nil {
-							fmt.Println("Algo va mal", err)
+							row[key] = err
 						}
 					}
 				} else {
@@ -321,7 +319,7 @@ func Select(
 							row[key] = *v
 							log.Println("at", table, "turn", key, columnType, "into numeric")
 						} else if err != nil {
-							fmt.Println("Algo va mal", err)
+							row[key] = err
 						}
 					}
 				} else {
