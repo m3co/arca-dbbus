@@ -180,6 +180,34 @@ func processOther(value interface{}, row map[string]interface{}, key string) err
 	return nil
 }
 
+func prepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
+	columns = []string{}
+	keys = []string{}
+	processColumn = []processCell{}
+	for column, columnType := range fieldMap {
+		tlColumnType := strings.ToLower(columnType)
+		columns = append(columns, fmt.Sprintf(`"%s"`, column))
+		keys = append(keys, column)
+		if strings.Contains(tlColumnType, "numeric") {
+			processColumn = append(processColumn, processNumeric)
+		} else if tlColumnType == "double precision" {
+			processColumn = append(processColumn, processDoublePrecision)
+		} else if tlColumnType == "integer" {
+			processColumn = append(processColumn, processInteger)
+		} else if tlColumnType == "boolean" ||
+			tlColumnType == "text" ||
+			tlColumnType == "date" ||
+			strings.Contains(tlColumnType, "character varying") ||
+			strings.Contains(tlColumnType, "timestamp with") ||
+			strings.Contains(tlColumnType, "t_") {
+			processColumn = append(processColumn, processOther)
+		} else {
+			err = fmt.Errorf("Cannot recognize the type of field %s", columnType)
+		}
+	}
+	return
+}
+
 // setupIDU whatever
 func setupIDU(
 	table string,

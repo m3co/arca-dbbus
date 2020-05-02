@@ -15,29 +15,9 @@ func Select(
 
 	var rows *sql.Rows
 	result := []map[string]interface{}{}
-	columns := []string{}
-	keys := []string{}
-	processColumn := []processCell{}
-	for column, columnType := range fieldMap {
-		tlColumnType := strings.ToLower(columnType)
-		columns = append(columns, fmt.Sprintf(`"%s"`, column))
-		keys = append(keys, column)
-		if strings.Contains(tlColumnType, "numeric") {
-			processColumn = append(processColumn, processNumeric)
-		} else if tlColumnType == "double precision" {
-			processColumn = append(processColumn, processDoublePrecision)
-		} else if tlColumnType == "integer" {
-			processColumn = append(processColumn, processInteger)
-		} else if tlColumnType == "boolean" ||
-			tlColumnType == "text" ||
-			tlColumnType == "date" ||
-			strings.Contains(tlColumnType, "character varying") ||
-			strings.Contains(tlColumnType, "timestamp with") ||
-			strings.Contains(tlColumnType, "t_") {
-			processColumn = append(processColumn, processOther)
-		} else {
-			return nil, fmt.Errorf("Cannot recognize the type of field %s", columnType)
-		}
+	columns, keys, processColumn, err := prepareSelectVariables(fieldMap)
+	if err != nil {
+		return nil, err
 	}
 	count := len(columns)
 	slots := make([]interface{}, count)
@@ -47,7 +27,7 @@ func Select(
 	}
 
 	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
-	rows, err := db.Query(query)
+	rows, err = db.Query(query)
 	if err != nil {
 		return nil, err
 	}
