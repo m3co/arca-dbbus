@@ -110,6 +110,76 @@ func generateReturning(pk []string) string {
 	return pks
 }
 
+func processNumeric(value interface{}, row map[string]interface{}, key string) error {
+	v, err := convert2Numeric(value)
+	if v != nil && err == nil {
+		row[key] = *v
+	} else if err != nil {
+		row[key] = err
+	} else {
+		row[key] = nil
+	}
+	return err
+}
+
+func processDoublePrecision(value interface{}, row map[string]interface{}, key string) error {
+	var e error = nil
+	if value != nil {
+		d, ok := value.(float64)
+		if ok {
+			row[key] = d
+		} else {
+			v, err := convert2Numeric(value)
+			if v != nil && err == nil {
+				row[key] = *v
+				e = fmt.Errorf("turn %s into numeric", key)
+			} else if err != nil {
+				row[key] = err
+				e = err
+			}
+		}
+	} else {
+		row[key] = nil
+	}
+	return e
+}
+
+func processInteger(value interface{}, row map[string]interface{}, key string) error {
+	var e error = nil
+	if value != nil {
+		d, ok := value.(int64)
+		if ok {
+			row[key] = d
+		} else {
+			v, err := convert2Numeric(value)
+			if v != nil && err == nil {
+				row[key] = *v
+				e = fmt.Errorf("turn %s into numeric", key)
+			} else if err != nil {
+				row[key] = err
+				e = err
+			}
+		}
+	} else {
+		row[key] = nil
+	}
+	return e
+}
+
+func processOther(value interface{}, row map[string]interface{}, key string) error {
+	if value != nil {
+		v, ok := value.([]byte)
+		if ok {
+			row[key] = string(v)
+		} else {
+			row[key] = value
+		}
+	} else {
+		row[key] = nil
+	}
+	return nil
+}
+
 // setupIDU whatever
 func setupIDU(
 	table string,

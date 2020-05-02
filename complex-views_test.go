@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	skipComplexViewsTests                   = true
 	srvCmplx                                *dbbus.Server
 	dbMaster, dbView12, dbView23, dbView123 *sql.DB
 	conn                                    net.Conn
@@ -198,6 +199,9 @@ func checkNotificationComplex(t *testing.T, notification *ResponseOrNotification
 }
 
 func Test_check_allDBs(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	srvCmplx, dbMaster, dbView12, dbView23, dbView123 = createSwarm(t)
 
 	srvCmplx.RegisterSourceIDU("Table1", Table1Map, dbMaster)
@@ -215,6 +219,9 @@ func Test_check_allDBs(t *testing.T) {
 }
 
 func Test_DBMaster_Table1_Insert(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -264,6 +271,9 @@ func Test_DBMaster_Table1_Insert(t *testing.T) {
 }
 
 func Test_DBMaster_Table1_Update(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -314,6 +324,9 @@ func Test_DBMaster_Table1_Update(t *testing.T) {
 }
 
 func Test_DBMaster_Table1_Delete(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -376,6 +389,9 @@ func Test_DBMaster_Table1_Delete(t *testing.T) {
 }
 
 func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -447,6 +463,9 @@ func Test_DBView12_Table1_Table2_Insert(t *testing.T) {
 }
 
 func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -518,6 +537,9 @@ func Test_DBView23_Table2_Table3_Insert(t *testing.T) {
 }
 
 func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -612,6 +634,9 @@ func Test_DBView123_Table1_Table2_Table3_Insert(t *testing.T) {
 }
 
 func Test_DBView12_Table1_Table2_Update(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -684,6 +709,9 @@ func Test_DBView12_Table1_Table2_Update(t *testing.T) {
 }
 
 func Test_DBView23_Table2_Table3_Update(t *testing.T) {
+	if skipComplexViewsTests {
+		t.Skip()
+	}
 	conn, err := net.Dial("tcp", srvCmplx.Address)
 	if err != nil {
 		t.Fatal(err)
