@@ -110,16 +110,17 @@ func generateReturning(pk []string) string {
 	return pks
 }
 
-func processNumeric(value interface{}, row map[string]interface{}, key string) error {
-	v, err := convert2Numeric(value)
-	if v != nil && err == nil {
+func processNumeric(value interface{}, row map[string]interface{}, key string) (err error) {
+	v, e := convert2Numeric(value)
+	if v != nil && e == nil {
 		row[key] = *v
-	} else if err != nil {
-		row[key] = err
+	} else if e != nil {
+		row[key] = e
+		err = fmt.Errorf("%s, key %s", e, key)
 	} else {
 		row[key] = nil
 	}
-	return err
+	return
 }
 
 func processDoublePrecision(value interface{}, row map[string]interface{}, key string) error {
