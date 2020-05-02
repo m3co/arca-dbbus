@@ -12,23 +12,15 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-func Test_SelectSearch_FieldMap(t *testing.T) {
-	// Estos son los casos a revisar
-	// string, 'c3'
-	// bool,   true
-	// int64,  6
-	// slice,  [49 53 54 46 50 50]
-	// struct, '2020-02-01 00:00:00 +0000 +0000'
-	// struct, '2020-02-01 16:17:18 +0000 +0000'
-	// struct, '2020-02-02 15:19:20 +0000 UTC'
+func checkType(t *testing.T, typeField, key string, value interface{}) {
 	row := map[string]interface{}{}
 	fieldMap := map[string]string{
-		"Field1": "text",
+		key: typeField,
 	}
 
-	expectedColumns := []string{`"Field1"`}
-	expectedKeys := []string{`Field1`}
-	expectedRow := map[string]interface{}{"Field1": "field1"}
+	expectedColumns := []string{fmt.Sprintf(`"%s"`, key)}
+	expectedKeys := []string{key}
+	expectedRow := map[string]interface{}{key: value}
 
 	columns, keys, processCells, err := dbbus.PrepareSelectVariables(fieldMap)
 	if err != nil {
@@ -40,12 +32,24 @@ func Test_SelectSearch_FieldMap(t *testing.T) {
 	if !cmp.Equal(keys, expectedKeys) {
 		t.Fatal(cmp.Diff(keys, expectedKeys))
 	}
-	if err := processCells[0]("field1", row, "Field1"); err != nil {
+	if err := processCells[0](value, row, key); err != nil {
 		t.Fatal(err)
 	}
 	if !cmp.Equal(row, expectedRow) {
 		t.Fatal(cmp.Diff(row, expectedRow))
 	}
+}
+
+func Test_SelectSearch_FieldMap(t *testing.T) {
+	checkType(t, "text", "Field1", "field 1")
+	checkType(t, "text", "Field1", nil)
+	checkType(t, "character varying(255)", "Field1", "field 1")
+	checkType(t, "boolean", "Field1", true)
+	checkType(t, "boolean", "Field1", nil)
+	checkType(t, "integer", "Field1", int64(33))
+	checkType(t, "integer", "Field1", nil)
+	checkType(t, "double precision", "Field1", float64(2.55))
+	checkType(t, "double precision", "Field1", nil)
 }
 
 func Test_SelectSearch_create_server(t *testing.T) {
