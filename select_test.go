@@ -12,6 +12,17 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
+func Test_SelectSearch_FieldMap(t *testing.T) {
+	// Estos son los casos a revisar
+	// string, 'c3'
+	// bool,   true
+	// int64,  6
+	// slice,  [49 53 54 46 50 50]
+	// struct, '2020-02-01 00:00:00 +0000 +0000'
+	// struct, '2020-02-01 16:17:18 +0000 +0000'
+	// struct, '2020-02-02 15:19:20 +0000 UTC'
+}
+
 func Test_SelectSearch_create_server(t *testing.T) {
 	connStrSS := ""
 	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {

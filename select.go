@@ -17,11 +17,27 @@ func Select(
 	result := []map[string]interface{}{}
 	columns := []string{}
 	keys := []string{}
-	columnTypes := []string{}
+	processColumn := []processCell{}
 	for column, columnType := range fieldMap {
+		tlColumnType := strings.ToLower(columnType)
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
 		keys = append(keys, column)
-		columnTypes = append(columnTypes, columnType)
+		if strings.Contains(tlColumnType, "numeric") {
+			processColumn = append(processColumn, processNumeric)
+		} else if tlColumnType == "double precision" {
+			processColumn = append(processColumn, processDoublePrecision)
+		} else if tlColumnType == "integer" {
+			processColumn = append(processColumn, processInteger)
+		} else if tlColumnType == "boolean" ||
+			tlColumnType == "text" ||
+			tlColumnType == "date" ||
+			strings.Contains(tlColumnType, "character varying") ||
+			strings.Contains(tlColumnType, "timestamp with") ||
+			strings.Contains(tlColumnType, "t_") {
+			processColumn = append(processColumn, processOther)
+		} else {
+			return nil, fmt.Errorf("Cannot recognize the type of field %s", columnType)
+		}
 	}
 	count := len(columns)
 	slots := make([]interface{}, count)
@@ -43,21 +59,8 @@ func Select(
 		}
 		row := map[string]interface{}{}
 		for i, key := range keys {
-			columnType := columnTypes[i]
-			if strings.Contains(columnType, "numeric") {
-				if err := processNumeric(slots[i], row, key); err != nil {
-					log.Println("At table", table, err, "it is", columnType)
-				}
-			} else if columnType == "double precision" {
-				if err := processDoublePrecision(slots[i], row, key); err != nil {
-					log.Println("At table", table, err, "it is", columnType)
-				}
-			} else if columnType == "integer" {
-				if err := processInteger(slots[i], row, key); err != nil {
-					log.Println("At table", table, err, "it is", columnType)
-				}
-			} else {
-				processOther(slots[i], row, key)
+			if err := processColumn[i](slots[i], row, key); err != nil {
+				log.Println(err)
 			}
 		}
 		result = append(result, row)
