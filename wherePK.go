@@ -23,7 +23,8 @@ func interfaceSlice(slice interface{}) []interface{} {
 // WherePK creates the string to use in the "Where" section of an SQL-query
 //
 // PK       - holds the object with the values to constructh the string query with.
-// fieldMap - describes the columns and their respective types (integer, varchar, text, boolean...).
+// fieldMap - describes the columns and their respective types:
+//              integer, varchar, text, boolean
 // keys     - indicates which columns from the fieldMap are considered primary keys.
 // values   - points to the array that holds the values to be rendered in the query
 // i        - an index for string-query-building purposes.

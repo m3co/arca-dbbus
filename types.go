@@ -69,6 +69,7 @@ type handlerIDU struct {
 }
 
 type fieldMap func() (map[string]string, []string)
+type processCell func(value interface{}, row map[string]interface{}, key string) error
 
 // Result shows if a request
 type Result struct {

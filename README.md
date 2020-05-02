@@ -65,3 +65,21 @@ interface Response {
     };
 }
 ```
+
+## Los tipos permitidos
+
+Resulta que en PostgreSQL existen tipos de datos correctamente definidos.
+[Tipos](https://www.postgresql.org/docs/10/datatype.html).
+
+En especial, vamos a utilizar [Numericos](https://www.postgresql.org/docs/10/datatype-numeric.html), [Caracteres](https://www.postgresql.org/docs/10/datatype-character.html), [Fechas](https://www.postgresql.org/docs/10/datatype-datetime.html), [Boolean](https://www.postgresql.org/docs/10/datatype-boolean.html), [Enums](https://www.postgresql.org/docs/10/datatype-enum.html).
+
+Es posible implementar en DB-BUS el procesamiento de todos los tipos existentes en PostgreSQL. Mas dicho objetivo no es necesario puesto que ARCA utiliza un juego de datos bastante limitado, el cual es:
+
+- [Character Varying, Text](https://www.postgresql.org/docs/10/datatype-character.html)
+- [Integer](https://www.postgresql.org/docs/10/datatype-numeric.html#DATATYPE-INT)
+- [Numeric](https://www.postgresql.org/docs/10/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL)
+- [Boolean](https://www.postgresql.org/docs/10/datatype-boolean.html)
+- [Date, Timestamp](https://www.postgresql.org/docs/10/datatype-datetime.html#DATATYPE-DATETIME-INPUT)
+- [Enums](https://www.postgresql.org/docs/10/datatype-enum.html)
+
+Por lo tanto, DB-BUS debe exponer los datos que está en capacidad de procesar a los entes interesados. En éste cáso sería exponerle ésa lista a Arca-Server.

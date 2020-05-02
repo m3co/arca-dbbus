@@ -3,7 +3,6 @@ package dbbus
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -111,240 +110,103 @@ func generateReturning(pk []string) string {
 	return pks
 }
 
-// Insert whatever
-func Insert(
-	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, pk []string, table string,
-) (*Result, error) {
-	header := []string{}
-	body := []string{}
-	values := []interface{}{}
-	row, ok := params["Row"]
-	if !ok || row == nil {
-		return nil, ErrorUndefinedRow
+func processNumeric(value interface{}, row map[string]interface{}, key string) error {
+	v, err := convert2Numeric(value)
+	if v != nil && err == nil {
+		row[key] = *v
+	} else if err != nil {
+		row[key] = err
+	} else {
+		row[key] = nil
 	}
-	Row, ok := row.(map[string]interface{})
-	if !ok {
-		return nil, ErrorMalformedRow
-	}
-	i := 0
-
-	for field, typefield := range fieldMap {
-		if value, ok := Row[field]; ok {
-			i++
-			header = append(header, fmt.Sprintf(`"%s"`, field))
-			body = append(body, fmt.Sprintf(`$%d::%s as "%s"`, i, typefield, field))
-			values = append(values, value)
-		}
-	}
-
-	if i > 0 {
-		queryPrepared := fmt.Sprintf(`insert into "%s"(%s) select %s %s;`,
-			table, strings.Join(header, ","), strings.Join(body, ","),
-			generateReturning(pk))
-
-		return PrepareAndExecute(db, pk, queryPrepared, values...)
-	}
-	return nil, ErrorZeroParamsInRow
+	return err
 }
 
-// Delete whatever
-func Delete(
-	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, keys []string, table string,
-) (*Result, error) {
-	values := make([]interface{}, 0)
-	var (
-		PK        map[string]interface{}
-		condition string
-		err       error
-	)
-	if value, ok := params["PK"]; ok {
-		PK, ok = value.(map[string]interface{})
-		if !ok {
-			return nil, ErrorMalformedPK
+func processDoublePrecision(value interface{}, row map[string]interface{}, key string) error {
+	var e error = nil
+	if value != nil {
+		d, ok := value.(float64)
+		if ok {
+			row[key] = d
+		} else {
+			v, err := convert2Numeric(value)
+			if v != nil && err == nil {
+				row[key] = *v
+				e = fmt.Errorf("turn %s into numeric", key)
+			} else if err != nil {
+				row[key] = err
+				e = err
+			}
 		}
 	} else {
-		return nil, ErrorUndefinedPK
+		row[key] = nil
 	}
-	condition, err = WherePK(PK, fieldMap, keys, &values, 0)
-	if err != nil {
-		return nil, err
-	}
-	queryPrepared := fmt.Sprintf(`delete from "%s" where %s %s;`,
-		table, condition, generateReturning(keys))
-
-	return PrepareAndExecute(db, keys, queryPrepared, values...)
+	return e
 }
 
-// Update whatever
-func Update(
-	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, keys []string, table string,
-) (*Result, error) {
-	body := []string{}
-	values := []interface{}{}
-	var (
-		Row, PK   map[string]interface{}
-		condition string
-		err       error
-	)
-
-	if value, ok := params["Row"]; ok {
-		Row, ok = value.(map[string]interface{})
-		if !ok {
-			return nil, ErrorMalformedRow
+func processInteger(value interface{}, row map[string]interface{}, key string) error {
+	var e error = nil
+	if value != nil {
+		d, ok := value.(int64)
+		if ok {
+			row[key] = d
+		} else {
+			v, err := convert2Numeric(value)
+			if v != nil && err == nil {
+				row[key] = *v
+				e = fmt.Errorf("turn %s into numeric", key)
+			} else if err != nil {
+				row[key] = err
+				e = err
+			}
 		}
 	} else {
-		return nil, ErrorUndefinedRow
+		row[key] = nil
 	}
-	i := 0
-	for field, typefield := range fieldMap {
-		if contains(keys, field) {
-			vfRow, ok := Row[field]
-			if !ok {
-				vfRow = nil
-			}
-			vfPK, ok := PK[field]
-			if !ok {
-				vfPK = nil
-			}
-			if (vfPK != nil && vfRow == nil) ||
-				(vfPK == nil && vfRow != nil) {
-
-			} else {
-				continue
-			}
-		}
-		if value, ok := Row[field]; ok {
-			i++
-			values = append(values, value)
-			body = append(body, fmt.Sprintf(`"%s"=$%d::%s`,
-				field, i, typefield))
-		}
-	}
-	if i == 0 {
-		return nil, ErrorZeroParamsInRow
-	}
-	if value, ok := params["PK"]; ok {
-		PK, ok = value.(map[string]interface{})
-		if !ok {
-			return nil, ErrorMalformedPK
-		}
-	} else {
-		return nil, ErrorUndefinedPK
-	}
-	condition, err = WherePK(PK, fieldMap, keys, &values, i)
-	if err != nil {
-		return nil, err
-	}
-	queryPrepared := fmt.Sprintf(`update "%s" set %s where %s %s;`,
-		table, strings.Join(body, ","), condition, generateReturning(keys))
-	return PrepareAndExecute(db, keys, queryPrepared, values...)
+	return e
 }
 
-// Select whatever
-func Select(
-	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, table string,
-) ([]map[string]interface{}, error) {
+func processOther(value interface{}, row map[string]interface{}, key string) error {
+	if value != nil {
+		v, ok := value.([]byte)
+		if ok {
+			row[key] = string(v)
+		} else {
+			row[key] = value
+		}
+	} else {
+		row[key] = nil
+	}
+	return nil
+}
 
-	var rows *sql.Rows
-	result := []map[string]interface{}{}
-	columns := []string{}
-	keys := []string{}
-	columnTypes := []string{}
+func prepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
+	columns = []string{}
+	keys = []string{}
+	processColumn = []processCell{}
 	for column, columnType := range fieldMap {
+		tlColumnType := strings.ToLower(columnType)
 		columns = append(columns, fmt.Sprintf(`"%s"`, column))
 		keys = append(keys, column)
-		columnTypes = append(columnTypes, columnType)
-	}
-	count := len(columns)
-	slots := make([]interface{}, count)
-	slotsPtrs := make([]interface{}, count)
-	for i := range slots {
-		slotsPtrs[i] = &slots[i]
-	}
-
-	query := fmt.Sprintf(`select %s from "%s"`, strings.Join(columns, ","), table)
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		if err := rows.Scan(slotsPtrs...); err != nil {
-			return nil, err
+		if strings.Contains(tlColumnType, "numeric") {
+			processColumn = append(processColumn, processNumeric)
+		} else if tlColumnType == "double precision" {
+			processColumn = append(processColumn, processDoublePrecision)
+		} else if tlColumnType == "integer" {
+			processColumn = append(processColumn, processInteger)
+		} else if tlColumnType == "boolean" ||
+			tlColumnType == "text" ||
+			tlColumnType == "date" ||
+			tlColumnType == "varchar" ||
+			strings.Contains(tlColumnType, "character varying") ||
+			strings.Contains(tlColumnType, "timestamp") ||
+			strings.Contains(tlColumnType, "t_") {
+			processColumn = append(processColumn, processOther)
+		} else {
+			err = fmt.Errorf("Cannot recognize the type of field %s", columnType)
 		}
-		row := map[string]interface{}{}
-		for i, key := range keys {
-			columnType := columnTypes[i]
-			if strings.Contains(columnType, "numeric") {
-				v, err := convert2Numeric(slots[i])
-				if v != nil && err == nil {
-					row[key] = *v
-				} else if err != nil {
-					row[key] = err
-				} else {
-					row[key] = nil
-				}
-			} else if columnType == "double precision" {
-				v := slots[i]
-				if v != nil {
-					d, ok := v.(float64)
-					if ok {
-						row[key] = d
-					} else {
-						v, err := convert2Numeric(slots[i])
-						if v != nil && err == nil {
-							row[key] = *v
-							log.Println("at", table, "turn", key, columnType, "into numeric")
-						} else if err != nil {
-							row[key] = err
-						}
-					}
-				} else {
-					row[key] = nil
-				}
-			} else if columnType == "integer" {
-				v := slots[i]
-				if v != nil {
-					d, ok := v.(int64)
-					if ok {
-						row[key] = d
-					} else {
-						v, err := convert2Numeric(slots[i])
-						if v != nil && err == nil {
-							row[key] = *v
-							log.Println("at", table, "turn", key, columnType, "into numeric")
-						} else if err != nil {
-							row[key] = err
-						}
-					}
-				} else {
-					row[key] = nil
-				}
-			} else {
-				if slots[i] != nil {
-					v, ok := slots[i].([]byte)
-					if ok {
-						row[key] = string(v)
-					} else {
-						row[key] = slots[i]
-					}
-				} else {
-					row[key] = nil
-				}
-			}
-		}
-		result = append(result, row)
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return
 }
 
 // setupIDU whatever
@@ -396,45 +258,4 @@ func setupIDU(
 		}
 	}
 	return handlers
-}
-
-// RegisterSourceIDU whatever
-func (server *Server) RegisterSourceIDU(
-	source string,
-	getFieldMap fieldMap,
-	db *sql.DB,
-) {
-	// IDU(Table) :: Public
-	handlers := setupIDU(source, getFieldMap)
-	server.RegisterSource("Insert", source, handlers.Insert(db))
-	server.RegisterSource("Delete", source, handlers.Delete(db))
-	server.RegisterSource("Update", source, handlers.Update(db))
-	server.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
-		return func(request *jsonrpc.Request) (interface{}, error) {
-			var (
-				params map[string]interface{}
-				ok     bool
-			)
-			fields, _ := getFieldMap()
-
-			if request.Params != nil {
-				params, ok = request.Params.(map[string]interface{})
-				if ok {
-				}
-			}
-			return Select(db, params, fields, source)
-		}
-	}(db))
-}
-
-// RegisterTargetIDU whatever
-func (server *Server) RegisterTargetIDU(
-	target string,
-	getFieldMap fieldMap,
-) {
-	// idu(_Table) :: Private
-	handlers := setupIDU(target, getFieldMap)
-	server.RegisterTarget("insert", target, handlers.Insert)
-	server.RegisterTarget("delete", target, handlers.Delete)
-	server.RegisterTarget("update", target, handlers.Update)
 }

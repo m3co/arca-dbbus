@@ -2,6 +2,7 @@ package dbbus
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -23,6 +24,63 @@ func (s *Server) RegisterTarget(
 func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 	s.dbs = append(s.dbs, db)
 	return s.setupListenNotify(connStr)
+}
+
+// RegisterSourceIDU whatever
+func (s *Server) RegisterSourceIDU(
+	source string,
+	getFieldMap fieldMap,
+	db *sql.DB,
+) {
+	// IDU(Table) :: Public
+	handlers := setupIDU(source, getFieldMap)
+	s.rpc.RegisterSource("Insert", source, handlers.Insert(db))
+	s.rpc.RegisterSource("Delete", source, handlers.Delete(db))
+	s.rpc.RegisterSource("Update", source, handlers.Update(db))
+	s.rpc.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var (
+				params map[string]interface{}
+				ok     bool
+			)
+			fields, _ := getFieldMap()
+
+			if request.Params != nil {
+				params, ok = request.Params.(map[string]interface{})
+				if ok {
+				}
+			}
+			return Select(db, params, fields, source)
+		}
+	}(db))
+}
+
+// RegisterTargetIDU whatever
+func (s *Server) RegisterTargetIDU(
+	target string,
+	getFieldMap fieldMap,
+) {
+	// idu(_Table) :: Private
+	handlers := setupIDU(target, getFieldMap)
+	s.rpc.RegisterTarget("insert", target, handlers.Insert)
+	s.rpc.RegisterTarget("delete", target, handlers.Delete)
+	s.rpc.RegisterTarget("update", target, handlers.Update)
+}
+
+// CheckFieldMap test the fieldMap dictionary against the implemented by DB-BUS fields
+func (s *Server) CheckFieldMap(f fieldMap) error {
+	fm, keys := f()
+	_, _, _, err := prepareSelectVariables(fm)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		_, ok := fm[key]
+		if !ok {
+			return fmt.Errorf("Key '%s' not found in the fieldMap", key)
+		}
+	}
+	return err
 }
 
 // Close whatever

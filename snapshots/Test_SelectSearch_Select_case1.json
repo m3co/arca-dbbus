@@ -1,0 +1,120 @@
+{
+  "Context": {
+    "Source": "Table2"
+  },
+  "Error": null,
+  "ID": "jsonrpc-mock-id-sss-select-case-1",
+  "Method": "Select",
+  "Result": [
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 1
+    },
+    {
+      "Field1": "Character Varying 255",
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 2
+    },
+    {
+      "Field1": null,
+      "Field2": "Text",
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 3
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": 156.22,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 4
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": true,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 5
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": false,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 6
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": "2020-02-01T00:00:00Z",
+      "Field6": null,
+      "Field7": null,
+      "Field8": null,
+      "ID": 7
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": "2020-02-01T16:17:18Z",
+      "Field7": null,
+      "Field8": null,
+      "ID": 8
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": "2020-02-02T15:19:20Z",
+      "Field8": null,
+      "ID": 9
+    },
+    {
+      "Field1": null,
+      "Field2": null,
+      "Field3": null,
+      "Field4": null,
+      "Field5": null,
+      "Field6": null,
+      "Field7": null,
+      "Field8": "T-ENUM",
+      "ID": 10
+    }
+  ]
+}
