@@ -12,7 +12,7 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-func checkType(t *testing.T, typeField, key string, value interface{}) {
+func checkType(t *testing.T, typeField, key string, value, actualValue interface{}) {
 	row := map[string]interface{}{}
 	fieldMap := map[string]string{
 		key: typeField,
@@ -20,7 +20,7 @@ func checkType(t *testing.T, typeField, key string, value interface{}) {
 
 	expectedColumns := []string{fmt.Sprintf(`"%s"`, key)}
 	expectedKeys := []string{key}
-	expectedRow := map[string]interface{}{key: value}
+	expectedRow := map[string]interface{}{key: actualValue}
 
 	columns, keys, processCells, err := dbbus.PrepareSelectVariables(fieldMap)
 	if err != nil {
@@ -41,15 +41,36 @@ func checkType(t *testing.T, typeField, key string, value interface{}) {
 }
 
 func Test_SelectSearch_FieldMap(t *testing.T) {
-	checkType(t, "text", "Field1", "field 1")
-	checkType(t, "text", "Field1", nil)
-	checkType(t, "character varying(255)", "Field1", "field 1")
-	checkType(t, "boolean", "Field1", true)
-	checkType(t, "boolean", "Field1", nil)
-	checkType(t, "integer", "Field1", int64(33))
-	checkType(t, "integer", "Field1", nil)
-	checkType(t, "double precision", "Field1", float64(2.55))
-	checkType(t, "double precision", "Field1", nil)
+	// Estos son los casos a revisar
+	// struct, '2020-02-01 00:00:00 +0000 +0000'
+	// struct, '2020-02-01 16:17:18 +0000 +0000'
+	// struct, '2020-02-02 15:19:20 +0000 UTC'
+	checkType(t, "text", "Field1",
+		"field 1",
+		"field 1")
+	checkType(t, "text", "Field1", nil, nil)
+	checkType(t, "character varying(255)", "Field1",
+		"field 1",
+		"field 1")
+	checkType(t, "boolean", "Field1",
+		true,
+		true)
+	checkType(t, "boolean", "Field1", nil, nil)
+	checkType(t, "integer", "Field1",
+		int64(33),
+		int64(33))
+	checkType(t, "integer", "Field1", nil, nil)
+	checkType(t, "double precision", "Field1",
+		float64(2.55),
+		float64(2.55))
+	checkType(t, "double precision", "Field1", nil, nil)
+	checkType(t, "numeric(15,2)", "Field1",
+		[]byte{49, 53, 54, 46, 50, 50},
+		float64(156.22))
+	checkType(t, "numeric(15,2)", "Field1", nil, nil)
+	checkType(t, "t_enum", "Field1",
+		[]byte{49, 53, 54, 46, 50, 50},
+		"156.22")
 }
 
 func Test_SelectSearch_create_server(t *testing.T) {
