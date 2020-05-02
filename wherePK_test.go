@@ -27,6 +27,20 @@ func Table1SSMap() (map[string]string, []string) {
 	}, []string{"ID"}
 }
 
+func Table2SSMap() (map[string]string, []string) {
+	return map[string]string{
+		"ID":     "integer",
+		"Field1": "character varying(255)",
+		"Field2": "text",
+		"Field3": "numeric(15,2)",
+		"Field4": "boolean",
+		"Field5": "date",
+		"Field6": "timestamp without time zone",
+		"Field7": "timestamp with time zone",
+		"Field8": "t_enum",
+	}, []string{"ID"}
+}
+
 type Table1SS struct {
 	ID     int64
 	Field1 *string
@@ -305,44 +319,6 @@ func Test_wherePK_result_case14(t *testing.T) {
 	} else {
 		t.Fatal("Expecting ErrorKeyNotInFieldMap")
 	}
-}
-
-func Test_SelectSearch_create_server(t *testing.T) {
-	connStrSS := ""
-	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
-		db.Close()
-		t.Fatal(err)
-		return
-	} else {
-		dbSS = db
-		connStrSS = connStr
-	}
-
-	srv := &dbbus.Server{Address: ":22347"}
-	started := make(chan bool)
-
-	go func() {
-		if err := srv.Start(started); err != nil {
-			t.Error(err)
-		}
-	}()
-
-	if <-started != true {
-		dbSS.Close()
-		srv.Close()
-		t.Fatal("Unexpected error")
-		return
-	}
-
-	srvSS = srv
-	if err := srvSS.RegisterDB(connStrSS, dbSS); err != nil {
-		dbSS.Close()
-		srv.Close()
-		t.Fatal(err)
-		return
-	}
-
-	srvSS.RegisterSourceIDU("Table1", Table1SSMap, dbSS)
 }
 
 func Test_SelectSearch_Select(t *testing.T) {
