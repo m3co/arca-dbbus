@@ -25,6 +25,47 @@ func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 	return s.setupListenNotify(connStr)
 }
 
+// RegisterSourceIDU whatever
+func (s *Server) RegisterSourceIDU(
+	source string,
+	getFieldMap fieldMap,
+	db *sql.DB,
+) {
+	// IDU(Table) :: Public
+	handlers := setupIDU(source, getFieldMap)
+	s.rpc.RegisterSource("Insert", source, handlers.Insert(db))
+	s.rpc.RegisterSource("Delete", source, handlers.Delete(db))
+	s.rpc.RegisterSource("Update", source, handlers.Update(db))
+	s.rpc.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var (
+				params map[string]interface{}
+				ok     bool
+			)
+			fields, _ := getFieldMap()
+
+			if request.Params != nil {
+				params, ok = request.Params.(map[string]interface{})
+				if ok {
+				}
+			}
+			return Select(db, params, fields, source)
+		}
+	}(db))
+}
+
+// RegisterTargetIDU whatever
+func (s *Server) RegisterTargetIDU(
+	target string,
+	getFieldMap fieldMap,
+) {
+	// idu(_Table) :: Private
+	handlers := setupIDU(target, getFieldMap)
+	s.rpc.RegisterTarget("insert", target, handlers.Insert)
+	s.rpc.RegisterTarget("delete", target, handlers.Delete)
+	s.rpc.RegisterTarget("update", target, handlers.Update)
+}
+
 // Close whatever
 func (s *Server) Close() error {
 	if s.rpc != nil {
