@@ -42,10 +42,6 @@ func checkType(t *testing.T, typeField, key string, value, actualValue interface
 }
 
 func Test_SelectSearch_FieldMap(t *testing.T) {
-	// Estos son los casos a revisar
-	// struct, '2020-02-01 00:00:00 +0000 +0000'
-	// struct, '2020-02-01 16:17:18 +0000 +0000'
-	// struct, '2020-02-02 15:19:20 +0000 UTC'
 	checkType(t, "text", "Field1",
 		"field 1",
 		"field 1")
@@ -72,11 +68,10 @@ func Test_SelectSearch_FieldMap(t *testing.T) {
 	checkType(t, "t_enum", "Field1",
 		[]byte{49, 53, 54, 46, 50, 50},
 		"156.22")
-	v1, _ := time.Parse(time.RFC3339, "2020-02-01T00:00:00Z")
-	checkType(t, "date", "Field1", v1, v1)
-	v2, _ := time.Parse(time.RFC3339, "2020-02-01T16:17:18Z")
-	checkType(t, "timestamp without time zone", "Field1", v2, v2)
-	checkType(t, "timestamp", "Field1", v2, v2)
+	v, _ := time.Parse(time.RFC3339, "2020-02-01T16:17:18Z")
+	checkType(t, "date", "Field1", v, v)
+	checkType(t, "timestamp without time zone", "Field1", v, v)
+	checkType(t, "timestamp", "Field1", v, v)
 }
 
 func Test_SelectSearch_create_server(t *testing.T) {
