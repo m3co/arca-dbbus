@@ -110,17 +110,18 @@ func generateReturning(pk []string) string {
 	return pks
 }
 
-func processNumeric(value interface{}, row map[string]interface{}, key string) (err error) {
-	v, e := convert2Numeric(value)
-	if v != nil && e == nil {
+func processNumeric(value interface{}, row map[string]interface{}, key string) error {
+	var e error = nil
+	v, err := convert2Numeric(value)
+	if v != nil && err == nil {
 		row[key] = *v
-	} else if e != nil {
-		row[key] = e
-		err = fmt.Errorf("%s, key %s", e, key)
+	} else if err != nil {
+		row[key] = err
+		e = fmt.Errorf("%s, key %s", err, key)
 	} else {
 		row[key] = nil
 	}
-	return
+	return e
 }
 
 func processDoublePrecision(value interface{}, row map[string]interface{}, key string) error {
@@ -136,7 +137,7 @@ func processDoublePrecision(value interface{}, row map[string]interface{}, key s
 				e = fmt.Errorf("turn %s into numeric", key)
 			} else if err != nil {
 				row[key] = err
-				e = err
+				e = fmt.Errorf("%s, key %s", err, key)
 			}
 		}
 	} else {
@@ -158,7 +159,7 @@ func processInteger(value interface{}, row map[string]interface{}, key string) e
 				e = fmt.Errorf("turn %s into numeric", key)
 			} else if err != nil {
 				row[key] = err
-				e = err
+				e = fmt.Errorf("%s, key %s", err, key)
 			}
 		}
 	} else {
