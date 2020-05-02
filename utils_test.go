@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"testing"
@@ -646,4 +647,16 @@ func showTable3(t *testing.T, db *sql.DB) error {
 		return err
 	}
 	return nil
+}
+
+func getExpected(t *testing.T) (map[string]interface{}, error) {
+	expected := map[string]interface{}{}
+	res, err := ioutil.ReadFile(fmt.Sprintf("snapshots/%s.json", t.Name()))
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(res, &expected); err != nil {
+		return nil, err
+	}
+	return expected, nil
 }
