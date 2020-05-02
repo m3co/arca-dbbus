@@ -3,6 +3,7 @@ package dbbus_test
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"net"
 	"testing"
 
@@ -82,6 +83,12 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 		return
 	}
 	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
 		t.Fatal(cmp.Diff(response, expected))
 	}
 }

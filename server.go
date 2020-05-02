@@ -66,6 +66,11 @@ func (s *Server) RegisterTargetIDU(
 	s.rpc.RegisterTarget("update", target, handlers.Update)
 }
 
+// CheckFieldMap test the fieldMap dictionary against the implemented by DB-BUS fields
+func (s *Server) CheckFieldMap(f fieldMap) error {
+	return nil
+}
+
 // Close whatever
 func (s *Server) Close() error {
 	if s.rpc != nil {
