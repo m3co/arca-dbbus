@@ -40,7 +40,7 @@ func Select(
 		row := map[string]interface{}{}
 		for i, key := range keys {
 			if err := processColumn[i](slots[i], row, key); err != nil {
-				log.Println(err)
+				log.Println(err, "at", table)
 			}
 		}
 		result = append(result, row)
