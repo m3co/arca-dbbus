@@ -180,7 +180,8 @@ func processOther(value interface{}, row map[string]interface{}, key string) err
 	return nil
 }
 
-func prepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
+// PrepareSelectVariables is a thing for making possible the Select action
+func PrepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
 	columns = []string{}
 	keys = []string{}
 	processColumn = []processCell{}

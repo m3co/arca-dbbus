@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	skipComplexViewsTests                   = false
+	skipComplexViewsTests                   = true
 	srvCmplx                                *dbbus.Server
 	dbMaster, dbView12, dbView23, dbView123 *sql.DB
 	conn                                    net.Conn

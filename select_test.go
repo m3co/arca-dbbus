@@ -21,6 +21,31 @@ func Test_SelectSearch_FieldMap(t *testing.T) {
 	// struct, '2020-02-01 00:00:00 +0000 +0000'
 	// struct, '2020-02-01 16:17:18 +0000 +0000'
 	// struct, '2020-02-02 15:19:20 +0000 UTC'
+	row := map[string]interface{}{}
+	fieldMap := map[string]string{
+		"Field1": "text",
+	}
+
+	expectedColumns := []string{`"Field1"`}
+	expectedKeys := []string{`Field1`}
+	expectedRow := map[string]interface{}{"Field1": "field1"}
+
+	columns, keys, processCells, err := dbbus.PrepareSelectVariables(fieldMap)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(columns, expectedColumns) {
+		t.Fatal(cmp.Diff(columns, expectedColumns))
+	}
+	if !cmp.Equal(keys, expectedKeys) {
+		t.Fatal(cmp.Diff(keys, expectedKeys))
+	}
+	if err := processCells[0]("field1", row, "Field1"); err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(row, expectedRow) {
+		t.Fatal(cmp.Diff(row, expectedRow))
+	}
 }
 
 func Test_SelectSearch_create_server(t *testing.T) {
