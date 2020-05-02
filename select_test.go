@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	dbbus "github.com/m3co/arca-dbbus"
@@ -71,6 +72,11 @@ func Test_SelectSearch_FieldMap(t *testing.T) {
 	checkType(t, "t_enum", "Field1",
 		[]byte{49, 53, 54, 46, 50, 50},
 		"156.22")
+	v1, _ := time.Parse(time.RFC3339, "2020-02-01T00:00:00Z")
+	checkType(t, "date", "Field1", v1, v1)
+	v2, _ := time.Parse(time.RFC3339, "2020-02-01T16:17:18Z")
+	checkType(t, "timestamp without time zone", "Field1", v2, v2)
+	checkType(t, "timestamp", "Field1", v2, v2)
 }
 
 func Test_SelectSearch_create_server(t *testing.T) {

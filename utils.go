@@ -199,7 +199,7 @@ func PrepareSelectVariables(fieldMap map[string]string) (columns, keys []string,
 			tlColumnType == "text" ||
 			tlColumnType == "date" ||
 			strings.Contains(tlColumnType, "character varying") ||
-			strings.Contains(tlColumnType, "timestamp with") ||
+			strings.Contains(tlColumnType, "timestamp") ||
 			strings.Contains(tlColumnType, "t_") {
 			processColumn = append(processColumn, processOther)
 		} else {
