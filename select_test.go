@@ -3,10 +3,10 @@ package dbbus_test
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"net"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	dbbus "github.com/m3co/arca-dbbus"
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
@@ -80,7 +80,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 		"Error":   nil,
 		"ID":      "jsonrpc-mock-id-sss-select-case-1",
 		"Method":  "Select",
-		"Result": []map[string]interface{}{
+		"Result": []interface{}{
 			map[string]interface{}{
 				"Field1": nil,
 				"Field2": nil,
@@ -90,7 +90,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     1,
+				"ID":     float64(1),
 			},
 			map[string]interface{}{
 				"Field1": "Character Varying 255",
@@ -101,7 +101,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     2,
+				"ID":     float64(2),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -112,7 +112,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     3,
+				"ID":     float64(3),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -123,7 +123,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     4,
+				"ID":     float64(4),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -134,7 +134,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     5,
+				"ID":     float64(5),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -145,7 +145,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     6,
+				"ID":     float64(6),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -156,7 +156,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     7,
+				"ID":     float64(7),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -167,7 +167,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": "2020-02-01T16:17:18Z",
 				"Field7": nil,
 				"Field8": nil,
-				"ID":     8,
+				"ID":     float64(8),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -178,7 +178,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": "2020-02-02T15:19:20Z",
 				"Field8": nil,
-				"ID":     9,
+				"ID":     float64(9),
 			},
 			map[string]interface{}{
 				"Field1": nil,
@@ -189,15 +189,11 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 				"Field6": nil,
 				"Field7": nil,
 				"Field8": "T-ENUM",
-				"ID":     10,
+				"ID":     float64(10),
 			},
 		},
 	}
-
-	actualStr := fmt.Sprintf("%v", response)
-	expectStr := fmt.Sprintf("%v", expected)
-
-	if expectStr != actualStr {
-		t.Fatal("expected doesn't match actual")
+	if !cmp.Equal(response, expected) {
+		t.Fatal(cmp.Diff(response, expected))
 	}
 }
