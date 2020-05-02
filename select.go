@@ -15,7 +15,7 @@ func Select(
 
 	var rows *sql.Rows
 	result := []map[string]interface{}{}
-	columns, keys, processColumn, err := PrepareSelectVariables(fieldMap)
+	columns, keys, processColumn, err := prepareSelectVariables(fieldMap)
 	if err != nil {
 		return nil, err
 	}

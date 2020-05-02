@@ -2,6 +2,7 @@ package dbbus
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	jsonrpc "github.com/m3co/arca-jsonrpc"
@@ -68,7 +69,18 @@ func (s *Server) RegisterTargetIDU(
 
 // CheckFieldMap test the fieldMap dictionary against the implemented by DB-BUS fields
 func (s *Server) CheckFieldMap(f fieldMap) error {
-	return nil
+	fm, keys := f()
+	_, _, _, err := prepareSelectVariables(fm)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		_, ok := fm[key]
+		if !ok {
+			return fmt.Errorf("Key '%s' not found in the fieldMap", key)
+		}
+	}
+	return err
 }
 
 // Close whatever

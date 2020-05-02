@@ -180,8 +180,7 @@ func processOther(value interface{}, row map[string]interface{}, key string) err
 	return nil
 }
 
-// PrepareSelectVariables is a thing for making possible the Select action
-func PrepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
+func prepareSelectVariables(fieldMap map[string]string) (columns, keys []string, processColumn []processCell, err error) {
 	columns = []string{}
 	keys = []string{}
 	processColumn = []processCell{}
@@ -198,6 +197,7 @@ func PrepareSelectVariables(fieldMap map[string]string) (columns, keys []string,
 		} else if tlColumnType == "boolean" ||
 			tlColumnType == "text" ||
 			tlColumnType == "date" ||
+			tlColumnType == "varchar" ||
 			strings.Contains(tlColumnType, "character varying") ||
 			strings.Contains(tlColumnType, "timestamp") ||
 			strings.Contains(tlColumnType, "t_") {
