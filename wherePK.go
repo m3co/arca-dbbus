@@ -107,7 +107,6 @@ func WherePK(
 						}
 					} else if t == reflect.String {
 						str, ok := value.(string)
-						fmt.Println(str, "TESTING IT")
 						if ok {
 							hasStart := false
 							if str[:1] == "%" {

@@ -23,7 +23,9 @@ interface Request {
             Key        : String | null;
             Description: String | null;
             ...
-        }
+        };
+        Limit?: Number;
+        Offset?: Number;
     }
 }
 ```
@@ -34,7 +36,7 @@ interface Request {
 - `Insert` solo requiere de `Row`
 - `Delete` solo requiere de `PK`
 - `Update` requiere de `Row` y de `PK`
-- `Select` requiere de `PK`
+- `Search` requiere de `PK`
 
 ### Responses
 

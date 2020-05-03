@@ -1,0 +1,52 @@
+{
+  "Context": {
+    "Source": "Table1"
+  },
+  "Error": null,
+  "ID": "jsonrpc-mock-id-sss-select-case-5",
+  "Method": "Search",
+  "Result": [
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search1",
+      "Field4": null,
+      "ID": 7
+    },
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search2",
+      "Field4": null,
+      "ID": 8
+    },
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search3",
+      "Field4": null,
+      "ID": 9
+    },
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search4",
+      "Field4": null,
+      "ID": 10
+    },
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search5",
+      "Field4": null,
+      "ID": 11
+    },
+    {
+      "Field1": "",
+      "Field2": "",
+      "Field3": "search6",
+      "Field4": null,
+      "ID": 12
+    }
+  ]
+}
