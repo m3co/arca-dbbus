@@ -47,7 +47,7 @@ func (s *Server) RegisterSourceIDU(
 					params = Params
 				}
 			}
-			return Select(db, params, fields, source)
+			return Select(db, params, fields, source, false)
 		}
 	}(db))
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
@@ -60,7 +60,13 @@ func (s *Server) RegisterSourceIDU(
 					params = Params
 				}
 			}
-			return Select(db, params, fields, source)
+			if params == nil {
+				return nil, ErrorUndefinedPK
+			}
+			if _, ok := params["Limit"]; !ok {
+				params["Limit"] = float64(6)
+			}
+			return Select(db, params, fields, source, true)
 		}
 	}(db))
 }
