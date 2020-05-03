@@ -1,7 +1,7 @@
 
 # arca-DB-bus
 
-Aqui tenemos una herramienta interna que permite hacer `IDUS`. _IDUS_ son las iniciales de las acciones _Insert_, _Delete_, _Update_, _Select_. Es altamente probable que ya existan cientos de bibliotecas que administran dichas acciones. Pero, teniendo en cuenta que es Arca, entonces...
+Aqui tenemos una herramienta interna que permite hacer `SIDUS`. _SIDUS_ son las iniciales de las acciones _Select_, _Insert_, _Delete_, _Update_, _Search_. Es altamente probable que ya existan cientos de bibliotecas que administran dichas acciones. Pero, teniendo en cuenta que es Arca, entonces...
 
 ## Estructura de las acciones
 
@@ -12,7 +12,7 @@ El _request_ se conforma de los siguientes campos (con valores de ejemplo):
 ```ts
 interface Request {
     ID    : uuid4();
-    Method: "Insert" | "Delete" | "Update" | "Select";
+    Method: "Select" | "Insert" | "Delete" | "Update" | "Search";
     Params: {
         PK?: {
             ID : Number;
@@ -28,12 +28,13 @@ interface Request {
 }
 ```
 
-`IDUS` utiliza solamente `PK` y `Row` en conjunto para procesar la accion correspondiente. Al analizar los casos particulares, se restalta que:
+`SIDUS` utiliza solamente `PK` y `Row` en conjunto para procesar la accion correspondiente. Al analizar los casos particulares, se restalta que:
 
+- `Select` es opcional `PK`
 - `Insert` solo requiere de `Row`
 - `Delete` solo requiere de `PK`
 - `Update` requiere de `Row` y de `PK`
-- `Select` es opcional `PK`
+- `Select` requiere de `PK`
 
 ### Responses
 
@@ -54,7 +55,7 @@ interface Response {
 }
 ```
 
-Si no se indica el parametro _PK_ entonces se ejecuta la _query_ retornando entonces
+Si no se indica el parametro _PK_ entonces se ejecuta la _query_ retornando
 
 ```ts
 interface Response {
@@ -65,6 +66,8 @@ interface Response {
     };
 }
 ```
+
+Nótese la diferencia de ésta respuesta contra la respuesta anterior. `PK` no está indicado. (Éso aún está por revisar).
 
 ## Los tipos permitidos
 
@@ -83,3 +86,49 @@ Es posible implementar en DB-BUS el procesamiento de todos los tipos existentes 
 - [Enums](https://www.postgresql.org/docs/10/datatype-enum.html)
 
 Por lo tanto, DB-BUS debe exponer los datos que está en capacidad de procesar a los entes interesados. En éste cáso sería exponerle ésa lista a Arca-Server.
+
+## PK
+
+Éste parámetro se torna en la clausula `where`. `PK` es un objeto que transforma su contenido en una expresion booleana utilizando sólamente dos operadores: `and` y `or`.
+
+Ejemplo 1:
+
+```ts
+// PK =
+{
+    "Field1": "Value1",
+    "Field2": "Value2",
+}
+```
+
+Su resultado sería:
+`where "Field1"="Value1" and "Field2"="Value2"`.
+
+
+Ejemplo 2:
+
+```ts
+// PK =
+{
+    "Field1": ["ValueA", "ValueB"],
+    "Field2": "Value2",
+}
+```
+
+Su resultado sería:
+`where ("Field1"="ValueA" or "Field1"="ValueB") and "Field2"="Value2"`.
+
+
+Para los booleanos y nulls, tenémos,
+Ejemplo 3:
+
+```ts
+// PK =
+{
+    "Field1": true,
+    "Field2": null,
+}
+```
+
+Su resultado sería:
+`where "Field1" is true and "Field2" is null`.

@@ -39,15 +39,12 @@ func (s *Server) RegisterSourceIDU(
 	s.rpc.RegisterSource("Update", source, handlers.Update(db))
 	s.rpc.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
-			var (
-				params map[string]interface{}
-				ok     bool
-			)
+			var params map[string]interface{}
 			fields, _ := getFieldMap()
-
 			if request.Params != nil {
-				params, ok = request.Params.(map[string]interface{})
+				Params, ok := request.Params.(map[string]interface{})
 				if ok {
+					params = Params
 				}
 			}
 			return Select(db, params, fields, source)
