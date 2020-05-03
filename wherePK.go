@@ -105,6 +105,26 @@ func WherePK(
 						} else {
 							return "", ErrorCastToBool
 						}
+					} else if t == reflect.String {
+						str, ok := value.(string)
+						if ok {
+							hasEnd := false
+							if str[len(str)-1:] == "%" {
+								hasEnd = true
+								str = str[:len(str)-1]
+							}
+							j++
+							if hasEnd {
+								*values = append(*values, str)
+								likeEndsWith := fmt.Sprintf(`"%s" like $%d::%s`,
+									field, i+j, typefield) + " || '%'"
+								condition = append(condition, likeEndsWith)
+							} else {
+								*values = append(*values, value)
+								condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+									field, i+j, typefield))
+							}
+						}
 					} else {
 						j++
 						*values = append(*values, value)

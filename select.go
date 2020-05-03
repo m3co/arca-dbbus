@@ -27,11 +27,10 @@ func Select(
 	if ok {
 		pk, ok := PK.(map[string]interface{})
 		if ok {
-			if Condition, err := WherePK(pk, fieldMap, keys, &values, 0); err != nil {
+			if condition, err = WherePK(pk, fieldMap, keys, &values, 0); err != nil {
 				return nil, err
-			} else {
-				condition = fmt.Sprintf("where %s", Condition)
 			}
+			condition = fmt.Sprintf("where %s", condition)
 		}
 	}
 

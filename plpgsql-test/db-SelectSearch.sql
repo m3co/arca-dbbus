@@ -18,7 +18,7 @@ insert into "Table1"("Field1", "Field2", "Field3", "Field4") values
 ('a3', 'ab1', null, false),
 ('a4', 'bc2', 'c2', null),
 ('a5', 'bc2', null, null),
-('a6', 'bc2', 'c3', true);
+('a6', 'bc3', 'c3', true);
 
 create type t_enum as enum (
   'T-ENUM');

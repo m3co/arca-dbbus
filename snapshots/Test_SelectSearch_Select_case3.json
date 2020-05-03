@@ -1,0 +1,31 @@
+{
+  "Context": {
+    "Source": "Table1"
+  },
+  "Error": null,
+  "ID": "jsonrpc-mock-id-sss-select-case-2",
+  "Method": "Select",
+  "Result": [
+    {
+      "Field1": "a4",
+      "Field2": "bc2",
+      "Field3": "c2",
+      "Field4": null,
+      "ID": 4
+    },
+    {
+      "Field1": "a5",
+      "Field2": "bc2",
+      "Field3": null,
+      "Field4": null,
+      "ID": 5
+    },
+    {
+      "Field1": "a6",
+      "Field2": "bc3",
+      "Field3": "c3",
+      "Field4": true,
+      "ID": 6
+    }
+  ]
+}
