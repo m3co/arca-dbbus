@@ -50,6 +50,19 @@ func (s *Server) RegisterSourceIDU(
 			return Select(db, params, fields, source)
 		}
 	}(db))
+	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var params map[string]interface{}
+			fields, _ := getFieldMap()
+			if request.Params != nil {
+				Params, ok := request.Params.(map[string]interface{})
+				if ok {
+					params = Params
+				}
+			}
+			return Select(db, params, fields, source)
+		}
+	}(db))
 }
 
 // RegisterTargetIDU whatever

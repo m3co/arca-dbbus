@@ -18,7 +18,15 @@ insert into "Table1"("Field1", "Field2", "Field3", "Field4") values
 ('a3', 'ab1', null, false),
 ('a4', 'bc2', 'c2', null),
 ('a5', 'bc2', null, null),
-('a6', 'bc3', 'c3', true);
+('', '', 'search1', null),
+('', '', 'search2', null),
+('', '', 'search3', null),
+('', '', 'search4', null),
+('', '', 'search5', null),
+('', '', 'search6', null),
+('', '', 'search7', null),
+('', '', 'search8', null),
+('', '', 'search9', null);
 
 create type t_enum as enum (
   'T-ENUM');
