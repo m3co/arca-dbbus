@@ -108,6 +108,8 @@ func WherePK(
 					} else if t == reflect.String {
 						str, ok := value.(string)
 						if ok {
+							hasStart := false
+							// Implementar aqui %value
 							hasEnd := false
 							if str[len(str)-1:] == "%" {
 								hasEnd = true
@@ -116,9 +118,17 @@ func WherePK(
 							j++
 							if hasEnd {
 								*values = append(*values, str)
-								likeEndsWith := fmt.Sprintf(`"%s" like $%d::%s`,
-									field, i+j, typefield) + " || '%'"
-								condition = append(condition, likeEndsWith)
+								likeStart := ""
+								if hasStart {
+									likeStart = "'%' ||"
+								}
+								likeEnd := ""
+								if hasEnd {
+									likeEnd = "|| '%'"
+								}
+								condition = append(condition,
+									fmt.Sprintf(`"%s" like %s $%d::%s %s`,
+										field, likeStart, i+j, typefield, likeEnd))
 							} else {
 								*values = append(*values, value)
 								condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
