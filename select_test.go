@@ -323,3 +323,7 @@ func Test_SelectSearch_Select_case6(t *testing.T) {
 		t.Fatal(cmp.Diff(response, expected))
 	}
 }
+
+// TODO
+// Play with date and timestamp values
+// Check the behavior of limit and offset

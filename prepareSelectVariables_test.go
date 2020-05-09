@@ -68,3 +68,7 @@ func Test_SelectSearch_FieldMap(t *testing.T) {
 	checkType(t, "timestamp without time zone", "Field1", v, v)
 	checkType(t, "timestamp", "Field1", v, v)
 }
+
+// TODO
+// field in PK not present in fieldMap
+// field in PK but its type doesn't match the given type from fieldMap
