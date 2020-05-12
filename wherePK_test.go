@@ -26,7 +26,8 @@ func Table1SSMap() *dbbus.Model {
 			"Field3": "character varying(255)",
 			"Field4": "boolean",
 		},
-		PK: []string{"ID"},
+		PK:      []string{"ID"},
+		OrderBy: `"ID"`,
 	}
 }
 

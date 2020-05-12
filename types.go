@@ -73,8 +73,8 @@ type handlerIDU struct {
 type Model struct {
 	Row     map[string]string
 	PK      []string
-	OrderBy *string
-	Limit   *int64
+	OrderBy string
+	Limit   int64
 }
 
 type processCell func(value interface{}, row map[string]interface{}, key string) error
