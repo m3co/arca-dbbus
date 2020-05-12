@@ -39,8 +39,10 @@ var (
 	connDb0           net.Conn
 )
 
-func fieldmap() (map[string]string, []string) {
-	return fieldMap, PK
+func getModel() *dbbus.Model {
+	return &dbbus.Model{
+		Row: fieldMap, PK: PK,
+	}
 }
 
 func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, conn net.Conn) {
@@ -88,8 +90,8 @@ func singleConn(t *testing.T, currdb string) (srv *dbbus.Server, db *sql.DB, con
 		t.Fatal(err)
 		return
 	}
-	srv.RegisterSourceIDU("Table1", fieldmap, db)
-	srv.RegisterTargetIDU("_Table1", fieldmap)
+	srv.RegisterSourceIDU("Table1", getModel(), db)
+	srv.RegisterTargetIDU("_Table1", getModel())
 
 	conn, err = net.Dial("tcp", srv.Address)
 	if err != nil {

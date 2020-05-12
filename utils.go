@@ -214,7 +214,8 @@ func prepareSelectVariables(fieldMap map[string]string) (columns, keys []string,
 // setupIDU whatever
 func setupIDU(
 	table string,
-	getFieldMap fieldMap,
+	fields map[string]string,
+	pk []string,
 ) handlerIDU {
 	handlers := handlerIDU{}
 
@@ -223,7 +224,6 @@ func setupIDU(
 			if request.Params != nil {
 				params, ok := request.Params.(map[string]interface{})
 				if ok {
-					fields, pk := getFieldMap()
 					return Insert(db, params, fields, pk, table)
 				}
 				return nil, ErrorMalformedParams
@@ -237,7 +237,6 @@ func setupIDU(
 			if request.Params != nil {
 				params, ok := request.Params.(map[string]interface{})
 				if ok {
-					fields, pk := getFieldMap()
 					return Delete(db, params, fields, pk, table)
 				}
 				return nil, ErrorMalformedParams
@@ -251,8 +250,7 @@ func setupIDU(
 			if request.Params != nil {
 				params, ok := request.Params.(map[string]interface{})
 				if ok {
-					fields, keys := getFieldMap()
-					return Update(db, params, fields, keys, table)
+					return Update(db, params, fields, pk, table)
 				}
 				return nil, ErrorMalformedParams
 			}

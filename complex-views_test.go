@@ -22,80 +22,98 @@ var (
 	lastInsertedIDTable3                    int64 = 0
 )
 
-func Table1Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID":     "integer",
-		"Field1": "character varying(255)",
-		"Field2": "character varying(255)",
-		"Field3": "character varying(255)",
-		"Field4": "character varying(255)",
-	}, []string{"ID"}
+func Table1Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID":     "integer",
+			"Field1": "character varying(255)",
+			"Field2": "character varying(255)",
+			"Field3": "character varying(255)",
+			"Field4": "character varying(255)",
+		},
+		PK: []string{"ID"},
+	}
 }
 
-func Table2Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID":     "integer",
-		"Field5": "character varying(255)",
-		"Field6": "character varying(255)",
-		"Field7": "character varying(255)",
-		"Field8": "character varying(255)",
-	}, []string{"ID"}
+func Table2Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID":     "integer",
+			"Field5": "character varying(255)",
+			"Field6": "character varying(255)",
+			"Field7": "character varying(255)",
+			"Field8": "character varying(255)",
+		},
+		PK: []string{"ID"},
+	}
 }
 
-func Table3Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID":      "integer",
-		"Field9":  "character varying(255)",
-		"Field10": "character varying(255)",
-		"Field11": "character varying(255)",
-		"Field12": "character varying(255)",
-	}, []string{"ID"}
+func Table3Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID":      "integer",
+			"Field9":  "character varying(255)",
+			"Field10": "character varying(255)",
+			"Field11": "character varying(255)",
+			"Field12": "character varying(255)",
+		},
+		PK: []string{"ID"},
+	}
 }
 
-func Table1Table2Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID1-ID2": "text",
-		"Field1":  "character varying(255)",
-		"Field2":  "character varying(255)",
-		"Field3":  "character varying(255)",
-		"Field4":  "character varying(255)",
-		"Field5":  "character varying(255)",
-		"Field6":  "character varying(255)",
-		"Field7":  "character varying(255)",
-		"Field8":  "character varying(255)",
-	}, []string{"ID1-ID2"}
+func Table1Table2Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID1-ID2": "text",
+			"Field1":  "character varying(255)",
+			"Field2":  "character varying(255)",
+			"Field3":  "character varying(255)",
+			"Field4":  "character varying(255)",
+			"Field5":  "character varying(255)",
+			"Field6":  "character varying(255)",
+			"Field7":  "character varying(255)",
+			"Field8":  "character varying(255)",
+		},
+		PK: []string{"ID1-ID2"},
+	}
 }
 
-func Table2Table3Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID2-ID3": "text",
-		"Field5":  "character varying(255)",
-		"Field6":  "character varying(255)",
-		"Field7":  "character varying(255)",
-		"Field8":  "character varying(255)",
-		"Field9":  "character varying(255)",
-		"Field10": "character varying(255)",
-		"Field11": "character varying(255)",
-		"Field12": "character varying(255)",
-	}, []string{"ID2-ID3"}
+func Table2Table3Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID2-ID3": "text",
+			"Field5":  "character varying(255)",
+			"Field6":  "character varying(255)",
+			"Field7":  "character varying(255)",
+			"Field8":  "character varying(255)",
+			"Field9":  "character varying(255)",
+			"Field10": "character varying(255)",
+			"Field11": "character varying(255)",
+			"Field12": "character varying(255)",
+		},
+		PK: []string{"ID2-ID3"},
+	}
 }
 
-func Table1Table2Table3Map() (map[string]string, []string) {
-	return map[string]string{
-		"ID1-ID2-ID3": "text",
-		"Field1":      "character varying(255)",
-		"Field2":      "character varying(255)",
-		"Field3":      "character varying(255)",
-		"Field4":      "character varying(255)",
-		"Field5":      "character varying(255)",
-		"Field6":      "character varying(255)",
-		"Field7":      "character varying(255)",
-		"Field8":      "character varying(255)",
-		"Field9":      "character varying(255)",
-		"Field10":     "character varying(255)",
-		"Field11":     "character varying(255)",
-		"Field12":     "character varying(255)",
-	}, []string{"ID1-ID2-ID3"}
+func Table1Table2Table3Map() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID1-ID2-ID3": "text",
+			"Field1":      "character varying(255)",
+			"Field2":      "character varying(255)",
+			"Field3":      "character varying(255)",
+			"Field4":      "character varying(255)",
+			"Field5":      "character varying(255)",
+			"Field6":      "character varying(255)",
+			"Field7":      "character varying(255)",
+			"Field8":      "character varying(255)",
+			"Field9":      "character varying(255)",
+			"Field10":     "character varying(255)",
+			"Field11":     "character varying(255)",
+			"Field12":     "character varying(255)",
+		},
+		PK: []string{"ID1-ID2-ID3"},
+	}
 }
 
 func showTable1FromAllDBs(t *testing.T) {
@@ -204,18 +222,18 @@ func Test_check_allDBs(t *testing.T) {
 	}
 	srvCmplx, dbMaster, dbView12, dbView23, dbView123 = createSwarm(t)
 
-	srvCmplx.RegisterSourceIDU("Table1", Table1Map, dbMaster)
-	srvCmplx.RegisterTargetIDU("_Table1", Table1Map)
+	srvCmplx.RegisterSourceIDU("Table1", Table1Map(), dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table1", Table1Map())
 
-	srvCmplx.RegisterSourceIDU("Table2", Table2Map, dbMaster)
-	srvCmplx.RegisterTargetIDU("_Table2", Table2Map)
+	srvCmplx.RegisterSourceIDU("Table2", Table2Map(), dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table2", Table2Map())
 
-	srvCmplx.RegisterSourceIDU("Table3", Table3Map, dbMaster)
-	srvCmplx.RegisterTargetIDU("_Table3", Table3Map)
+	srvCmplx.RegisterSourceIDU("Table3", Table3Map(), dbMaster)
+	srvCmplx.RegisterTargetIDU("_Table3", Table3Map())
 
-	srvCmplx.RegisterSourceIDU("Table1-Table2", Table1Table2Map, dbView12)
-	srvCmplx.RegisterSourceIDU("Table2-Table3", Table2Table3Map, dbView23)
-	srvCmplx.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map, dbView123)
+	srvCmplx.RegisterSourceIDU("Table1-Table2", Table1Table2Map(), dbView12)
+	srvCmplx.RegisterSourceIDU("Table2-Table3", Table2Table3Map(), dbView23)
+	srvCmplx.RegisterSourceIDU("Table1-Table2-Table3", Table1Table2Table3Map(), dbView123)
 }
 
 func Test_DBMaster_Table1_Insert(t *testing.T) {

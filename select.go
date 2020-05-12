@@ -11,7 +11,7 @@ import (
 func Select(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string,
-	requiredPK bool,
+	requiredPK bool, orderBy string,
 ) ([]map[string]interface{}, error) {
 	var (
 		rows      *sql.Rows
@@ -46,8 +46,12 @@ func Select(
 		}
 	}
 
-	query := fmt.Sprintf(`select %s from "%s" %s %s`, strings.Join(columns, ","),
-		table, condition, limit)
+	ob := ""
+	if orderBy != "" {
+		ob = fmt.Sprintf(`order by %s`, orderBy)
+	}
+	query := fmt.Sprintf(`select %s from "%s" %s %s %s`,
+		strings.Join(columns, ","), table, condition, ob, limit)
 	rows, err = db.Query(query, values...)
 	if err != nil {
 		return nil, err

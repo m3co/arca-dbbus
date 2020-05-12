@@ -17,28 +17,35 @@ var (
 	connSS net.Conn
 )
 
-func Table1SSMap() (map[string]string, []string) {
-	return map[string]string{
-		"ID":     "integer",
-		"Field1": "character varying(255)",
-		"Field2": "character varying(255)",
-		"Field3": "character varying(255)",
-		"Field4": "boolean",
-	}, []string{"ID"}
+func Table1SSMap() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID":     "integer",
+			"Field1": "character varying(255)",
+			"Field2": "character varying(255)",
+			"Field3": "character varying(255)",
+			"Field4": "boolean",
+		},
+		PK:      []string{"ID"},
+		OrderBy: `"ID"`,
+	}
 }
 
-func Table2SSMap() (map[string]string, []string) {
-	return map[string]string{
-		"ID":     "integer",
-		"Field1": "character varying(255)",
-		"Field2": "text",
-		"Field3": "numeric(15,2)",
-		"Field4": "boolean",
-		"Field5": "date",
-		"Field6": "timestamp without time zone",
-		"Field7": "timestamp with time zone",
-		"Field8": "t_enum",
-	}, []string{"ID"}
+func Table2SSMap() *dbbus.Model {
+	return &dbbus.Model{
+		Row: map[string]string{
+			"ID":     "integer",
+			"Field1": "character varying(255)",
+			"Field2": "text",
+			"Field3": "numeric(15,2)",
+			"Field4": "boolean",
+			"Field5": "date",
+			"Field6": "timestamp without time zone",
+			"Field7": "timestamp with time zone",
+			"Field8": "t_enum",
+		},
+		PK: []string{"ID"},
+	}
 }
 
 type Table1SS struct {

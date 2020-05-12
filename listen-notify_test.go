@@ -59,8 +59,8 @@ func Test_call_RegisterIDU(t *testing.T) {
 	if err := srv.RegisterDB(connStr, db); err != nil {
 		t.Fatal(err)
 	}
-	srv.RegisterSourceIDU("Table1", fieldmap, db)
-	srv.RegisterTargetIDU("_Table1", fieldmap)
+	srv.RegisterSourceIDU("Table1", getModel(), db)
+	srv.RegisterTargetIDU("_Table1", getModel())
 }
 
 func Test_call_RegisterIDU_connect(t *testing.T) {
