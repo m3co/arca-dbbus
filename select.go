@@ -46,8 +46,8 @@ func Select(
 		}
 	}
 
-	query := fmt.Sprintf(`select %s from "%s" %s %s`, strings.Join(columns, ","),
-		table, condition, limit)
+	query := fmt.Sprintf(`select %s from "%s" %s %s`,
+		strings.Join(columns, ","), table, condition, limit)
 	rows, err = db.Query(query, values...)
 	if err != nil {
 		return nil, err

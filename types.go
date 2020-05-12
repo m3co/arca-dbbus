@@ -68,7 +68,15 @@ type handlerIDU struct {
 	Update func(db *sql.DB) jsonrpc.RemoteProcedure
 }
 
-type fieldMap func() (map[string]string, []string)
+// Model defines the types in its table, the PK array of its table.
+// Also optionally it defines the OrderBy and Limit
+type Model struct {
+	Row     map[string]string
+	PK      []string
+	OrderBy *string
+	Limit   *int64
+}
+
 type processCell func(value interface{}, row map[string]interface{}, key string) error
 
 // Result shows if a request

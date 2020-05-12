@@ -47,8 +47,8 @@ func Test_SelectSearch_create_server(t *testing.T) {
 		return
 	}
 
-	srvSS.RegisterSourceIDU("Table1", Table1SSMap, dbSS)
-	srvSS.RegisterSourceIDU("Table2", Table2SSMap, dbSS)
+	srvSS.RegisterSourceIDU("Table1", Table1SSMap(), dbSS)
+	srvSS.RegisterSourceIDU("Table2", Table2SSMap(), dbSS)
 }
 
 func Test_SelectSearch_Select_case1(t *testing.T) {

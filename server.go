@@ -29,31 +29,29 @@ func (s *Server) RegisterDB(connStr string, db *sql.DB) error {
 // RegisterSourceIDU whatever
 func (s *Server) RegisterSourceIDU(
 	source string,
-	getFieldMap fieldMap,
+	model *Model,
 	db *sql.DB,
 ) {
 	// IDU(Table) :: Public
-	handlers := setupIDU(source, getFieldMap)
+	handlers := setupIDU(source, model.Row, model.PK)
 	s.rpc.RegisterSource("Insert", source, handlers.Insert(db))
 	s.rpc.RegisterSource("Delete", source, handlers.Delete(db))
 	s.rpc.RegisterSource("Update", source, handlers.Update(db))
 	s.rpc.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var params map[string]interface{}
-			fields, _ := getFieldMap()
 			if request.Params != nil {
 				Params, ok := request.Params.(map[string]interface{})
 				if ok {
 					params = Params
 				}
 			}
-			return Select(db, params, fields, source, false)
+			return Select(db, params, model.Row, source, false)
 		}
 	}(db))
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var params map[string]interface{}
-			fields, _ := getFieldMap()
 			if request.Params != nil {
 				Params, ok := request.Params.(map[string]interface{})
 				if ok {
@@ -64,9 +62,13 @@ func (s *Server) RegisterSourceIDU(
 				return nil, ErrorUndefinedPK
 			}
 			if _, ok := params["Limit"]; !ok {
-				params["Limit"] = float64(6)
+				if model.Limit != nil {
+					params["Limit"] = *model.Limit
+				} else {
+					params["Limit"] = float64(6)
+				}
 			}
-			return Select(db, params, fields, source, true)
+			return Select(db, params, model.Row, source, true)
 		}
 	}(db))
 }
@@ -74,24 +76,25 @@ func (s *Server) RegisterSourceIDU(
 // RegisterTargetIDU whatever
 func (s *Server) RegisterTargetIDU(
 	target string,
-	getFieldMap fieldMap,
+	model *Model,
 ) {
 	// idu(_Table) :: Private
-	handlers := setupIDU(target, getFieldMap)
+	handlers := setupIDU(target, model.Row, model.PK)
 	s.rpc.RegisterTarget("insert", target, handlers.Insert)
 	s.rpc.RegisterTarget("delete", target, handlers.Delete)
 	s.rpc.RegisterTarget("update", target, handlers.Update)
 }
 
 // CheckFieldMap test the fieldMap dictionary against the implemented by DB-BUS fields
-func (s *Server) CheckFieldMap(f fieldMap) error {
-	fm, keys := f()
-	_, _, _, err := prepareSelectVariables(fm)
+func (s *Server) CheckFieldMap(model *Model) error {
+	Row := model.Row
+	PK := model.PK
+	_, _, _, err := prepareSelectVariables(Row)
 	if err != nil {
 		return err
 	}
-	for _, key := range keys {
-		_, ok := fm[key]
+	for _, key := range PK {
+		_, ok := Row[key]
 		if !ok {
 			return fmt.Errorf("Key '%s' not found in the fieldMap", key)
 		}
