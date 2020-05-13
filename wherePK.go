@@ -105,10 +105,10 @@ func WherePK(
 										}
 										like := fmt.Sprintf(`"%s" like %s $%d::%s %s`,
 											field, likeStart, i+j, typefield, likeEnd)
-										condition = append(condition, like)
+										ors = append(ors, like)
 									} else {
 										*values = append(*values, value)
-										condition = append(condition, fmt.Sprintf(`"%s"=$%d::%s`,
+										ors = append(ors, fmt.Sprintf(`"%s"=$%d::%s`,
 											field, i+j, typefield))
 									}
 								}
