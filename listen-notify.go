@@ -78,7 +78,7 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			request.Context = notification.Context
 			request.Params = Params
 			for _, db := range s.dbs {
-				go s.rpc.ProcessNotification(&request, db)
+				s.rpc.ProcessNotification(&request, db)
 			}
 			continue // favor, salir del ciclo presente*
 		}
@@ -104,12 +104,10 @@ func (s *Server) processNotification(listener *pq.Listener) {
 			Es decir, en este caso ocurre que la notificación es para ejecutar el RPC
 			sobre una vista determinada.
 		*/
-		go func(notification Notification) {
-			request := jsonrpc.Request{}
-			request.Method = strings.Title(notification.Method)
-			request.Context = notification.Context
-			request.Params = Params
-			s.rpc.ProcessRequest(&request, nil)
-		}(notification)
+		request := jsonrpc.Request{}
+		request.Method = strings.Title(notification.Method)
+		request.Context = notification.Context
+		request.Params = Params
+		s.rpc.ProcessRequest(&request, nil)
 	}
 }
