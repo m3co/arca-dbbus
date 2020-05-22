@@ -3,6 +3,8 @@ package dbbus
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -29,7 +31,15 @@ func convert2Numeric(v interface{}) (res *float64, err error) {
 			res = &c
 			err = nil
 		} else {
-			return nil, fmt.Errorf("Cannot process %v", v)
+			t := reflect.TypeOf(v).Kind()
+			if t == reflect.Int64 {
+				ip, _ := v.(int64)
+				i := float64(ip)
+				res = &i
+				err = nil
+				return
+			}
+			return nil, fmt.Errorf("Cannot process %v %s", v, t)
 		}
 	}
 	return
@@ -42,16 +52,24 @@ func PrepareAndExecute(
 	tx, err := db.Begin()
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
+			log.Println(err)
+			log.Println(queryPrepared, values)
 			return nil, err
 		}
+		log.Println(err)
+		log.Println(queryPrepared, values)
 		return nil, err
 	}
 
 	query, err := tx.Prepare(queryPrepared)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
+			log.Println(err)
+			log.Println(queryPrepared, values)
 			return nil, err
 		}
+		log.Println(err)
+		log.Println(queryPrepared, values)
 		return nil, err
 	}
 	defer query.Close()
@@ -69,12 +87,18 @@ func PrepareAndExecute(
 
 		if err := row.Scan(ret...); err != nil && err != sql.ErrNoRows {
 			if err := tx.Rollback(); err != nil {
+				log.Println(err)
+				log.Println(queryPrepared, values)
 				return nil, err
 			}
+			log.Println(err)
+			log.Println(queryPrepared, values)
 			return nil, err
 		}
 
 		if err := tx.Commit(); err != nil {
+			log.Println(err)
+			log.Println(queryPrepared, values)
 			return nil, err
 		}
 
@@ -87,12 +111,18 @@ func PrepareAndExecute(
 
 	if _, err := query.Exec(values...); err != nil {
 		if err := tx.Rollback(); err != nil {
+			log.Println(err)
+			log.Println(queryPrepared, values)
 			return nil, err
 		}
+		log.Println(err)
+		log.Println(queryPrepared, values)
 		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
+		log.Println(err)
+		log.Println(queryPrepared, values)
 		return nil, err
 	}
 	return &Result{Success: true}, nil
