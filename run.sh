@@ -7,7 +7,7 @@ docker stop arca-dbbus-go arca-dbbus-db arca-dbbus-db0 arca-dbbus-db-ss arca-dbb
 docker build -t arca-dbbus-go         -f go.Dockerfile . && \
 docker build -t arca-dbbus-db         -f db.Dockerfile . && \
 docker build -t arca-dbbus-db0        -f db.Dockerfile . && \
-docker build -t arca-dbbus-db-ss      -f plpgsql-test/db-SelectSearch.Dockerfile . && \
+docker build -t arca-dbbus-db-ss      -f plpgsql-test/db-Select.Dockerfile . && \
 docker build -t arca-dbbus-db-master  -f plpgsql-test/db-master.Dockerfile . && \
 docker build -t arca-dbbus-db-view12  -f plpgsql-test/db-view12.Dockerfile . && \
 docker build -t arca-dbbus-db-view23  -f plpgsql-test/db-view23.Dockerfile . && \

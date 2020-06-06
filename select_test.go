@@ -12,7 +12,7 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-func Test_SelectSearch_create_server(t *testing.T) {
+func Test_Select_create_server(t *testing.T) {
 	connStrSS := ""
 	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
 		db.Close()
@@ -51,7 +51,7 @@ func Test_SelectSearch_create_server(t *testing.T) {
 	srvSS.RegisterSourceIDU("Table2", Table2SSMap(), dbSS)
 }
 
-func Test_SelectSearch_Select_case1(t *testing.T) {
+func Test_Select_Select_case1(t *testing.T) {
 	conn, err := net.Dial("tcp", srvSS.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -93,7 +93,7 @@ func Test_SelectSearch_Select_case1(t *testing.T) {
 	}
 }
 
-func Test_SelectSearch_Select_case2(t *testing.T) {
+func Test_Select_Select_case2(t *testing.T) {
 	conn, err := net.Dial("tcp", srvSS.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -139,7 +139,7 @@ func Test_SelectSearch_Select_case2(t *testing.T) {
 	}
 }
 
-func Test_SelectSearch_Select_case3(t *testing.T) {
+func Test_Select_Select_case3(t *testing.T) {
 	conn, err := net.Dial("tcp", srvSS.Address)
 	if err != nil {
 		t.Fatal(err)
@@ -185,7 +185,7 @@ func Test_SelectSearch_Select_case3(t *testing.T) {
 	}
 }
 
-func Test_SelectSearch_Select_case4(t *testing.T) {
+func Test_Select_Select_case4(t *testing.T) {
 	conn, err := net.Dial("tcp", srvSS.Address)
 	if err != nil {
 		t.Fatal(err)

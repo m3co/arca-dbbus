@@ -7,4 +7,4 @@ ENV POSTGRES_PASSWORD="test"
 ENV POSTGRES_USER="test"
 ENV POSTGRES_DB="test-ss"
 
-COPY plpgsql-test/db-SelectSearch.sql /docker-entrypoint-initdb.d
+COPY plpgsql-test/db-Select.sql /docker-entrypoint-initdb.d
