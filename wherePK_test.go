@@ -15,6 +15,10 @@ var (
 	srvSS  *dbbus.Server
 	dbSS   *sql.DB
 	connSS net.Conn
+
+	srvSearch  *dbbus.Server
+	dbSearch   *sql.DB
+	connSearch net.Conn
 )
 
 func Table1SSMap() *dbbus.Model {

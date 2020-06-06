@@ -14,7 +14,7 @@ import (
 
 func Test_Select_create_server(t *testing.T) {
 	connStrSS := ""
-	if connStr, db, err := connect("arca-dbbus-db-ss", "test-ss"); err != nil {
+	if connStr, db, err := connect("arca-dbbus-db-select", "test-select"); err != nil {
 		db.Close()
 		t.Fatal(err)
 		return
