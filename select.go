@@ -10,8 +10,7 @@ import (
 // Select whatever
 func Select(
 	db *sql.DB, params map[string]interface{},
-	fieldMap map[string]string, table string,
-	requiredPK bool, orderBy string,
+	fieldMap map[string]string, table string, orderBy string,
 ) ([]map[string]interface{}, error) {
 	var (
 		rows      *sql.Rows

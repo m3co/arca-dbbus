@@ -47,7 +47,7 @@ func (s *Server) RegisterSourceIDU(
 					params = Params
 				}
 			}
-			return Select(db, params, model.Row, source, false, model.OrderBy)
+			return Select(db, params, model.Row, source, model.OrderBy)
 		}
 	}(db))
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
