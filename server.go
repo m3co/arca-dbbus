@@ -56,14 +56,18 @@ func (s *Server) RegisterSourceIDU(
 			var params map[string]interface{}
 			if request.Params == nil {
 				return nil, ErrorUndefinedParams
-			} else {
-				Params, ok := request.Params.(map[string]interface{})
-				if ok {
-					params = Params
-				} else {
-					return nil, ErrorMalformedParams
-				}
 			}
+			Params, ok := request.Params.(map[string]interface{})
+			if ok {
+				params = Params
+			} else {
+				return nil, ErrorMalformedParams
+			}
+			searchStr, ok := Params["Search"]
+			if !ok || searchStr == "" {
+				return nil, fmt.Errorf("Search field is required")
+			}
+
 			return params, nil
 		}
 	}(db))

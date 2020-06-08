@@ -1,0 +1,17 @@
+{
+  "Context": {
+    "Source": "Table2"
+  },
+  "Error": {
+    "Code": -32603,
+    "Data": {
+      "Error": "Params are not defined",
+      "ID": "jsonrpc-mock-id-searchs-select-case-1",
+      "Method": "Search"
+    },
+    "Message": "Internal error"
+  },
+  "ID": "jsonrpc-mock-id-searchs-select-case-1",
+  "Method": "Search",
+  "Result": null
+}
