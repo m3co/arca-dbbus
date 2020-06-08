@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-// Select whatever
+// Select makes posible to perform a select query in the DB.
+// params contains the dictionary with the folling fields:
+//  * PK for filtering (optional)
+//  * Limit falls into the query as limit (optional)
 func Select(
 	db *sql.DB, params map[string]interface{},
 	fieldMap map[string]string, table string, orderBy string,
