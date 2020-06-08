@@ -38,6 +38,7 @@ func (s *Server) RegisterSourceIDU(
 	s.rpc.RegisterSource("Delete", source, handlers.Delete(db))
 	s.rpc.RegisterSource("Update", source, handlers.Update(db))
 	s.rpc.RegisterSource("Select", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		// TODO: escribir aqui la documentacion sobre como funciona Select
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var params map[string]interface{}
 			if request.Params != nil {
@@ -47,6 +48,23 @@ func (s *Server) RegisterSourceIDU(
 				}
 			}
 			return Select(db, params, model.Row, source, false, model.OrderBy)
+		}
+	}(db))
+	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
+		// TODO: escribir aqui la documentacion sobre como funciona Search
+		return func(request *jsonrpc.Request) (interface{}, error) {
+			var params map[string]interface{}
+			if request.Params == nil {
+				return nil, ErrorUndefinedParams
+			} else {
+				Params, ok := request.Params.(map[string]interface{})
+				if ok {
+					params = Params
+				} else {
+					return nil, ErrorMalformedParams
+				}
+			}
+			return params, nil
 		}
 	}(db))
 }

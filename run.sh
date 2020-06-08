@@ -23,7 +23,7 @@ docker run -d --rm --name arca-dbbus-db-master  --net arca-dbbus-net arca-dbbus-
 docker run -d --rm --name arca-dbbus-db-view12  --net arca-dbbus-net arca-dbbus-db-view12 && \
 docker run -d --rm --name arca-dbbus-db-view23  --net arca-dbbus-net arca-dbbus-db-view23 && \
 docker run -d --rm --name arca-dbbus-db-view123 --net arca-dbbus-net arca-dbbus-db-view123 && \
-docker run    --rm --name arca-dbbus-go         --net arca-dbbus-net arca-dbbus-go go -- test -v -timeout 20s && \
+docker run    --rm --name arca-dbbus-go         --net arca-dbbus-net arca-dbbus-go go -- test -v -timeout 5s && \
 
 # Clean-up
 docker stop arca-dbbus-db arca-dbbus-db0 arca-dbbus-db-select arca-dbbus-db-search arca-dbbus-db-master arca-dbbus-db-view12 arca-dbbus-db-view23 arca-dbbus-db-view123 && \
