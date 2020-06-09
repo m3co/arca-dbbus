@@ -61,7 +61,23 @@ func (s *Server) RegisterSourceIDU(
 			} else {
 				return nil, ErrorMalformedParams
 			}
-			return Search(db, params, model.Row, source)
+			rows, err := Search(db, params, model.Row, source)
+			if err != nil {
+				return nil, err
+			}
+
+			results := []FoundRow{}
+			for _, row := range rows {
+				PK := map[string]interface{}{}
+				for _, pk := range model.PK {
+					PK[pk] = row[pk]
+				}
+				results = append(results, FoundRow{
+					PK:    PK,
+					Label: row["Field2"].(string),
+				})
+			}
+			return results, nil
 		}
 	}(db))
 }

@@ -9,7 +9,7 @@ import (
 
 // FoundRow represents the resulting row when performing a search
 type FoundRow struct {
-	Value string
+	PK    map[string]interface{}
 	Label string
 }
 
