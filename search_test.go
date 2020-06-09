@@ -48,6 +48,7 @@ func Test_Search_create_server(t *testing.T) {
 	}
 
 	srvSearch.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch)
+	srvSearch.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch)
 }
 
 func Test_Search_case1_noparams(t *testing.T) {

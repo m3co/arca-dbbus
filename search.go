@@ -38,7 +38,6 @@ func Search(
 		strings.Join(columns, ","),
 		table,
 		searchCondition(search, fieldMap, table))
-	fmt.Println(query)
 	rows, err := db.Query(query, search)
 	if err != nil {
 		return nil, err
