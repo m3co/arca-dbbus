@@ -1,1 +1,65 @@
-{}
+{
+    "Context": {
+        "Source": "Table2"
+    },
+    "Error": null,
+    "ID": "jsonrpc-mock-id-searchs-select-case-5",
+    "Method": "Search",
+    "Result": [
+        {
+            "Field1": "Field1 ABC",
+            "Field2": "Field2 ABC",
+            "Field3": 10,
+            "Field4": false,
+            "Field5": "2020-06-06T00:00:00Z",
+            "Field6": "2020-06-06T18:10:10Z",
+            "Field7": null,
+            "Field8": "T-ENUM",
+            "ID": 11
+        },
+        {
+            "Field1": "Field1 ABCD",
+            "Field2": "Field2 ABCD",
+            "Field3": 11,
+            "Field4": false,
+            "Field5": "2020-06-06T00:00:00Z",
+            "Field6": "2020-06-06T18:10:10Z",
+            "Field7": null,
+            "Field8": "T-ENUM",
+            "ID": 12
+        },
+        {
+            "Field1": "ABC Field1",
+            "Field2": "EFG Field2",
+            "Field3": 10,
+            "Field4": false,
+            "Field5": "2020-06-06T00:00:00Z",
+            "Field6": "2020-06-06T18:10:10Z",
+            "Field7": null,
+            "Field8": "T-ENUM",
+            "ID": 13
+        },
+        {
+            "Field1": "abc Field1",
+            "Field2": "efg Field2",
+            "Field3": 101,
+            "Field4": false,
+            "Field5": "2020-06-06T00:00:00Z",
+            "Field6": "2020-06-06T18:10:10Z",
+            "Field7": null,
+            "Field8": "T-ENUM",
+            "ID": 14
+        },
+        {
+            "Field1": "Zabc Field1",
+            "Field2": "xyz Field2",
+            "Field3": 20,
+            "Field4": false,
+            "Field5": "2020-06-06T00:00:00Z",
+            "Field6": "2020-06-06T18:10:10Z",
+            "Field7": null,
+            "Field8": "T-ENUM",
+            "ID": 15
+        }
+    ]
+}

@@ -3,6 +3,7 @@ package dbbus
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -27,17 +28,48 @@ func Search(
 		return nil, fmt.Errorf("Search field is required")
 	}
 
-	query := searchCreateQuery(search, fieldMap, table)
-	fmt.Println(query, search)
-
 	result := []map[string]interface{}{}
+	columns, keys, processColumn, err := prepareSelectVariables(fieldMap)
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`select %s from "%s" where %s`,
+		strings.Join(columns, ","),
+		table,
+		searchCondition(search, fieldMap, table))
+	fmt.Println(query)
+	rows, err := db.Query(query, search)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	count := len(columns)
+	slots := make([]interface{}, count)
+	slotsPtrs := make([]interface{}, count)
+	for i := range slots {
+		slotsPtrs[i] = &slots[i]
+	}
+	for rows.Next() {
+		if err := rows.Scan(slotsPtrs...); err != nil {
+			return nil, err
+		}
+		row := map[string]interface{}{}
+		for i, key := range keys {
+			if err := processColumn[i](slots[i], row, key); err != nil {
+				log.Println(err, "at", table)
+			}
+		}
+		result = append(result, row)
+	}
 	return result, nil
 }
 
-// searchCreateQuery returns the query that perform the search procress among the fields
+// searchCondition returns the query that perform the search procress among the fields
 //  - search.(string) will render in search among fields that can be casted to text
 //  - search.(float64) will render in search among fields that can be casted to float
-func searchCreateQuery(search interface{}, fieldMap map[string]string, table string) string {
+func searchCondition(search interface{}, fieldMap map[string]string, table string) string {
 	selectedFields := []string{}
 	searchFields := []string{}
 
@@ -89,9 +121,5 @@ func searchCreateQuery(search interface{}, fieldMap map[string]string, table str
 		}
 	}
 
-	return fmt.Sprintf("select %s from %s where %s",
-		strings.Join(selectedFields, ","),
-		table,
-		strings.Join(searchFields, " or "),
-	)
+	return strings.Join(searchFields, " or ")
 }
