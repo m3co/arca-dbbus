@@ -12,7 +12,7 @@ import (
 	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
-func Test_Search_create_server(t *testing.T) {
+func Test_Search_create_server1(t *testing.T) {
 	connStrSearch := ""
 	if connStr, db, err := connect("arca-dbbus-db-search", "test-search"); err != nil {
 		db.Close()
