@@ -218,3 +218,47 @@ func Test_Search_case4_search_param_empty(t *testing.T) {
 		t.Fatal(cmp.Diff(response, expected))
 	}
 }
+
+func Test_Search_case5_search_ok(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSearch.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-searchs-select-case-5"
+	request.Method = "Search"
+	request.Context = map[string]string{
+		"Source": "Table2",
+	}
+	request.Params = map[string]string{
+		"Search": "Field",
+	}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+		return
+	}
+	expected, err := getExpected(t)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
+		t.Fatal(cmp.Diff(response, expected))
+	}
+}
