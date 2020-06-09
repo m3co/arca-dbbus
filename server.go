@@ -56,6 +56,7 @@ func (s *Server) RegisterSourceSearch(
 	source string,
 	model *Model,
 	db *sql.DB,
+	labeler Labeler,
 ) {
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
@@ -80,9 +81,13 @@ func (s *Server) RegisterSourceSearch(
 				for _, pk := range model.PK {
 					PK[pk] = row[pk]
 				}
+				label, err := labeler(row)
+				if err != nil {
+					return nil, err
+				}
 				results = append(results, FoundRow{
 					PK:    PK,
-					Label: row["Field2"].(string),
+					Label: label,
 				})
 			}
 			return results, nil

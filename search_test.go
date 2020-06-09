@@ -47,8 +47,11 @@ func Test_Search_create_server(t *testing.T) {
 		return
 	}
 
+	labeler := func(row map[string]interface{}) (string, error) {
+		return row["Field2"].(string), nil
+	}
 	srvSearch.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch)
-	srvSearch.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch)
+	srvSearch.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch, labeler)
 }
 
 func Test_Search_case1_noparams(t *testing.T) {

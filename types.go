@@ -79,6 +79,9 @@ type Model struct {
 
 type processCell func(value interface{}, row map[string]interface{}, key string) error
 
+// Labeler is the constructor of the label based on its row
+type Labeler func(row map[string]interface{}) (string, error)
+
 // Result shows if a request
 type Result struct {
 	Success bool
