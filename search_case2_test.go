@@ -47,11 +47,11 @@ func Test_Search_create_server2(t *testing.T) {
 		return
 	}
 
-	tags := map[string]func(row map[string]interface{}) (string, error){}
-	tags["Field1"] = func(row map[string]interface{}) (string, error) {
-		return row["Field1"].(string), nil
+	tags := map[string]func(row map[string]interface{}) string{}
+	tags["Field1"] = func(row map[string]interface{}) string {
+		return row["Field1"].(string)
 	}
-	tags["Field1-Field2"] = func(row map[string]interface{}) (string, error) {
+	tags["Field1-Field2"] = func(row map[string]interface{}) string {
 		field1 := ""
 		if row["Field1"] != nil {
 			field1 = row["Field1"].(string)
@@ -60,7 +60,7 @@ func Test_Search_create_server2(t *testing.T) {
 		if row["Field2"] != nil {
 			field2 = row["Field2"].(string)
 		}
-		return fmt.Sprintf(`%s -- %s`, field1, field2), nil
+		return fmt.Sprintf(`%s -- %s`, field1, field2)
 	}
 	srvSearch2.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch2)
 	srvSearch2.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch2, tags)

@@ -47,11 +47,11 @@ func Test_Search_create_server1(t *testing.T) {
 		return
 	}
 
-	labeler := func(row map[string]interface{}) (string, error) {
+	labeler := func(row map[string]interface{}) string {
 		if row["Field2"] == nil {
-			return "", nil
+			return ""
 		}
-		return row["Field2"].(string), nil
+		return row["Field2"].(string)
 	}
 	srvSearch.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch)
 	srvSearch.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch, labeler)

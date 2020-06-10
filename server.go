@@ -58,14 +58,14 @@ func (s *Server) RegisterSourceSearch(
 	db *sql.DB,
 	labeler interface{},
 ) {
-	tags, ok := labeler.(map[string](func(row map[string]interface{}) (string, error)))
+	tags, ok := labeler.(map[string]func(row map[string]interface{}) string)
 	if !ok {
-		fn, ok := labeler.(func(row map[string]interface{}) (string, error))
+		fn, ok := labeler.(func(row map[string]interface{}) string)
 		if !ok {
 			log.Fatal("Cannot cast labeler as a function")
 			return
 		}
-		tags = map[string](func(row map[string]interface{}) (string, error)){}
+		tags = map[string]func(row map[string]interface{}) string{}
 		tags[""] = fn
 	}
 
@@ -105,10 +105,7 @@ func (s *Server) RegisterSourceSearch(
 				for _, pk := range model.PK {
 					PK[pk] = row[pk]
 				}
-				label, err := tagFn(row)
-				if err != nil {
-					return nil, err
-				}
+				label := tagFn(row)
 				if label == "" {
 					continue
 				}
