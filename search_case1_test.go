@@ -48,6 +48,9 @@ func Test_Search_create_server1(t *testing.T) {
 	}
 
 	labeler := func(row map[string]interface{}) (string, error) {
+		if row["Field2"] == nil {
+			return "", nil
+		}
 		return row["Field2"].(string), nil
 	}
 	srvSearch.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch)
@@ -238,6 +241,50 @@ func Test_Search_case5_search_ok(t *testing.T) {
 	}
 	request.Params = map[string]string{
 		"Search": "Field",
+	}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+		return
+	}
+	expected, err := getExpected(t)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
+		t.Fatal(cmp.Diff(response, expected))
+	}
+}
+
+func Test_Search_case6_search_ok(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSearch.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-searchs-select-case-6"
+	request.Method = "Search"
+	request.Context = map[string]string{
+		"Source": "Table2",
+	}
+	request.Params = map[string]int64{
+		"Search": 10,
 	}
 
 	send(conn, request)

@@ -116,7 +116,7 @@ func searchCondition(search interface{}, fieldMap map[string]string, table strin
 			}
 
 			searchFields = append(searchFields,
-				fmt.Sprintf(`("%s"::float = $1::float`, key))
+				fmt.Sprintf(`case when "%s" is null then false else "%s" = $1 end`, key, key))
 		}
 	}
 

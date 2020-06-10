@@ -85,6 +85,9 @@ func (s *Server) RegisterSourceSearch(
 				if err != nil {
 					return nil, err
 				}
+				if label == "" {
+					continue
+				}
 				results = append(results, FoundRow{
 					PK:    PK,
 					Label: label,
