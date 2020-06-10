@@ -1,0 +1,17 @@
+{
+    "Context": {
+        "Source": "Table2"
+    },
+    "Error": {
+        "Code": -32603,
+        "Data": {
+        "Error": "Params is not a map of values",
+        "ID": "jsonrpc-mock-id-searchs-select-case-2",
+        "Method": "Search"
+        },
+        "Message": "Internal error"
+    },
+    "ID": "jsonrpc-mock-id-searchs-select-case-2",
+    "Method": "Search",
+    "Result": null
+}

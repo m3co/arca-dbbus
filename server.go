@@ -46,29 +46,78 @@ func (s *Server) RegisterSourceIDU(
 					params = Params
 				}
 			}
-			return Select(db, params, model.Row, source, false, model.OrderBy)
+			return Select(db, params, model.Row, source, model.OrderBy)
 		}
 	}(db))
+}
+
+// RegisterSourceSearch whatever
+func (s *Server) RegisterSourceSearch(
+	source string,
+	model *Model,
+	db *sql.DB,
+	labeler interface{},
+) {
+	tags, ok := labeler.(map[string](func(row map[string]interface{}) (string, error)))
+	if !ok {
+		fn, ok := labeler.(func(row map[string]interface{}) (string, error))
+		if !ok {
+			log.Fatal("Cannot cast labeler as a function")
+			return
+		}
+		tags = map[string](func(row map[string]interface{}) (string, error)){}
+		tags[""] = fn
+	}
+
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var params map[string]interface{}
-			if request.Params != nil {
-				Params, ok := request.Params.(map[string]interface{})
-				if ok {
-					params = Params
+			if request.Params == nil {
+				return nil, ErrorUndefinedParams
+			}
+			Params, ok := request.Params.(map[string]interface{})
+			if ok {
+				params = Params
+			} else {
+				return nil, ErrorMalformedParams
+			}
+			rows, err := Search(db, params, model.Row, source)
+			if err != nil {
+				return nil, err
+			}
+
+			tag := ""
+			iTag, ok := Params["Tag"]
+			if ok {
+				tag, ok = iTag.(string)
+				if !ok {
+					return nil, ErrorMalformedTag
 				}
 			}
-			if params == nil {
-				return nil, ErrorUndefinedPK
+			tagFn, ok := tags[tag]
+			if !ok {
+				return nil, ErrorUndefinedTag
 			}
-			if _, ok := params["Limit"]; !ok {
-				if model.Limit != 0 {
-					params["Limit"] = model.Limit
-				} else {
-					params["Limit"] = float64(6)
+
+			results := []FoundRow{}
+			for _, row := range rows {
+				PK := map[string]interface{}{}
+				for _, pk := range model.PK {
+					PK[pk] = row[pk]
 				}
+				label, err := tagFn(row)
+				if err != nil {
+					return nil, err
+				}
+				if label == "" {
+					continue
+				}
+				results = append(results, FoundRow{
+					PK:    PK,
+					Label: label,
+				})
 			}
-			return Select(db, params, model.Row, source, true, model.OrderBy)
+			return results, nil
 		}
 	}(db))
 }

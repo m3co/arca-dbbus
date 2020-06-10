@@ -12,9 +12,14 @@ import (
 )
 
 var (
-	srvSS  *dbbus.Server
-	dbSS   *sql.DB
-	connSS net.Conn
+	srvSS *dbbus.Server
+	dbSS  *sql.DB
+
+	srvSearch *dbbus.Server
+	dbSearch  *sql.DB
+
+	srvSearch2 *dbbus.Server
+	dbSearch2  *sql.DB
 )
 
 func Table1SSMap() *dbbus.Model {

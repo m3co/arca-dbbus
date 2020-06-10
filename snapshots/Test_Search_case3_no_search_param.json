@@ -1,0 +1,17 @@
+{
+    "Context": {
+        "Source": "Table2"
+    },
+    "Error": {
+        "Code": -32603,
+        "Data": {
+        "Error": "Search field is required",
+        "ID": "jsonrpc-mock-id-searchs-select-case-3",
+        "Method": "Search"
+        },
+        "Message": "Internal error"
+    },
+    "ID": "jsonrpc-mock-id-searchs-select-case-3",
+    "Method": "Search",
+    "Result": null
+}

@@ -26,6 +26,8 @@ var (
 	ErrorIndexNegative        = errors.New("Index cannot be negative")
 	ErrorCastToBool           = errors.New("Cannot cast value into boolean")
 	ErrorKeyNotInFieldMap     = errors.New("Key is not in the fielMap")
+	ErrorMalformedTag         = errors.New("Tag in the search is not an string")
+	ErrorUndefinedTag         = errors.New("Tag not found in the definitions")
 )
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
@@ -78,6 +80,10 @@ type Model struct {
 }
 
 type processCell func(value interface{}, row map[string]interface{}, key string) error
+
+// Labeler is the constructor of the label based on its row.
+// If return an empty string then it will not appear in the search
+type Labeler func(row map[string]interface{}) (string, error)
 
 // Result shows if a request
 type Result struct {

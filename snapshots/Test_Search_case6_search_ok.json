@@ -1,0 +1,22 @@
+{
+  "Context": {
+    "Source": "Table2"
+  },
+  "Error": null,
+  "ID": "jsonrpc-mock-id-searchs-select-case-6",
+  "Method": "Search",
+  "Result": [
+    {
+      "Label": "Field2 ABC",
+      "PK": {
+        "ID": 11
+      }
+    },
+    {
+      "Label": "EFG Field2",
+      "PK": {
+        "ID": 13
+      }
+    }
+  ]
+}
