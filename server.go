@@ -56,8 +56,19 @@ func (s *Server) RegisterSourceSearch(
 	source string,
 	model *Model,
 	db *sql.DB,
-	labeler Labeler,
+	labeler interface{},
 ) {
+	tags, ok := labeler.(map[string](func(row map[string]interface{}) (string, error)))
+	if !ok {
+		fn, ok := labeler.(func(row map[string]interface{}) (string, error))
+		if !ok {
+			log.Fatal("Cannot cast labeler as a function")
+			return
+		}
+		tags = map[string](func(row map[string]interface{}) (string, error)){}
+		tags[""] = fn
+	}
+
 	s.rpc.RegisterSource("Search", source, func(db *sql.DB) jsonrpc.RemoteProcedure {
 		return func(request *jsonrpc.Request) (interface{}, error) {
 			var params map[string]interface{}
@@ -75,13 +86,26 @@ func (s *Server) RegisterSourceSearch(
 				return nil, err
 			}
 
+			tag := ""
+			iTag, ok := Params["Tag"]
+			if ok {
+				tag, ok = iTag.(string)
+				if !ok {
+					return nil, ErrorMalformedTag
+				}
+			}
+			tagFn, ok := tags[tag]
+			if !ok {
+				return nil, ErrorUndefinedTag
+			}
+
 			results := []FoundRow{}
 			for _, row := range rows {
 				PK := map[string]interface{}{}
 				for _, pk := range model.PK {
 					PK[pk] = row[pk]
 				}
-				label, err := labeler(row)
+				label, err := tagFn(row)
 				if err != nil {
 					return nil, err
 				}

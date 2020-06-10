@@ -1,9 +1,15 @@
 package dbbus_test
 
 import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"net"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	dbbus "github.com/m3co/arca-dbbus"
+	jsonrpc "github.com/m3co/arca-jsonrpc"
 )
 
 func Test_Search_create_server2(t *testing.T) {
@@ -41,9 +47,111 @@ func Test_Search_create_server2(t *testing.T) {
 		return
 	}
 
-	labeler := func(row map[string]interface{}) (string, error) {
-		return row["Field2"].(string), nil
+	tags := map[string]func(row map[string]interface{}) (string, error){}
+	tags["Field1"] = func(row map[string]interface{}) (string, error) {
+		return row["Field1"].(string), nil
+	}
+	tags["Field1-Field2"] = func(row map[string]interface{}) (string, error) {
+		field1 := ""
+		if row["Field1"] != nil {
+			field1 = row["Field1"].(string)
+		}
+		field2 := ""
+		if row["Field2"] != nil {
+			field2 = row["Field2"].(string)
+		}
+		return fmt.Sprintf(`%s -- %s`, field1, field2), nil
 	}
 	srvSearch2.RegisterSourceIDU("Table2", Table2SSMap(), dbSearch2)
-	srvSearch2.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch2, labeler)
+	srvSearch2.RegisterSourceSearch("Table2", Table2SSMap(), dbSearch2, tags)
+}
+
+func Test_Search_case7_search_tag_field2(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSearch2.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-searchs-select-case-5"
+	request.Method = "Search"
+	request.Context = map[string]string{
+		"Source": "Table2",
+	}
+	request.Params = map[string]string{
+		"Search": "Field",
+		"Tag":    "Field1",
+	}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+		return
+	}
+	expected, err := getExpected(t)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
+		t.Fatal(cmp.Diff(response, expected))
+	}
+}
+
+func Test_Search_case8_search_tag_field1_field2(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSearch2.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-searchs-select-case-5"
+	request.Method = "Search"
+	request.Context = map[string]string{
+		"Source": "Table2",
+	}
+	request.Params = map[string]string{
+		"Search": "Field",
+		"Tag":    "Field1-Field2",
+	}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+		return
+	}
+	expected, err := getExpected(t)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
+		t.Fatal(cmp.Diff(response, expected))
+	}
 }

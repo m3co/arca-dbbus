@@ -26,6 +26,8 @@ var (
 	ErrorIndexNegative        = errors.New("Index cannot be negative")
 	ErrorCastToBool           = errors.New("Cannot cast value into boolean")
 	ErrorKeyNotInFieldMap     = errors.New("Key is not in the fielMap")
+	ErrorMalformedTag         = errors.New("Tag in the search is not an string")
+	ErrorUndefinedTag         = errors.New("Tag not found in the definitions")
 )
 
 // Notification es el mensaje que viene de NOTIFY 'jsonrpc'
