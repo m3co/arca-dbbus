@@ -74,7 +74,7 @@ func Test_Search_case7_search_tag_field2(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-searchs-select-case-5"
+	request.ID = "jsonrpc-mock-id-searchs-select-case-7"
 	request.Method = "Search"
 	request.Context = map[string]string{
 		"Source": "Table2",
@@ -119,7 +119,7 @@ func Test_Search_case8_search_tag_field1_field2(t *testing.T) {
 	}
 
 	request := &jsonrpc.Request{}
-	request.ID = "jsonrpc-mock-id-searchs-select-case-5"
+	request.ID = "jsonrpc-mock-id-searchs-select-case-8"
 	request.Method = "Search"
 	request.Context = map[string]string{
 		"Source": "Table2",
@@ -127,6 +127,54 @@ func Test_Search_case8_search_tag_field1_field2(t *testing.T) {
 	request.Params = map[string]string{
 		"Search": "Field",
 		"Tag":    "Field1-Field2",
+	}
+
+	send(conn, request)
+
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	raw := scanner.Bytes()
+
+	response := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err)
+		return
+	}
+	expected, err := getExpected(t)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if !cmp.Equal(response, expected) {
+		strToWrite, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log(string(strToWrite))
+		t.Fatal(cmp.Diff(response, expected))
+	}
+}
+
+func Test_Search_case9_search_tag_field1_field2_and_filter(t *testing.T) {
+	conn, err := net.Dial("tcp", srvSearch2.Address)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	request := &jsonrpc.Request{}
+	request.ID = "jsonrpc-mock-id-searchs-select-case-9"
+	request.Method = "Search"
+	request.Context = map[string]string{
+		"Source": "Table2",
+	}
+	request.Params = map[string]interface{}{
+		"Search": "Field",
+		"Tag":    "Field1-Field2",
+		"PK": map[string]int64{
+			"Field3": 10,
+		},
 	}
 
 	send(conn, request)

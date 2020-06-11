@@ -28,17 +28,40 @@ func Search(
 		return nil, fmt.Errorf("Search field is required")
 	}
 
+	values := []interface{}{search}
 	result := []map[string]interface{}{}
 	columns, keys, processColumn, err := prepareSelectVariables(fieldMap)
 	if err != nil {
 		return nil, err
 	}
 
-	query := fmt.Sprintf(`select %s from "%s" where %s`,
+	condition := "true"
+	if PK, ok := params["PK"]; ok {
+		if pk, ok := PK.(map[string]interface{}); ok {
+			if condition, err = WherePK(pk, fieldMap, keys, &values, 1); err != nil {
+				if err != ErrorZeroParamsInPK {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	limit := ""
+	if Limit, ok := params["Limit"]; ok {
+		if l, ok := Limit.(float64); ok {
+			li := int64(l)
+			limit = fmt.Sprintf("limit %d", li)
+		} else {
+			return nil, fmt.Errorf("Cannot convert limit param %v into integer", Limit)
+		}
+	}
+
+	query := fmt.Sprintf(`select %s from "%s" where (%s) and %s %s`,
 		strings.Join(columns, ","),
 		table,
-		searchCondition(search, fieldMap, table))
-	rows, err := db.Query(query, search)
+		searchCondition(search, fieldMap, table), condition,
+		limit)
+	rows, err := db.Query(query, values...)
 	if err != nil {
 		return nil, err
 	}
