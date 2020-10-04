@@ -112,6 +112,7 @@ func (s *Server) RegisterSourceSearch(
 				results = append(results, FoundRow{
 					PK:    PK,
 					Label: label,
+					Row:   row,
 				})
 			}
 			return results, nil

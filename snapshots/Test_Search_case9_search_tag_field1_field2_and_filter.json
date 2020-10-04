@@ -10,11 +10,33 @@
       "Label": "Field1 ABC -- Field2 ABC",
       "PK": {
         "ID": 11
+      },
+      "Row": {
+        "Field1": "Field1 ABC",
+        "Field2": "Field2 ABC",
+        "Field3": 10,
+        "Field4": false,
+        "Field5": "2020-06-06T00:00:00Z",
+        "Field6": "2020-06-06T18:10:10Z",
+        "Field7": null,
+        "Field8": "T-ENUM",
+        "ID": 11
       }
     },
     {
       "Label": "ABC Field1 -- EFG Field2",
       "PK": {
+        "ID": 13
+      },
+      "Row": {
+        "Field1": "ABC Field1",
+        "Field2": "EFG Field2",
+        "Field3": 10,
+        "Field4": false,
+        "Field5": "2020-06-06T00:00:00Z",
+        "Field6": "2020-06-06T18:10:10Z",
+        "Field7": null,
+        "Field8": "T-ENUM",
         "ID": 13
       }
     }
